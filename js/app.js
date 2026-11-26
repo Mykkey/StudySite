@@ -1,0 +1,378 @@
+/* StudySite app: home page + module page. No dependencies. */
+(function () {
+  'use strict';
+  var MODS = window.MODULES, MAN = window.MANIFEST;
+
+  /* ---------- helpers ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function fmt(s) { return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>'); }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function plain(s) { return String(s == null ? '' : s).replace(/[`*]/g, ''); }
+
+  /* ---------- storage (guarded) ---------- */
+  var mem = {}, KEY = 'studysite.v1';
+  var state = (function () { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return mem; } })();
+  state.done = state.done || {}; state.cards = state.cards || {};
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function applyTheme() { if (state.theme) document.documentElement.setAttribute('data-theme', state.theme); }
+  applyTheme();
+
+  /* ---------- content rendering ---------- */
+  function renderItems(items) {
+    var h = '', ul = false;
+    (items || []).forEach(function (it) {
+      if (typeof it === 'string') { if (!ul) { h += '<ul>'; ul = true; } h += '<li>' + fmt(it) + '</li>'; return; }
+      if (ul) { h += '</ul>'; ul = false; }
+      switch (it.type) {
+        case 'p': h += '<p>' + fmt(it.text) + '</p>'; break;
+        case 'note': h += '<div class="callout">' + fmt(it.text) + '</div>'; break;
+        case 'warn': h += '<div class="callout warn">' + fmt(it.text) + '</div>'; break;
+        case 'formula': h += '<div class="formula" title="' + esc(it.label || '') + '">' + (it.label ? '<small>' + esc(it.label) + '</small>\n' : '') + esc(it.text) + '</div>'; break;
+        case 'code': h += '<pre><code>' + esc(it.text) + '</code></pre>'; break;
+        case 'table':
+          h += '<table class="t"><thead><tr>' + it.head.map(function (c) { return '<th>' + fmt(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+            it.rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + fmt(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+          break;
+        case 'diagram': h += window.Diagrams.render(it.kind, it.data || {}, it.caption); break;
+        default: h += '<p>' + fmt(JSON.stringify(it)) + '</p>';
+      }
+    });
+    if (ul) h += '</ul>';
+    return h;
+  }
+  function list(arr) { return '<ul>' + (arr || []).map(function (x) { return '<li>' + fmt(x) + '</li>'; }).join('') + '</ul>'; }
+
+  function modOf(code) { return MAN.filter(function (m) { return m.code === code; })[0]; }
+  function stats(code) {
+    var m = MODS[code]; if (!m) return { topics: 0, done: 0, cards: 0, known: 0 };
+    var done = 0, known = 0;
+    (m.topics || []).forEach(function (t) { if (state.done[code + ':' + t.id]) done++; });
+    (m.flashcards || []).forEach(function (c) { if (state.cards[code + ':' + c.id] === 'know') known++; });
+    return { topics: (m.topics || []).length, done: done, cards: (m.flashcards || []).length, known: known };
+  }
+  function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+
+  /* ---------- search ---------- */
+  var index = null;
+  function buildIndex() {
+    index = [];
+    MAN.forEach(function (mm) {
+      var m = MODS[mm.code]; if (!m) return;
+      (m.topics || []).forEach(function (t) {
+        var txt = [t.summary].concat((t.sections || []).map(function (s) { return s.heading + ' ' + (s.items || []).map(function (i) { return typeof i === 'string' ? i : (i.text || (i.rows ? i.rows.join(' ') : '')); }).join(' '); })).concat(t.pitfalls || []).join(' ');
+        index.push({ code: mm.code, kind: 'Topic', title: t.title, text: plain(txt), href: 'module.html?m=' + mm.code + '#topics/' + t.id });
+      });
+      (m.flashcards || []).forEach(function (c) { index.push({ code: mm.code, kind: 'Flashcard', title: plain(c.front), text: plain(c.back), href: 'module.html?m=' + mm.code + '#cards/' + c.id }); });
+      (m.methods || []).forEach(function (c) { index.push({ code: mm.code, kind: 'Method', title: c.title, text: plain((c.steps || []).join(' ') + ' ' + (c.when || '')), href: 'module.html?m=' + mm.code + '#methods/' + c.id }); });
+      (m.practice || []).forEach(function (c) { index.push({ code: mm.code, kind: 'Practice', title: plain(c.question).slice(0, 90), text: plain(c.question), href: 'module.html?m=' + mm.code + '#practice/' + c.id }); });
+    });
+  }
+  function search(q) {
+    if (!index) buildIndex();
+    var toks = q.toLowerCase().split(/\s+/).filter(Boolean); if (!toks.length) return [];
+    var out = [];
+    index.forEach(function (d) {
+      var t = d.title.toLowerCase(), x = d.text.toLowerCase(), sc = 0, ok = true;
+      toks.forEach(function (k) { var a = t.indexOf(k) >= 0, b = x.indexOf(k) >= 0; if (!a && !b) ok = false; sc += (a ? 5 : 0) + (b ? 1 : 0); });
+      if (ok) out.push({ d: d, sc: sc });
+    });
+    out.sort(function (a, b) { return b.sc - a.sc; });
+    return out.slice(0, 40).map(function (o) { return o.d; });
+  }
+  function initSearch() {
+    var box = $('#q'), res = $('#results'); if (!box) return;
+    var sel = -1;
+    function show() {
+      var r = search(box.value.trim());
+      if (!box.value.trim()) { res.hidden = true; return; }
+      res.hidden = false; sel = -1;
+      res.innerHTML = r.length ? r.map(function (d) { return '<a href="' + d.href + '"><span class="badge mod">' + d.code + '</span> <span class="badge">' + d.kind + '</span> ' + esc(d.title) + '<small>' + esc(d.text.slice(0, 110)) + '</small></a>'; }).join('') : '<a>No matches</a>';
+    }
+    box.addEventListener('input', show);
+    box.addEventListener('keydown', function (e) {
+      var items = $$('a[href]', res);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, Math.min(items.length - 1, sel + (e.key === 'ArrowDown' ? 1 : -1))); items.forEach(function (a, i) { a.classList.toggle('sel', i === sel); }); if (items[sel]) items[sel].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'Enter' && items[Math.max(sel, 0)]) { location.href = items[Math.max(sel, 0)].getAttribute('href'); }
+      else if (e.key === 'Escape') { box.value = ''; res.hidden = true; box.blur(); }
+    });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.search')) res.hidden = true; });
+  }
+
+  /* ---------- keyboard help ---------- */
+  var HELP = {
+    'Everywhere': [['/', 'Focus search'], ['?', 'This help'], ['D', 'Toggle dark/light'], ['G then H', 'Go home']],
+    'Module tabs': [['1 - 6', 'Jump to tab (not on Flashcards)'], [', and .', 'Previous / next tab'], ['[ and ]', 'Previous / next topic'], ['E', 'Expand / collapse all topics'], ['C', 'Mark focused topic complete']],
+    'Flashcards': [['Space / Enter', 'Flip card'], ['Right / J', 'Next card'], ['Left / K', 'Previous card'], ['2 or Up', 'I know it (then next)'], ['1 or Down', 'Still learning (then next)'], ['S', 'Shuffle'], ['M', 'Toggle missed-only'], ['R', 'Restart deck']],
+    'Mock papers': [['T', 'Start / pause timer'], ['A', 'Show / hide model answer for focused part'], ['Right / Left', 'Next / previous question'], ['Up / Down', 'Move focus between parts']]
+  };
+  function showHelp() {
+    if ($('#help')) { $('#help').remove(); return; }
+    var h = '<div class="overlay" id="help"><div class="card"><h2 style="margin-top:0">Keyboard shortcuts</h2>';
+    Object.keys(HELP).forEach(function (g) { h += '<h3>' + g + '</h3><table>' + HELP[g].map(function (r) { return '<tr><td><span class="kbd">' + esc(r[0]) + '</span></td><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</table>'; });
+    h += '<p><button class="primary" id="closehelp">Close (Esc)</button></p></div></div>';
+    document.body.insertAdjacentHTML('beforeend', h);
+    $('#closehelp').onclick = function () { $('#help').remove(); };
+  }
+
+  /* ---------- HOME ---------- */
+  function home() {
+    var h = '<h1>4th Year Exam Revision</h1><p class="lead">Topics ranked by how likely they are to score marks. Flashcards, methods, past-paper practice and mock papers for every module.</p><div class="grid">';
+    MAN.forEach(function (mm) {
+      var s = stats(mm.code), m = MODS[mm.code];
+      h += '<a class="card modcard" href="module.html?m=' + mm.code + '" style="--mc:' + mm.colour + '"><h3>' + mm.code + (m && m.evidence === 'estimated' ? ' <span class="badge est" title="No past papers available: ranking estimated from lecture emphasis">estimated</span>' : '') + (m && m.hints ? ' <span class="badge likely">hints</span>' : '') + '</h3><div>' + esc(mm.name) + '</div>';
+      if (!m) h += '<p class="stat">Content not built yet.</p>';
+      else h += '<p class="stat">Topics ' + s.done + '/' + s.topics + '</p><div class="bar"><i style="width:' + pct(s.done, s.topics) + '%"></i></div><p class="stat">Flashcards known ' + s.known + '/' + s.cards + '</p><div class="bar"><i style="width:' + pct(s.known, s.cards) + '%"></i></div>';
+      h += '</a>';
+    });
+    h += '</div><div class="disclaimer">Content is synthesised from your notes and past papers. Lecturer hints are second-hand and unverified. Mock papers and model answers are AI-written practice material, not official marking schemes.</div>';
+    $('#app').innerHTML = h;
+  }
+
+  /* ---------- MODULE ---------- */
+  var TABS = [['exam', 'Exam breakdown'], ['topics', 'Topics'], ['cards', 'Flashcards'], ['methods', 'Methods'], ['practice', 'Past questions'], ['mocks', 'Mock papers']];
+  var code, M, tab = 'topics', focusT = -1, fc = { topic: 'all', missed: false, order: [], i: 0, flipped: false }, mk = { mi: 0, qi: 0, fp: 0, secs: null, run: false, timer: null, shown: {} };
+
+  function route() {
+    var parts = location.hash.replace(/^#/, '').split('/'); tab = parts[0] || 'topics';
+    if (!TABS.some(function (t) { return t[0] === tab; })) tab = 'topics';
+    var target = parts[1] ? decodeURIComponent(parts[1]) : null;
+    renderTab(target);
+  }
+  function go(t) { location.hash = '#' + t; }
+
+  function moduleShell() {
+    var mm = modOf(code);
+    if (!mm) { $('#app').innerHTML = '<h1>Unknown module</h1><p><a href="index.html">Home</a></p>'; return false; }
+    if (!M) { $('#app').innerHTML = '<h1>' + code + ' ' + esc(mm.name) + '</h1><p>This module\'s content file (data/' + code + '.js) has not been built yet.</p>'; return false; }
+    var h = '<h1 style="border-left:6px solid ' + mm.colour + ';padding-left:10px">' + code + ' <small style="font-weight:400">' + esc(mm.name) + '</small></h1>';
+    if (M.evidence === 'estimated') h += '<div class="disclaimer">No past papers were available for this module, so topic order is <b>estimated</b> from lecture emphasis.</div>';
+    h += '<nav class="tabs" role="tablist">' + TABS.map(function (t, i) { return '<button role="tab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + (i + 1) + '. ' + t[1] + '</button>'; }).join('') + '</nav><div id="view"></div>';
+    $('#app').innerHTML = h;
+    $$('nav.tabs button').forEach(function (b) { b.onclick = function () { go(b.dataset.tab); }; });
+    return true;
+  }
+
+  function renderTab(target) {
+    if (!moduleShell()) return;
+    var v = $('#view');
+    if (tab === 'exam') v.innerHTML = examView();
+    else if (tab === 'topics') { v.innerHTML = topicsView(); bindTopics(target); }
+    else if (tab === 'cards') { cardsInit(target); }
+    else if (tab === 'methods') { v.innerHTML = methodsView(); scrollTo(target); }
+    else if (tab === 'practice') { v.innerHTML = practiceView(); scrollTo(target); bindToggles(v); }
+    else if (tab === 'mocks') { mocksView(); }
+  }
+  function scrollTo(id) { if (!id) return; var el = document.getElementById('x-' + id); if (el) { if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ block: 'center' }); } }
+  function bindToggles(root) { $$('[data-toggle]', root).forEach(function (b) { b.onclick = function () { var el = document.getElementById(b.dataset.toggle); el.hidden = !el.hidden; b.textContent = el.hidden ? 'Show model outline' : 'Hide model outline'; }; }); }
+
+  /* --- exam --- */
+  function examView() {
+    var e = M.exam || {}, h = '';
+    if (e.summary) h += '<div class="card"><h3 style="margin-top:0">Format at a glance</h3>' + list(e.summary) + '</div>';
+    if (M.hints) {
+      var hs = M.hints;
+      h += '<h2>Lecturer hints <span class="badge likely">as reported</span></h2><div class="disclaimer">' + esc(hs.source || 'Second-hand, unverified.') + '</div>';
+      if (hs.questionShapes) h += '<h3>Question shapes</h3>' + list(hs.questionShapes);
+      h += '<div class="grid"><div class="card"><h3 style="margin-top:0">Likely</h3>' + list(hs.likely) + '</div><div class="card"><h3 style="margin-top:0">Unlikely</h3>' + list(hs.unlikely) + '</div></div>';
+      if (hs.notes && hs.notes.length) h += '<h3>Other notes</h3>' + list(hs.notes);
+    }
+    if (e.structure) h += '<h2>Structure</h2><table class="t"><thead><tr><th>Part</th><th>Details</th></tr></thead><tbody>' + e.structure.map(function (r) { return '<tr><td>' + fmt(r.label) + '</td><td>' + fmt(r.detail) + '</td></tr>'; }).join('') + '</tbody></table>';
+    if (e.freq && e.freq.length) h += '<h2>Topic frequency in past papers</h2>' + window.Diagrams.render('bar', { title: 'Appearances (out of ' + (e.freq[0].of || '?') + ' papers)', yLabel: 'papers', bars: e.freq.slice(0, 10).map(function (f, i) { return { label: String(f.topic).slice(0, 14), value: f.count, color: i < 3 ? 4 : 0 }; }) }, 'Top topics by number of papers they appeared in.') + '<table class="t"><thead><tr><th>Topic</th><th>Papers</th></tr></thead><tbody>' + e.freq.map(function (f) { return '<tr><td>' + fmt(f.topic) + '</td><td>' + f.count + '/' + f.of + '</td></tr>'; }).join('') + '</tbody></table>';
+    if (e.years && e.years.length) h += '<h2>Paper by paper</h2><table class="t"><thead><tr><th>Paper</th><th>What was asked</th></tr></thead><tbody>' + e.years.map(function (y) { return '<tr><td>' + fmt(y.year) + '</td><td>' + (y.themes || []).map(fmt).join('<br>') + '</td></tr>'; }).join('') + '</tbody></table>';
+    if (e.tips) h += '<h2>How to score</h2>' + list(e.tips);
+    if (e.note) h += '<div class="disclaimer">' + fmt(e.note) + '</div>';
+    return h;
+  }
+
+  /* --- topics --- */
+  function topicCard(t) {
+    var key = code + ':' + t.id, done = !!state.done[key];
+    var h = '<details class="topic' + (done ? ' done' : '') + '" id="x-' + esc(t.id) + '" data-id="' + esc(t.id) + '"><summary><input type="checkbox" aria-label="Mark complete" ' + (done ? 'checked' : '') + ' data-done="' + esc(t.id) + '"><span class="ttl">' + esc(t.title) + '</span>' +
+      '<span class="badge' + (t.priority <= 3 ? ' p1' : '') + '">#' + t.priority + '</span>' + (t.freq ? '<span class="badge">' + esc(t.freq) + '</span>' : '') + (t.marks ? '<span class="badge">' + esc(t.marks) + '</span>' : '') +
+      (t.hint ? '<span class="badge ' + esc(t.hint) + '">Lecturer: ' + esc(t.hint) + '</span>' : '') + '</summary><div class="tbody">';
+    if (t.summary) h += '<p><b>' + fmt(t.summary) + '</b></p>';
+    if (t.mnemonic) h += '<div class="callout hook">Memory hook: ' + fmt(t.mnemonic) + '</div>';
+    (t.sections || []).forEach(function (s) { h += '<h3>' + fmt(s.heading) + '</h3>' + renderItems(s.items); });
+    if (t.pitfalls && t.pitfalls.length) h += '<div class="callout warn"><b>Marks are lost by:</b>' + list(t.pitfalls) + '</div>';
+    if (t.source) h += '<p class="stat">Source: ' + esc([].concat(t.source).join(', ')) + '</p>';
+    return h + '</div></details>';
+  }
+  function topicsView() {
+    var ts = (M.topics || []).slice().sort(function (a, b) { return a.priority - b.priority; });
+    var main = ts.filter(function (t) { return t.tier !== 'low'; }), low = ts.filter(function (t) { return t.tier === 'low'; });
+    var s = stats(code);
+    var h = '<div class="toolbar"><button id="expall">Expand / collapse all <span class="kbd">E</span></button><button id="hidedone" aria-pressed="false">Hide completed</button><span class="stat" style="align-self:center">' + s.done + ' of ' + s.topics + ' complete</span></div><div class="bar"><i style="width:' + pct(s.done, s.topics) + '%"></i></div>';
+    h += '<p class="stat">Ordered by likelihood and marks (#1 = revise first). <span class="kbd">[</span> <span class="kbd">]</span> move between topics, <span class="kbd">C</span> marks complete.</p>';
+    h += main.map(topicCard).join('');
+    if (low.length) h += '<h2>Only if time (lecturer says unlikely, or low value)</h2><p class="stat">Still examinable in principle: keep a light pass over these.</p>' + low.map(topicCard).join('');
+    return h;
+  }
+  function topicEls() { return $$('details.topic'); }
+  function setFocusT(i) { var els = topicEls(); if (!els.length) return; focusT = Math.max(0, Math.min(els.length - 1, i)); els.forEach(function (e, k) { e.classList.toggle('focus', k === focusT); }); els[focusT].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  function bindTopics(target) {
+    $$('input[data-done]').forEach(function (cb) {
+      cb.onclick = function (e) { e.stopPropagation(); };
+      cb.onchange = function () { toggleDone(cb.dataset.done, cb.checked); };
+    });
+    $$('details.topic').forEach(function (d, i) { d.addEventListener('toggle', function () { if (d.open) { focusT = i; $$('details.topic').forEach(function (e, k) { e.classList.toggle('focus', k === i); }); } }); });
+    $('#expall').onclick = expandAll;
+    $('#hidedone').onclick = function () { var on = this.getAttribute('aria-pressed') !== 'true'; this.setAttribute('aria-pressed', on); $$('details.topic.done').forEach(function (d) { d.style.display = on ? 'none' : ''; }); };
+    if (target) scrollTo(target);
+  }
+  function toggleDone(id, val) {
+    var k = code + ':' + id; if (val) state.done[k] = true; else delete state.done[k]; save();
+    var d = document.getElementById('x-' + id); if (d) { d.classList.toggle('done', val); var cb = $('input[data-done]', d); if (cb) cb.checked = val; }
+    var s = stats(code); var bar = $('#view .bar > i'); if (bar) bar.style.width = pct(s.done, s.topics) + '%';
+    var st = $('#view .toolbar .stat'); if (st) st.textContent = s.done + ' of ' + s.topics + ' complete';
+  }
+  function expandAll() { var els = topicEls(), anyClosed = els.some(function (e) { return !e.open; }); els.forEach(function (e) { e.open = anyClosed; }); }
+
+  /* --- methods --- */
+  function methodsView() {
+    var ms = M.methods || []; if (!ms.length) return '<p>No methods for this module.</p>';
+    return '<p class="lead">Step-by-step recipes for the problem types that come up. Learn the mnemonic, then do the worked example from memory.</p>' + ms.map(function (m) {
+      var h = '<div class="card method" id="x-' + esc(m.id) + '"><h3 style="margin-top:0">' + esc(m.title) + '</h3>';
+      if (m.when) h += '<p class="stat">Use when: ' + fmt(m.when) + '</p>';
+      if (m.mnemonic) h += '<div class="callout hook">Memory hook: ' + fmt(m.mnemonic) + '</div>';
+      h += '<ol>' + (m.steps || []).map(function (s) { return '<li>' + fmt(s) + '</li>'; }).join('') + '</ol>';
+      if (m.example) h += '<div class="eg"><b>Worked example.</b> ' + fmt(m.example.problem) + (m.example.solution ? list(m.example.solution) : '') + '</div>';
+      if (m.diagram) h += window.Diagrams.render(m.diagram.kind, m.diagram.data, m.diagram.caption);
+      return h + '</div>';
+    }).join('');
+  }
+
+  /* --- practice --- */
+  function practiceView() {
+    var ps = M.practice || []; if (!ps.length) return '<p>No past questions recorded.</p>';
+    var tt = {}; (M.topics || []).forEach(function (t) { tt[t.id] = t; });
+    return '<p class="lead">Real past-paper questions, grouped by topic. Attempt first, then reveal the outline (my synthesis from your notes, not an official scheme).</p>' + ps.map(function (p, i) {
+      return '<div class="card method" id="x-' + esc(p.id) + '" style="margin:10px 0"><span class="badge">' + esc(p.source || '') + '</span> <span class="badge">' + esc(p.marks || '') + ' marks</span> ' + (tt[p.topicId] ? '<span class="badge mod">' + esc(tt[p.topicId].title) + '</span>' : '') + '<p>' + fmt(p.question) + '</p><button class="sm" data-toggle="o-' + i + '">Show model outline</button><div class="answer" id="o-' + i + '" hidden>' + list(p.outline) + '</div></div>';
+    }).join('');
+  }
+
+  /* --- flashcards --- */
+  function cardList() {
+    var all = M.flashcards || [];
+    return all.filter(function (c) { return (fc.topic === 'all' || c.topicId === fc.topic) && (!fc.missed || state.cards[code + ':' + c.id] !== 'know'); });
+  }
+  function cardsInit(target) {
+    if (!(M.flashcards || []).length) { $('#view').innerHTML = '<p>No flashcards for this module.</p>'; return; }
+    fc.order = cardList().map(function (c) { return c.id; }); fc.i = 0; fc.flipped = false;
+    if (target) { var ix = fc.order.indexOf(target); if (ix >= 0) fc.i = ix; }
+    cardsRender();
+  }
+  function rebuildDeck(keepId) { fc.order = cardList().map(function (c) { return c.id; }); fc.i = Math.max(0, Math.min(fc.i, fc.order.length - 1)); fc.flipped = false; }
+  function cardsRender() {
+    var byId = {}; (M.flashcards || []).forEach(function (c) { byId[c.id] = c; });
+    var s = stats(code), tt = {}; (M.topics || []).forEach(function (t) { tt[t.id] = t; });
+    var topicOpts = '<option value="all">All topics</option>' + (M.topics || []).map(function (t) { return '<option value="' + esc(t.id) + '"' + (fc.topic === t.id ? ' selected' : '') + '>' + esc(t.title) + '</option>'; }).join('');
+    var h = '<div class="deckbar"><select id="fctopic" aria-label="Topic filter">' + topicOpts + '</select><button id="fcmiss" aria-pressed="' + fc.missed + '">Missed only <span class="kbd">M</span></button><button id="fcshuf">Shuffle <span class="kbd">S</span></button><button id="fcreset">Restart <span class="kbd">R</span></button><button id="fcclear" title="Forget all know/learning marks for this module">Clear marks</button><span class="stat">Known ' + s.known + '/' + s.cards + '</span></div><div class="bar"><i style="width:' + pct(s.known, s.cards) + '%"></i></div>';
+    if (!fc.order.length) { h += '<div class="card"><p>Nothing in this deck' + (fc.missed ? ' (every card here is marked known: nice)' : '') + '.</p></div>'; $('#view').innerHTML = h; bindCards(); return; }
+    var c = byId[fc.order[fc.i]], st = state.cards[code + ':' + c.id];
+    h += '<p class="stat" style="text-align:center">Card ' + (fc.i + 1) + ' of ' + fc.order.length + (tt[c.topicId] ? ' &middot; ' + esc(tt[c.topicId].title) : '') + '</p>';
+    h += '<div class="fc' + (fc.flipped ? ' flipped' : '') + (st === 'know' ? ' known' : st === 'learn' ? ' learn' : '') + '" id="fc"><div class="fc-inner"><div class="fc-face front"><span class="tag">Question</span>' + fmt(c.front) + '<small>click or press Space to flip</small></div><div class="fc-face back"><span class="tag">Answer</span><div>' + fmt(c.back) + '</div>' + (c.hook ? '<small>Hook: ' + fmt(c.hook) + '</small>' : '') + '</div></div></div>';
+    h += '<div class="actions"><button id="fcprev">&larr; Prev</button><button class="bad" id="fclearn">Still learning <span class="kbd">1</span></button><button class="good" id="fcknow">I know it <span class="kbd">2</span></button><button id="fcnext">Next &rarr;</button></div>';
+    $('#view').innerHTML = h; bindCards();
+  }
+  function bindCards() {
+    var f = $('#fc'); if (f) { f.onclick = cardFlip; var x0 = null; f.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true }); f.addEventListener('touchend', function (e) { if (x0 == null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) cardMove(dx < 0 ? 1 : -1); }); }
+    var on = function (id, fn) { var el = $(id); if (el) el.onclick = fn; };
+    on('#fcprev', function () { cardMove(-1); }); on('#fcnext', function () { cardMove(1); });
+    on('#fcknow', function () { cardRate('know'); }); on('#fclearn', function () { cardRate('learn'); });
+    on('#fcshuf', cardShuffle); on('#fcreset', cardRestart); on('#fcmiss', cardMissed);
+    on('#fcclear', function () { (M.flashcards || []).forEach(function (c) { delete state.cards[code + ':' + c.id]; }); save(); rebuildDeck(); cardsRender(); });
+    var sel = $('#fctopic'); if (sel) sel.onchange = function () { fc.topic = sel.value; fc.i = 0; rebuildDeck(); cardsRender(); };
+  }
+  function cardFlip() { fc.flipped = !fc.flipped; var f = $('#fc'); if (f) f.classList.toggle('flipped', fc.flipped); }
+  function cardMove(d) { if (!fc.order.length) return; fc.i = (fc.i + d + fc.order.length) % fc.order.length; fc.flipped = false; cardsRender(); }
+  function cardRate(v) { if (!fc.order.length) return; state.cards[code + ':' + fc.order[fc.i]] = v; save(); if (fc.missed && v === 'know') { var keep = fc.i; fc.order.splice(fc.i, 1); fc.i = Math.min(keep, fc.order.length - 1); fc.flipped = false; cardsRender(); } else cardMove(1); }
+  function cardShuffle() { for (var i = fc.order.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = fc.order[i]; fc.order[i] = fc.order[j]; fc.order[j] = t; } fc.i = 0; fc.flipped = false; cardsRender(); }
+  function cardRestart() { fc.i = 0; rebuildDeck(); cardsRender(); }
+  function cardMissed() { fc.missed = !fc.missed; fc.i = 0; rebuildDeck(); cardsRender(); }
+
+  /* --- mocks --- */
+  function mocksView() {
+    var ms = M.mocks || [], v = $('#view');
+    if (!ms.length) { v.innerHTML = '<p>No mock papers for this module yet.</p>'; return; }
+    var mock = ms[mk.mi] || ms[0], q = mock.questions[mk.qi] || mock.questions[0];
+    if (mk.secs == null) mk.secs = (mock.duration || 120) * 60;
+    var h = '<div class="disclaimer">AI-written practice paper modelled on the real format and lecturer hints. Not an official paper; model outlines are suggestions.</div>';
+    h += '<div class="toolbar">' + ms.map(function (m, i) { return '<button data-mock="' + i + '" aria-pressed="' + (i === mk.mi) + '">' + esc(m.title) + '</button>'; }).join('') + '<button onclick="window.print()">Print</button></div>';
+    h += '<div class="paper"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>' + code + ' ' + esc(mock.title) + '</b><br><span class="stat">' + esc(mock.instructions || '') + '</span></div><div><span class="timer" id="timer">' + clock(mk.secs) + '</span> <button id="tbtn">' + (mk.run ? 'Pause' : 'Start') + ' <span class="kbd">T</span></button></div></div>';
+    h += '<div class="qtabs">' + mock.questions.map(function (qq, i) { return '<button data-q="' + i + '" aria-pressed="' + (i === mk.qi) + '">Q' + qq.n + ' (' + qq.marks + ')</button>'; }).join('') + '</div>';
+    h += '<div class="qpane"><h3>Question ' + q.n + ' <span class="badge">' + q.marks + ' marks</span></h3>';
+    if (q.scenario) h += '<div class="scenario">' + fmt(q.scenario) + '</div>';
+    q.parts.forEach(function (p, i) {
+      var id = 'a-' + mk.mi + '-' + mk.qi + '-' + i, shown = !!mk.shown[id];
+      h += '<div class="part' + (i === mk.fp ? ' focus' : '') + '" data-p="' + i + '"><b>(' + esc(p.label) + ')</b> ' + fmt(p.text) + ' <span class="badge">' + p.marks + '</span><div><button class="sm" data-ans="' + id + '">' + (shown ? 'Hide' : 'Show') + ' model outline</button></div><div class="answer" id="' + id + '"' + (shown ? '' : ' hidden') + '>' + list(p.outline) + '</div></div>';
+    });
+    h += '</div></div>';
+    v.innerHTML = h;
+    $$('[data-mock]').forEach(function (b) { b.onclick = function () { mk.mi = +b.dataset.mock; mk.qi = 0; mk.fp = 0; mk.secs = null; stopTimer(); mocksView(); }; });
+    $$('[data-q]').forEach(function (b) { b.onclick = function () { mk.qi = +b.dataset.q; mk.fp = 0; mocksView(); }; });
+    $$('[data-ans]').forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); mk.shown[b.dataset.ans] = !mk.shown[b.dataset.ans]; mocksView(); }; });
+    $$('.part').forEach(function (p) { p.onclick = function () { mk.fp = +p.dataset.p; $$('.part').forEach(function (x) { x.classList.toggle('focus', x === p); }); }; });
+    $('#tbtn').onclick = toggleTimer;
+  }
+  function clock(s) { s = Math.max(0, s); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' : '') + String(m).padStart(h ? 2 : 1, '0') + ':' + String(x).padStart(2, '0'); }
+  function stopTimer() { mk.run = false; clearInterval(mk.timer); mk.timer = null; }
+  function toggleTimer() {
+    if (mk.run) stopTimer(); else { mk.run = true; mk.timer = setInterval(function () { mk.secs--; var t = $('#timer'); if (t) t.textContent = clock(mk.secs); if (mk.secs <= 0) stopTimer(); }, 1000); }
+    var b = $('#tbtn'); if (b) b.innerHTML = (mk.run ? 'Pause' : 'Start') + ' <span class="kbd">T</span>';
+  }
+  function mockStep(d) { var mock = (M.mocks || [])[mk.mi]; if (!mock) return; mk.qi = (mk.qi + d + mock.questions.length) % mock.questions.length; mk.fp = 0; mocksView(); }
+  function mockFocus(d) { var q = ((M.mocks || [])[mk.mi] || {}).questions; if (!q) return; var n = q[mk.qi].parts.length; mk.fp = Math.max(0, Math.min(n - 1, mk.fp + d)); $$('.part').forEach(function (x, i) { x.classList.toggle('focus', i === mk.fp); }); var el = $$('.part')[mk.fp]; if (el) el.scrollIntoView({ block: 'nearest' }); }
+  function mockAnswer() { var id = 'a-' + mk.mi + '-' + mk.qi + '-' + mk.fp; mk.shown[id] = !mk.shown[id]; mocksView(); }
+
+  /* ---------- keyboard ---------- */
+  var gPending = false;
+  function onKey(e) {
+    var t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } if (page === 'module' && tab === 'cards' && !typing) { go('topics'); } return; }
+    if (typing) return;
+    var k = e.key, lk = k.length === 1 ? k.toLowerCase() : k;
+    if (gPending) { gPending = false; if (lk === 'h') { location.href = 'index.html'; return; } }
+    if (lk === '/') { e.preventDefault(); var q = $('#q'); if (q) q.focus(); return; }
+    if (k === '?') { showHelp(); return; }
+    if (lk === 'd') { state.theme = (document.documentElement.getAttribute('data-theme') === 'dark' || (!state.theme && matchMedia('(prefers-color-scheme: dark)').matches)) ? 'light' : 'dark'; applyTheme(); save(); return; }
+    if (lk === 'g') { gPending = true; setTimeout(function () { gPending = false; }, 900); return; }
+    if (page !== 'module' || !M) return;
+    var ti = TABS.map(function (x) { return x[0]; }).indexOf(tab);
+    if (k === ',' || k === '.') { go(TABS[(ti + (k === '.' ? 1 : -1) + TABS.length) % TABS.length][0]); return; }
+    if (tab === 'cards') {
+      if (k === ' ' || k === 'Enter') { e.preventDefault(); cardFlip(); return; }
+      if (k === 'ArrowRight' || lk === 'j') { cardMove(1); return; }
+      if (k === 'ArrowLeft' || lk === 'k') { cardMove(-1); return; }
+      if (k === '2' || k === 'ArrowUp') { e.preventDefault(); cardRate('know'); return; }
+      if (k === '1' || k === 'ArrowDown') { e.preventDefault(); cardRate('learn'); return; }
+      if (lk === 's') { cardShuffle(); return; } if (lk === 'm') { cardMissed(); return; } if (lk === 'r') { cardRestart(); return; }
+    } else if (/^[1-6]$/.test(k)) { go(TABS[+k - 1][0]); return; }
+    if (tab === 'topics') {
+      if (k === ']') { setFocusT(focusT + 1); return; } if (k === '[') { setFocusT(focusT - 1); return; }
+      if (lk === 'e') { expandAll(); return; }
+      if (lk === 'c' && focusT >= 0) { var d = topicEls()[focusT]; toggleDone(d.dataset.id, !state.done[code + ':' + d.dataset.id]); return; }
+      if ((k === ' ' || k === 'Enter') && focusT >= 0) { e.preventDefault(); var dd = topicEls()[focusT]; dd.open = !dd.open; return; }
+    }
+    if (tab === 'mocks') {
+      if (lk === 't') { toggleTimer(); return; } if (lk === 'a') { mockAnswer(); return; }
+      if (k === 'ArrowRight') { mockStep(1); return; } if (k === 'ArrowLeft') { mockStep(-1); return; }
+      if (k === 'ArrowDown') { e.preventDefault(); mockFocus(1); return; } if (k === 'ArrowUp') { e.preventDefault(); mockFocus(-1); return; }
+    }
+  }
+
+  /* ---------- boot ---------- */
+  var page = document.body.getAttribute('data-page');
+  initSearch();
+  document.addEventListener('keydown', onKey);
+  var hb = $('#helpbtn'); if (hb) hb.onclick = showHelp;
+  var th = $('#themebtn'); if (th) th.onclick = function () { onKey({ key: 'd', target: document.body }); };
+  if (page === 'home') home();
+  else {
+    code = (new URLSearchParams(location.search).get('m') || '').toUpperCase(); M = MODS[code];
+    if (M && M.exam === undefined) M.exam = {};
+    document.title = code + ' revision';
+    window.addEventListener('hashchange', route); route();
+  }
+})();
