@@ -75,6 +75,7 @@ module.exports = [
       {
         "heading": "Worked example (10 examples)",
         "items": [
+{"type":"task","show":1,"q":["Find the entropy and Gini of the whole set, then decide which feature to split on first and build the tree."]},
           {
             "type": "table",
             "head": [
@@ -246,6 +247,7 @@ module.exports = [
       {
         "heading": "Lecture worked example: Anyone for Tennis? (weather data)",
         "items": [
+{"type":"task","show":3,"q":["Build the decision tree using information gain."]},
           {
             "type": "p",
             "text": "The lecture data: will we play tennis?"
@@ -615,6 +617,7 @@ module.exports = [
       {
         "heading": "Worked examples",
         "items": [
+{"type":"task","show":0,"q":["**AdaBoost:** 10 examples, each weight 0.1. The first stump gets 2 wrong. Find the error, the stump weight and the new example weights.","**Gradient boosting:** y = 3, 5, 8. Start from the mean, find the residuals, and make one step with learning rate 0.1."],"own":[{"type":"formula","label":"AdaBoost stump weight","text":"a = 0.5 × ln((1 − e) / e), where e is the weighted error"},{"type":"formula","label":"AdaBoost reweighting","text":"wrong: weight × e^a. right: weight × e^(−a). Then rescale so the weights add to 1."}]},
           "**AdaBoost weights**: 10 examples, each weight 0.1; the first stump misclassifies 2. Weighted error e = 0.2; a = 0.5 ln(0.8 / 0.2) = 0.5 ln 4 = 0.693.",
           "Misclassified: 0.1 x e^0.693 = 0.1 x 2 = 0.2 each (total 0.4). Correct: 0.1 x 0.5 = 0.05 each (total 0.4). Sum 0.8, so normalise: misclassified 0.25 each, correct 0.0625 each (totals 0.5 and 0.5). The next stump now sees the hard cases as half the total weight.",
           "**Gradient boosting (squared error)**: y = 3, 5, 8. F0 = mean = 5.333. Residuals = -2.333, -0.333, +2.667. Suppose the first tree fits the residuals exactly and eta = 0.1: F1 = 5.333 + 0.1 x residual = 5.100, 5.300, 5.600. Each stage moves a small step towards the targets."

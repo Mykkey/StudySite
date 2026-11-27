@@ -32,6 +32,7 @@ module.exports = [
       'Reading it: a curve high and to the right is better; an ideal system has precision 1 at recall 1; a system better at low recall (system A, web search) vs better at high recall (system B, legal search) cross over. Gives a summary of behaviour over the whole ranking and lets us compare systems; area under the curve approximates MAP.'
     ] },
     { heading: 'Worked example', items: [
+{"type":"task","show":1,"q":["Find precision and recall at each rank. Then at cut-off 10 find P, R, F1 and F2, and the 11-point interpolated precision."]},
       'Ranked list of 10 documents, relevant ones at ranks 1, 3, 6, 8; collection has |R| = 5 relevant documents (one never retrieved).',
       { type: 'table', head: ['Rank', 'Relevant?', 'Precision', 'Recall'], rows: [['1', 'yes', '1/1 = 1.000', '1/5 = 0.2'], ['2', 'no', '1/2 = 0.500', '0.2'], ['3', 'yes', '2/3 = 0.667', '2/5 = 0.4'], ['4', 'no', '2/4 = 0.500', '0.4'], ['5', 'no', '2/5 = 0.400', '0.4'], ['6', 'yes', '3/6 = 0.500', '3/5 = 0.6'], ['7', 'no', '3/7 = 0.429', '0.6'], ['8', 'yes', '4/8 = 0.500', '4/5 = 0.8'], ['9', 'no', '4/9 = 0.444', '0.8'], ['10', 'no', '4/10 = 0.400', '0.8']] },
       'At cut-off 10: P = 0.4, R = 0.8, F1 = 2(0.4)(0.8)/1.2 = 0.533, F2 = 5(0.4)(0.8)/(4(0.4)+0.8) = 0.667 (recall weighted).',
@@ -71,6 +72,7 @@ module.exports = [
       { type: 'formula', label: 'DCG and nDCG', text: 'DCG@k = Σ_{i=1..k} rel_i / log2(i + 1);  nDCG@k = DCG@k / IDCG@k, IDCG = DCG of the ideal ordering (sorted by relevance). 0 ≤ nDCG ≤ 1. (A variant uses gain 2^rel - 1.)' }
     ] },
     { heading: 'Worked examples', items: [
+{"type":"task","show":0,"q":["**AP:** a ranked list reads R N R N N R N R N N (R = relevant), and 5 relevant documents exist.","**MAP:** a second query has relevant documents at ranks 2 and 4, and only those 2 exist.","**MRR:** three queries have their first relevant result at ranks 1, 3 and 2.","For the first list also find P@5 and R-precision.","**nDCG@5:** the top 5 results have graded relevance 3, 2, 3, 0, 1."]},
       '**AP:** list R N R N N R N R N N, |R| = 5. Precisions at relevant ranks: 1/1, 2/3, 3/6, 4/8 = 1, 0.667, 0.5, 0.5 (sum 2.667). AP = 2.667/5 = **0.533** (the fifth relevant document was not retrieved, contributing 0). If AP is divided by 4 retrieved-relevant it would be 0.667: do not do this.',
       '**MAP:** second query has relevant at ranks 2 and 4 of 2 relevant: AP = (1/2 + 2/4)/2 = 0.5. MAP = (0.533 + 0.5)/2 = **0.517**.',
       '**MRR:** first relevant at ranks 1, 3, 2 for three queries: (1 + 1/3 + 1/2)/3 = **0.611**.',

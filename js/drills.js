@@ -156,6 +156,9 @@
 
   /* ---------- screen ---------- */
   var H, cur = null, count = 0;
+  /* where each drill's formulas live: MODULE/topic */
+  var REFS = { tfidf: ['CT4100/tf-idf-weighting'], ndcg: ['CT4100/ranked-metrics'], pagerank: ['CT4100/pagerank'], prf: ['CT4100/precision-recall'], infogain: ['CT4101/decision-trees'], slo: ['CT417/sli-slo-sla-error-budget'], mutation: ['CT4111/mutation-testing'], tam: ['CT4107/tam-sam-som'], euler: ['CT561/euler-integration'], epidemic: ['CT561/r0-herd-immunity'] };
+
   function view(helpers, arg) {
     H = helpers;
     var d = byId(arg);
@@ -172,7 +175,7 @@
   function fresh() {
     cur.x = cur.d.make(cur.d.params(Math.random)); cur.checked = false; cur.n = ++count;
     var x = cur.x;
-    var h = '<p><a href="#drills">&larr; All drills</a></p><h1>' + H.esc(cur.d.title) + '</h1><form class="card drill" id="dform" autocomplete="off"><p class="q">' + H.fmt(x.q) + '</p>';
+    var h = '<p><a href="#drills">&larr; All drills</a></p><h1>' + H.esc(cur.d.title) + '</h1><form class="card drill" id="dform" autocomplete="off"><p class="q">' + H.fmt(x.q) + '</p>' + H.formulas(REFS[cur.d.id] || []);
     h += x.fields.map(function (fl, i) { return '<label><span>' + H.esc(fl.label) + '</span><input type="text" inputmode="decimal" id="d' + i + '"><em id="m' + i + '"></em></label>'; }).join('');
     h += '<p class="stat">Round to 3 decimal places. Fractions like 2/3 are accepted.</p><div class="actions"><button class="primary" id="dgo">Check <span class="kbd">Enter</span></button></div><div id="dsol" class="answer" hidden></div></form>';
     H.app.innerHTML = h;

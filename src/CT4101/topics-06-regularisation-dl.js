@@ -89,6 +89,7 @@ module.exports = [
       'Hierarchy of features: early layers detect edges and colours, middle layers textures and parts, deep layers whole objects.'
     ]},
     { heading: 'Worked convolution', items: [
+{"type":"task","show":1,"q":["Compute the feature map, apply ReLU, then 2×2 max pooling."]},
       'Input I = [[1,2,0],[0,1,3],[2,1,0]], kernel K = [[1,0],[0,-1]], stride 1, no padding, so output is 2x2.',
       'O(0,0) = 1(1) + 2(0) + 0(0) + 1(-1) = 0 ; O(0,1) = 2(1) + 0(0) + 1(0) + 3(-1) = -1 ; O(1,0) = 0(1) + 1(0) + 2(0) + 1(-1) = -1 ; O(1,1) = 1(1) + 3(0) + 1(0) + 0(-1) = 1.',
       'Feature map [[0,-1],[-1,1]]. Apply ReLU: [[0,0],[0,1]]. 2x2 max-pool gives a single value 1.'

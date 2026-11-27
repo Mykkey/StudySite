@@ -72,6 +72,7 @@ module.exports = [
       {
         "heading": "Worked example (from the notes)",
         "items": [
+{"type":"task","show":0,"q":["Terms: information, retrieval, indexing, database. The original query is (1, 1, 0, 0).","Relevant documents: (1, 2, 2, 0) and (1, 1, 2, 0). Non-relevant document: (0, 0, 0, 2).","Find the new query using Rocchio with α = 1, β = 0.75, γ = 0.25."]},
           {
             "type": "table",
             "head": [

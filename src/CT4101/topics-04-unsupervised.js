@@ -22,6 +22,7 @@ module.exports = [
       'Complexity roughly O(n k d) per iteration. Assumes compact, roughly spherical, similar-size clusters; sensitive to outliers (means) and to scaling; k must be given.'
     ]},
     { heading: 'Worked example (k = 2)', items: [
+{"type":"task","show":1,"q":["Run k-means until the clusters stop changing."],"uses":["Euclidean (L2)","Objective (inertia / within-cluster SSE)"]},
       'Points: A(1,1), B(1.5,2), C(3,3.5), D(5,7), E(3.5,5), F(4.5,5), G(3.5,4.5). Initial centroids: mu1 = A(1,1), mu2 = D(5,7).',
       { type: 'table', head: ['Point', 'd to mu1', 'd to mu2', 'Assigned'], rows: [
         ['A (1,1)', '0.00', '7.21', 'C1'], ['B (1.5,2)', '1.12', '6.10', 'C1'], ['C (3,3.5)', '3.20', '4.03', 'C1'],
@@ -91,6 +92,7 @@ module.exports = [
       'Equivalent via SVD of the centred data matrix (what scikit-learn does). Fit the scaler and PCA on training data only, inside a Pipeline.'
     ]},
     { heading: 'Worked example', items: [
+{"type":"task","show":0,"q":["Points (x, y): (1, 1), (2, 3), (3, 2), (4, 5), (5, 4).","Find the covariance matrix, its eigenvalues and eigenvectors, and how much variance the first component explains."],"own":[{"type":"formula","label":"Sample variance and covariance","text":"var(x) = Σ (x − mean x)² / (n − 1). cov(x, y) = Σ (x − mean x)(y − mean y) / (n − 1)."},{"type":"formula","label":"Eigenvalues","text":"solve det(C − λ I) = 0"}]},
       'Points (x, y): (1,1), (2,3), (3,2), (4,5), (5,4). Means = (3, 3). Centred: (-2,-2), (-1,0), (0,-1), (1,2), (2,1).',
       'Var(x) = (4 + 1 + 0 + 1 + 4)/4 = 2.5; Var(y) = (4 + 0 + 1 + 4 + 1)/4 = 2.5; Cov(x,y) = (4 + 0 + 0 + 2 + 2)/4 = 2.0.',
       'Covariance matrix C = [[2.5, 2.0], [2.0, 2.5]].',

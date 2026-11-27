@@ -148,6 +148,7 @@ module.exports = [
       {
         "heading": "Worked example (Resnick et al.): does Ken like message 6?",
         "items": [
+{"type":"task","show":2,"q":["Work out whether Ken would like message 6. Pick a similarity measure, then predict the rating."]},
           "The question: would Ken like message 6? A dash means \"not rated\".",
           {
             "type": "table",

@@ -45,6 +45,7 @@ module.exports = [
       "Performance (latency, requests/s, CPU/memory); scalability (max users); availability (uptime %); maintainability (change lead time, cyclomatic complexity, coupling and cohesion, files affected per change); deployability (deployment time and frequency, rollback time, change failure rate); security (vulnerabilities, time to patch, attack surface); cost (infrastructure, cost per request, effort); architecture complexity (services, integration points, dependency graph)."
     ] },
     { heading: "Weighted score matrix (worked)", items: [
+{"type":"task","show":0,"q":["Weights: performance 30%, security 25%, maintainability 25%, cost 20%. Scores out of 10, in that order:","Monolith 8, 7, 6, 9. Microservices 6, 9, 7, 6. Serverless 7, 8, 9, 7. Hybrid 8, 8, 8, 8.","Find each weighted total and choose a design."],"own":[{"type":"formula","label":"Weighted total","text":"total = sum of weight × score"}]},
       "Weights: Performance 30%, Security 25%, Maintainability 25%, Cost 20%; scores 0-10; total = sum of weight x score.",
       { type: "table", head: ["Criterion (weight)", "Monolith", "Microservices", "Serverless", "Hybrid"], rows: [
         ["Performance (0.30)", "8", "6", "7", "8"],

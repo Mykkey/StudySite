@@ -12,3 +12,7 @@
 ? Pass rate: the share of tests that pass. Coverage: the share of units that any test touches.
 ? Neither shows the tests are good: a test can run code and check nothing.
 > 25 of 26 tests pass (0.96), and 8 of 10 units are tested (0.8).
+== Weighted total
+\text{total} = \sum \text{weight} \times \text{score}
+? Multiply each score by how much that criterion matters, then add.
+> Scores 8 and 6 with weights 0.7 and 0.3 give 7.4.

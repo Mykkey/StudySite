@@ -578,6 +578,7 @@ module.exports = [
       {
         "heading": "Worked example 1: top-down then bottom-up (pregnancy app, Ireland)",
         "items": [
+{"type":"task","show":0,"q":["A pregnancy app in Ireland. Females: 2,465,802. Pregnancies a year: about 75,713. First-time mothers: about 30,306.","Estimate the yearly TAM bottom-up with one app each at €5. Is it big enough as a first market?"]},
           "A pregnancy app in Ireland.",
           {
             "type": "p",
@@ -626,6 +627,7 @@ module.exports = [
       {
         "heading": "Worked example 2: Perch-style smart gym racks (USA)",
         "items": [
+{"type":"task","show":2,"q":["Find the beachhead size in units, the TAM at $5,000 per rack, and the yearly figure if a rack lasts 5 years."]},
           "Smart gym racks in the USA.",
           "35,000 gyms, of which 3,000 are high-end chains. Each would buy 4 racks.",
           "Beachhead = 3,000 × 4 = **12,000 units**. All gyms would be 140,000 units.",
@@ -656,6 +658,7 @@ module.exports = [
       {
         "heading": "Worked example 3: per-user annual revenue (workbook method)",
         "items": [
+{"type":"task","show":0,"q":["Estimate yearly revenue per user three ways: a one-time price of 1,200 lasting 4 years; a budget of 10,000 of which 5% could go to you; a comparable product at 400 a year.","Then find the TAM for 3,000 users."]},
           "**One-time**: price 1,200, 1 unit, lasts 4 years: 1,200 × 1 / 4 = **300 a year**.",
           "**Budget**: budget 10,000, 5% could go to this: 10,000 × 0.05 = **500 a year**.",
           "**Comparable product**: 400 a year.",

@@ -270,6 +270,7 @@ module.exports = [
       {
         heading: 'Worked calculation: line vs branch',
         items: [
+{"type":"task","show":1,"q":["Find line and branch coverage after testing classify(10), then after adding classify(-1), then classify(30)."],"own":[{"type":"formula","label":"Line coverage","text":"lines run / executable lines × 100"},{"type":"formula","label":"Branch coverage","text":"branch outcomes taken / all branch outcomes × 100"}]},
           { type: 'code', text: '1  int classify(int age) {\n2      if (age < 0) {\n3          throw new IllegalArgumentException();\n4      }\n5      if (age < 18) {\n6          return 0;\n7      }\n8      return 1;\n9  }' },
           'Executable lines: 2, 3, 5, 6, 8 = 5 lines. Branches: 2 decisions x 2 outcomes = 4.',
           'Test classify(10): lines 2, 5, 6 run = 3/5 = **60% line**; branches: first if false, second if true = 2/4 = **50% branch**.',

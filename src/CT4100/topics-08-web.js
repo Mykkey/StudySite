@@ -20,6 +20,7 @@ module.exports = [
       '**Power iteration:** 1. PR(W) = 1/N for all pages. 2. Repeat: compute new PR for every page from the previous values using the formula. 3. Stop when changes < ε. Values always sum to 1. Early Google experiments: convergence in 52 iterations on 322 million links; iterations needed grows about O(log n) in the number of links, so it is efficient. (Matrix form: PR is the principal eigenvector of the Google matrix.)'
     ] },
     { heading: 'Worked example (from the notes)', items: [
+{"type":"task","show":1,"q":["Starting every page at 0.25, work out the PageRank scores for a few iterations."]},
       'Four pages: A links to B and C; B links to C; C links to A; D links to C. T = 0.15, N = 4, so T/N = 0.0375 and damping 0.85.',
       { type: 'diagram', kind: 'graph', data: { title: 'Link graph', directed: true, r: 22, height: 300, nodes: [ { id: 'A', label: 'A', x: 20, y: 25 }, { id: 'B', label: 'B', x: 80, y: 25 }, { id: 'C', label: 'C', x: 80, y: 75 }, { id: 'D', label: 'D', x: 20, y: 75 } ], edges: [ { from: 'A', to: 'B' }, { from: 'A', to: 'C' }, { from: 'B', to: 'C' }, { from: 'C', to: 'A', curve: 30 }, { from: 'D', to: 'C' } ] }, caption: 'A to B, A to C, B to C, C to A, D to C. D has no in-links; C passes all its rank to A.' },
       'Iteration 1: A = 0.0375 + 0.85(PR(C)/1) = 0.0375 + 0.85(0.25) = 0.250; B = 0.0375 + 0.85(PR(A)/2) = 0.0375 + 0.85(0.125) = 0.144; C = 0.0375 + 0.85(PR(A)/2 + PR(B)/1 + PR(D)/1) = 0.0375 + 0.85(0.125 + 0.25 + 0.25) = 0.569; D = 0.0375 (no in-links).',
@@ -61,6 +62,7 @@ module.exports = [
       { type: 'formula', label: 'Matrix form', text: 'M = adjacency matrix of S (M_ij = 1 iff page i links to page j). a ← M^T h;  h ← M a, so a ∝ M^T M a and h ∝ M M^T h. Repeated multiplication (power method) converges to the principal eigenvector of M^T M (authorities) and of M M^T (hubs).' }
     ] },
     { heading: 'Worked example (from the notes)', items: [
+{"type":"task","show":1,"q":["Starting every hub score at 1, find the best authority and the best hubs."]},
       'Pages A, B, C, D with links A to C, A to D, B to C, B to D, D to C.',
       { type: 'diagram', kind: 'graph', data: { title: 'Base set link graph', directed: true, r: 22, height: 300, nodes: [ { id: 'A', label: 'A', x: 15, y: 20 }, { id: 'B', label: 'B', x: 15, y: 80 }, { id: 'D', label: 'D', x: 55, y: 50 }, { id: 'C', label: 'C', x: 90, y: 50 } ], edges: [ { from: 'A', to: 'C' }, { from: 'A', to: 'D' }, { from: 'B', to: 'C' }, { from: 'B', to: 'D' }, { from: 'D', to: 'C' } ] }, caption: 'A and B are hubs, C is the main authority, D is both.' },
       'Iteration 1 (h = 1 for all): authority a = M^T h = (A 0, B 0, C 3 (from A, B, D), D 2 (from A, B)); hub h = M a = (A: a_C + a_D = 5, B: 5, C: 0, D: a_C = 3). Normalise (each sums to 1): a = (0, 0, 0.60, 0.40); h = (0.385, 0.385, 0, 0.231).',

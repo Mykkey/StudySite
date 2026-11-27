@@ -19,6 +19,7 @@ function checkItems(c, where, items, collect) {
     if (['p', 'note', 'warn'].includes(t)) { if (!it.text) err(c, `${where}[${i}] ${t} needs text`); }
     else if (t === 'formula' || t === 'code') { if (!it.text) err(c, `${where}[${i}] ${t} needs text`); else if (ART.test(it.text) && t === 'formula') err(c, `${where}[${i}]: formula looks like text art`); }
     else if (t === 'screen') return;
+    else if (t === 'task') { if (!Array.isArray(it.q)) err(c, `${where}[${i}] task needs q`); (it.own || []).forEach(f => { if (!f.label || !f.text) err(c, `${where}[${i}] own formula needs label and text`); }); }
     else if (t === 'table') { if (!Array.isArray(it.head) || !Array.isArray(it.rows)) err(c, `${where}[${i}] table needs head/rows`); else it.rows.forEach((r, k) => { if (r.length !== it.head.length) err(c, `${where}[${i}] row ${k} has ${r.length} cells, head has ${it.head.length}`); }); }
     else if (t === 'diagram') {
       const need = KINDS[it.kind]; if (!need) return err(c, `${where}[${i}] unknown diagram kind ${it.kind}`);

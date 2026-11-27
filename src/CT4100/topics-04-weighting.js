@@ -32,6 +32,7 @@ module.exports = [
       '6. **Tunable and robust:** few parameters (k1, b, s) tuned per collection; empirically effective; efficient to compute with an inverted index.'
     ] },
     { heading: 'Worked example (tf-idf with cosine) - see also the VSM topic', items: [
+{"type":"task","show":0,"q":["N = 5 documents. df: cat 3, dog 2, mouse 2, bird 2, fish 1. Use log base 10.","Find each idf. Then find the tf-idf weights for d1 = \"cat cat dog\" and d3 = \"dog dog bird\"."]},
       'Collection N = 5. df(cat) = 3 so idf = log10(5/3) = 0.222; df(dog) = 2 so idf = log10(5/2) = 0.398; df(mouse) = df(bird) = 2 so 0.398; df(fish) = 1 so 0.699.',
       'Doc d1 = "cat cat dog": w(cat) = 2 × 0.222 = 0.444, w(dog) = 1 × 0.398 = 0.398. Doc d3 = "dog dog bird": w(dog) = 0.796, w(bird) = 0.398.',
       'Note how rare "fish" (idf 0.699) gets high weight, but tf alone would give "cat" (3 docs) more weight: idf demotes common terms.'
@@ -67,6 +68,7 @@ module.exports = [
       'Cosine uses **angle, not length**: scaling a vector (doubling every weight) leaves it unchanged. Because |q| is the same for all documents, it does not affect the ranking.'
     ] },
     { heading: 'Worked ranking example', items: [
+{"type":"task","show":1,"q":["Rank the documents for this query using tf-idf weights and cosine similarity (log base 10)."],"uses":["Basic tf-idf (Spärck Jones / Salton & Fox)","Cosine similarity"]},
       'Documents (term counts): d1 = cat 2, dog 1; d2 = cat 1, mouse 1; d3 = dog 2, bird 1; d4 = bird 2, mouse 1; d5 = cat 1, fish 3. N = 5. Query "cat dog" (tf 1 each, weight = idf).',
       'idf: cat log10(5/3) = 0.222; dog log10(5/2) = 0.398; mouse = bird = 0.398; fish = 0.699. Query vector (cat 0.222, dog 0.398), |q| = 0.456.',
       { type: 'table', head: ['Doc', 'weights', 'dot with q', '|d|', 'cosine'], rows: [
@@ -163,6 +165,7 @@ module.exports = [
       { type: 'diagram', kind: 'line', data: { title: 'BM25 tf saturation (average-length document)', xLabel: 'term frequency tf', yLabel: 'local weight tf(k1+1)/(tf+k1)', xMin: 0, xMax: 20, yMin: 0, yMax: 3, series: [ { name: 'k1 = 0.5 (limit 1.5)', points: [[0,0],[1,1],[2,1.2],[3,1.286],[5,1.364],[8,1.412],[12,1.44],[16,1.455],[20,1.463]] }, { name: 'k1 = 1.2 (limit 2.2)', points: [[0,0],[1,1],[2,1.375],[3,1.571],[5,1.774],[8,1.913],[12,2],[16,2.047],[20,2.075]] }, { name: 'k1 = 2 (limit 3)', points: [[0,0],[1,1],[2,1.5],[3,1.8],[5,2.143],[8,2.4],[12,2.571],[16,2.667],[20,2.727]] } ] }, caption: 'The first occurrences matter most; later ones add little. Values computed from tf(k1+1)/(tf+k1).' }
     ] },
     { heading: 'Worked example', items: [
+{"type":"task","show":1,"q":["Documents: A has length 80 with tf(information) = 3 and tf(retrieval) = 2. B has the same counts but length 200. C has length 100, tf(information) = 10 and no \"retrieval\".","Score and rank them with BM25."]},
       'N = 1000, avgdl = 100, k1 = 1.2, b = 0.75. Query "information retrieval": df(information) = 100, df(retrieval) = 20.',
       'idf(information) = ln(900.5/100.5) = 2.193; idf(retrieval) = ln(980.5/20.5) = 3.868.',
       '**Doc A:** |d| = 80, tf(information) = 3, tf(retrieval) = 2. Length factor (1-b) + b·80/100 = 0.85, so denominators use k1 × 0.85 = 1.02. information: 3(2.2)/(3 + 1.02) = 1.642, × 2.193 = 3.600. retrieval: 2(2.2)/(2 + 1.02) = 1.457, × 3.868 = 5.635. **Score A = 9.24.**',

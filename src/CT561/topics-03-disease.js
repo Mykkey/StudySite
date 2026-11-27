@@ -53,6 +53,7 @@ module.exports = [
       {
         "heading": "Worked example: Lecture challenge 10.1",
         "items": [
+{"type":"task","show":1,"q":["Find beta, lambda and the infection rate."]},
           "N = 100,000, 1% infectious (I = 1000), R0 = 14, D = 7 days.",
           "beta = R0/D = 14/7 = **2 per day**. lambda = beta x I/N = 2 x 1000/100000 = **0.02 per day**. (Infection rate = S x lambda = 99,000 x 0.02 = 1,980 people per day.)"
         ]
@@ -60,6 +61,7 @@ module.exports = [
       {
         "heading": "Worked example: Sheet 1 Q3(a) measles",
         "items": [
+{"type":"task","show":1,"q":["Find beta, lambda and the herd immunity threshold."]},
           "N = 10,000, 2% infectious (I = 200), R0 = 12, D = 7 days.",
           "beta = 12/7 = 1.714 per day. lambda = 1.714 x 200/10000 = **0.0343 per day** (3.4% of susceptibles infected per day).",
           "HIT = 1 - 1/12 = 0.9167 = **91.7%**, i.e. about 9,167 of 10,000 must be immune."
@@ -280,6 +282,7 @@ module.exports = [
       {
         "heading": "Worked Euler steps (N = 1000, I0 = 10, R0 = 3, D = 4, DT = 1)",
         "items": [
+{"type":"task","show":0,"q":["SIR model: N = 1000, 10 infected, R0 = 3, D = 4, DT = 1.","Do three Euler steps for S, I and R."]},
           "beta = 3/4 = 0.75. Step 0: IR = 0.75 x 990 x 10/1000 = 7.425; RR = 10/4 = 2.5. So S = 982.58, I = 10 + 7.425 - 2.5 = 14.93, R = 2.5.",
           "Step 1: IR = 0.75 x 982.58 x 14.93/1000 = 11.00; RR = 3.73. S = 971.58, I = 22.19, R = 6.23.",
           "Step 2: IR = 16.17; RR = 5.55. S = 955.41, I = 32.82, R = 11.78 (check: sums to 1000)."

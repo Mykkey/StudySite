@@ -175,6 +175,7 @@ module.exports = [
       {
         "heading": "Worked example 1 (the lecture): uptime SLI",
         "items": [
+{"type":"task","show":1,"q":["The target (SLO) is 99.9%. Find the SLI, the allowed downtime, and say whether the SLO is met."]},
           "Month: 30 × 24 = 720 hours. The service was down 1.44 hours.",
           "SLI = (720 - 1.44) / 720 × 100 = 718.56 / 720 × 100 = **99.8%**.",
           "Target (SLO) is 99.9%. Allowed downtime = 0.001 × 720 = 0.72 hours (43.2 minutes).",
@@ -185,6 +186,7 @@ module.exports = [
       {
         "heading": "Worked example 2: several incidents against a budget",
         "items": [
+{"type":"task","show":2,"q":["Find the error budget, how much of it is used, the SLI, and whether the SLO is met."]},
           "A vet clinic booking system. Target 99.9% over 30 days.",
           "Three outages: 12, 18 and 9 minutes = 39 minutes.",
           "Budget = 0.001 × 43,200 = 43.2 minutes.",
@@ -196,6 +198,7 @@ module.exports = [
       {
         "heading": "Worked example 3: stricter SLO",
         "items": [
+{"type":"task","show":1,"q":["Find the budget and the SLI. Is the SLO met, and by how much is it over or under?"]},
           "Target 99.95% over 30 days. Downtime 25 minutes.",
           "Budget = 0.0005 × 43,200 = 21.6 minutes.",
           "SLI = (43,200 - 25) / 43,200 × 100 = 99.942%.",
@@ -206,6 +209,7 @@ module.exports = [
       {
         "heading": "Worked example 4: request-based SLI and error budget in requests",
         "items": [
+{"type":"task","show":1,"q":["Find the SLI, the allowed failures, and how much budget is left."]},
           "10,000,000 requests in a month, 4,200 failed. Target 99.95%.",
           "SLI = (10,000,000 - 4,200) / 10,000,000 = 99.958%: **met**.",
           "Budget = 0.0005 × 10,000,000 = 5,000 allowed failures.",
@@ -215,6 +219,7 @@ module.exports = [
       {
         "heading": "Worked example 5: burn rate",
         "items": [
+{"type":"task","show":0,"q":["Target 99.9% over 30 days. After 10 days there have been 30 minutes of downtime.","Find the burn rate. What does it tell you?"]},
           "**Burn rate** is how fast you are spending the budget.",
           "Target 99.9% over 30 days (budget 43.2 minutes). After 10 days you have had 30 minutes of downtime.",
           "Budget used: 30 / 43.2 = 0.694.",
@@ -227,6 +232,7 @@ module.exports = [
       {
         "heading": "Worked example 6: working backwards and composite availability",
         "items": [
+{"type":"task","show":0,"q":["1. There were 2 hours of downtime in 30 days. Find the SLI. Does it meet 99.5%? And 99.9%?","2. What is the most downtime allowed for 99.99% over a year (525,600 minutes)?","3. Services in a chain: find the availability of 99.9% then 99.5%, and of three 99.9% parts.","4. Two copies, each 99% available, either one works: find the availability.","5. 962,000 of 1,000,000 requests answer in under 300 ms. Is \"95% under 300 ms\" met?"]},
           {
             "type": "p",
             "text": "Working backwards"
@@ -302,6 +308,7 @@ module.exports = [
       {
         "heading": "Worked example A (2025-26 Semester 1 Q3d)",
         "items": [
+{"type":"task","show":0,"q":["Three incidents. Time to detect and time to repair: (4 h, 2 h), (30 min, 1 h), (6 h, 4 h).","The paper defines MTBF = MTTD + MTTR. Find the average, name the best incident, and suggest two improvements."],"own":[{"type":"formula","label":"MTBF as this paper defines it","text":"average of (MTTD + MTTR) over the incidents"}]},
           {
             "type": "table",
             "head": [
@@ -343,6 +350,7 @@ module.exports = [
       {
         "heading": "Worked example B (2025-26 Autumn Q3c, from timestamps)",
         "items": [
+{"type":"task","show":0,"q":["Incidents (start, detected, restored): (09:00, 09:40, 10:30), (13:15, 13:20, 13:50), (18:00, 19:30, 21:00).","Find the average MTTD and MTTR and name the best incident."],"own":[{"type":"formula","label":"MTTD and MTTR","text":"MTTD = average of (detected − start). MTTR = average of (restored − detected)."}]},
           {
             "type": "table",
             "head": [

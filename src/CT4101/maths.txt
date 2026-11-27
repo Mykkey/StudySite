@@ -300,3 +300,46 @@ y_t = W_y h_t
 ? Each query is compared with every key to see how relevant it is.
 ? Softmax turns those scores into shares adding to 1, and the output is that blend of the values.
 > Scaled scores of 1 and 0 become shares 0.73 and 0.27. With values 10 and 0 the output is 7.3.
+== Mean and variance of fold scores
+\bar{a} = \frac{\sum a_i}{k}
+s^2 = \frac{\sum (a_i - \bar{a})^2}{k - 1}
+? The mean is the typical score. The variance says how much the folds disagree.
+> Scores 0.8 and 0.9 have mean 0.85 and variance 0.005.
+== Output delta (squared error, sigmoid)
+\delta_o = (y - t) \times y (1 - y)
+? How wrong the output was, times how sensitive the sigmoid is at that point.
+> y = 0.5 and t = 1 gives -0.125.
+== Hidden delta
+\delta_h = \delta_o \times v \times h (1 - h)
+? Pass the blame back along the weight v, then scale by the sigmoid's sensitivity.
+> Output blame -0.1, weight 0.5, h = 0.5 gives -0.0125.
+== Gradient of a weight
+\text{gradient} = \delta \times \text{input}
+? A weight's share of the blame: the blame at the neuron it feeds, times what flowed through it.
+> Blame -0.4 with input 2 gives -0.8.
+== Gradient descent step
+w \leftarrow w - \eta \times \text{gradient}
+? Move each weight a small step against its gradient to reduce the loss.
+> Weight 0.5, learning rate 0.1, gradient -0.8 gives 0.58.
+== Output delta (cross-entropy, sigmoid)
+\delta = p - y
+? With this loss the output blame is simply prediction minus truth.
+> p = 0.608 and y = 1 gives -0.392.
+== AdaBoost stump weight
+a = 0.5 \ln \frac{1 - e}{e}
+? A stump with fewer mistakes gets a bigger say.
+> Error 0.2 gives 0.69.
+== AdaBoost reweighting
+w \leftarrow w \times e^{a} \quad \text{if wrong}
+w \leftarrow w \times e^{-a} \quad \text{if right}
+? Mistakes get heavier so the next stump pays them more attention. Rescale to add to 1.
+> With a = 0.69, a wrong 0.1 becomes 0.2 and a right one 0.05.
+== Sample variance and covariance
+\var{var}(x) = \frac{\sum (x - \bar{x})^2}{n - 1}
+\var{cov}(x, y) = \frac{\sum (x - \bar{x})(y - \bar{y})}{n - 1}
+? Variance is spread in one direction. Covariance says whether two move together.
+> For x = 1, 3 and y = 2, 6: var(x) = 2 and cov = 4.
+== Eigenvalues
+\var{det}(C - \lambda I) = 0
+? Solving this gives how much spread lies along each principal direction.
+> For rows (2.5, 2) and (2, 2.5) the answers are 4.5 and 0.5.

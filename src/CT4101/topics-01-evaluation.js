@@ -103,6 +103,7 @@ module.exports = [
       {
         "heading": "Worked example (200 cases)",
         "items": [
+{"type":"task","show":1,"q":["Work out accuracy, precision, recall, specificity, F1 and balanced accuracy, and compare with always predicting \"negative\"."]},
           "200 cases: TP = 40, FP = 10, FN = 20, TN = 130.",
           "So 60 are really positive and 140 are really negative.",
           {
@@ -383,6 +384,7 @@ module.exports = [
       {
         "heading": "Worked example: 5-fold CV",
         "items": [
+{"type":"task","show":2,"q":["Find the average accuracy, the variance and the standard deviation."],"own":[{"type":"formula","label":"Mean and variance of fold scores","text":"mean = sum of scores / k. variance = sum of (score − mean)² / (k − 1). standard deviation = square root of the variance."}]},
           "100 examples, 5 folds: each round trains on 80 and checks on 20.",
           {
             "type": "table",

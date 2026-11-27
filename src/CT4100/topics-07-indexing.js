@@ -82,6 +82,7 @@ module.exports = [
       'Properties: results are **ranked**; partial matching: a document with only one of two ANDed terms still gets non-zero score (AND of w1 = 1, w2 = 0 with p = 2: 1 - sqrt(0.5) = 0.293); OR is lenient; AND is strict: higher p makes AND stricter, OR looser.'
     ] },
     { heading: 'Worked example (2021-22, 2024-25: "calculate relevance to highway AND revisited and highway OR revisited")', items: [
+{"type":"task","show":1,"q":["Find the term weights, then the score for highway OR revisited and for highway AND revisited with p = 2, p = 1 and p = ∞."]},
       'Collection N = 1000; df(highway) = 100 so idf = log10(1000/100) = 1; df(revisited) = 10 so idf = 2. Document d: tf(highway) = 3, tf(revisited) = 1, max tf in d = 3.',
       'Weights: w_highway = (3/3)(1/2) = **0.5**; w_revisited = (1/3)(2/2) = **0.333** (idf normalised by the maximum idf 2).',
       '**p = 2:** OR = sqrt((0.25 + 0.111)/2) = sqrt(0.1806) = **0.425**. AND = 1 - sqrt(((0.5)^2 + (0.667)^2)/2) = 1 - sqrt((0.25 + 0.444)/2) = 1 - sqrt(0.347) = 1 - 0.589 = **0.411**.',

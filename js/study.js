@@ -78,12 +78,8 @@
   }
   function chunkSection(s) {
     var out = [], cur = [], w = 0;
-    /* a section that marks its own screen breaks is split only there */
-    if ((s.items || []).some(function (it) { return it && it.type === 'screen'; })) {
-      s.items.forEach(function (it) { if (it && it.type === 'screen') { if (cur.length) out.push(cur); cur = []; } else cur.push(it); });
-      if (cur.length) out.push(cur);
-      return out;
-    }
+    /* a worked example stays on one page */
+    if (s.items && s.items[0] && s.items[0].type === 'task') return [s.items];
     function flush() { if (cur.length) out.push(cur); cur = []; w = 0; }
     (s.items || []).forEach(function (it) {
       var n = words(it), big = it && (it.type === 'table' || it.type === 'diagram' || it.type === 'code');
@@ -236,7 +232,7 @@
   /* returns true when the key was used */
   function key(e) {
     if (!L) return false;
-    var k = e.key, s = L.steps[L.i], onButton = e.target && e.target.tagName === 'BUTTON';
+    var k = e.key, s = L.steps[L.i], onButton = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'SUMMARY');
     if (onButton && (k === ' ' || k === 'Enter')) return true;
     var card = s.type === 'check' ? s.cards.filter(function (c) { return !L.rated[c.id]; })[0] : null;
     if (k === 'ArrowLeft') { if (L.i) move(-1); return true; }

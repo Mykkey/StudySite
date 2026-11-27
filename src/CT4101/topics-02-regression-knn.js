@@ -62,6 +62,7 @@ module.exports = [
       {
         "heading": "Worked example: least squares",
         "items": [
+{"type":"task","show":1,"q":["Fit the least squares line y = w0 + w1 x."]},
           "Data: x = 1,2,3,4,5 and y = 2,4,5,4,5. Averages: x = 3, y = 4.",
           "**Sxy** = (-2)(-2) + (-1)(0) + (0)(1) + (1)(0) + (2)(1) = 6.",
           "**Sxx** = 4 + 1 + 0 + 1 + 4 = 10.",
@@ -381,6 +382,7 @@ module.exports = [
       {
         "heading": "Worked example",
         "items": [
+{"type":"task","show":0,"q":["Model: z = -4 + 1.0 x, where x is hours studied. Data (x, passed): (2, 0), (3, 0), (5, 1), (6, 1).","Find z, the probability and the loss for each, the average log-loss, and the odds ratio."]},
           "Model: z = -4 + 1.0 x, where x = hours studied. The boundary is at 4 hours.",
           {
             "type": "table",
@@ -661,6 +663,7 @@ module.exports = [
       {
         "heading": "Worked example: query q = (3, 3)",
         "items": [
+{"type":"task","show":0,"q":["Points: P1 (1, 1) A, P2 (2, 1) A, P3 (4, 4) B, P4 (3, 5) B, P5 (6, 3) B, P6 (2, 3) A.","Classify q = (3, 3) with k = 1, k = 3, k = 3 weighted by 1/d², and k = 5."]},
           {
             "type": "table",
             "head": [

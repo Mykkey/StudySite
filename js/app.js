@@ -23,6 +23,8 @@
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function plain(s) { return String(s == null ? '' : s).replace(/[`*]/g, ''); }
 
+  var CALC = /calculat|comput|work out|\bfind the\b|how many|what is the value/i;   /* questions that need a formula */
+
   /* ---------- storage (guarded) ---------- */
   var mem = {}, KEY = 'studysite.v1';
   var state = (function () { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return mem; } })();
@@ -34,7 +36,39 @@
   /* ---------- content rendering ---------- */
   /* "Term: explanation" bullets get a bold term so the eye has somewhere to land */
   function leadIn(s) { var m = /^([^:`*]{2,40}):\s+(\S[\s\S]*)$/.exec(s); return m ? '<b>' + fmt(m[1]) + ':</b> ' + fmt(m[2]) : fmt(s); }
+  /* every formula box of a topic (or, with "uses", the named ones from anywhere in the module) */
+  function formulasOf(mod, topicId, uses) {
+    var out = [], seen = {};
+    (mod && mod.topics || []).forEach(function (t) {
+      if (!uses && t.id !== topicId) return;
+      (t.sections || []).forEach(function (s) {
+        (s.items || []).forEach(function (it) {
+          if (!it) return;
+          (it.type === 'formula' ? [it] : it.type === 'task' ? it.own || [] : []).forEach(function (f) {
+            if (/^Worked example:|^Result$/.test(f.label) || seen[f.label] || (uses && uses.indexOf(f.label) < 0)) return;
+            seen[f.label] = true; out.push(f);
+          });
+        });
+      });
+    });
+    return out;
+  }
+  /* names only, so you can jog your memory without being shown everything */
+  function formulaPicker(list) {
+    if (!list.length) return '';
+    return '<details class="flist"><summary>🔤 Forgot a formula? Show the names</summary><div>' + list.map(function (f) { return '<details class="fname"><summary>' + esc(f.label) + '</summary>' + formula(f) + '</details>'; }).join('') + '</div></details>';
+  }
+  /* a worked example: the question, a nudge to try it, then the working behind a button */
+  function taskBlock(items) {
+    var t = items[0], rest = items.slice(1), n = t.show || 0;
+    var list = formulasOf(window.M_NOW, t.topic, t.uses);
+    (t.own || []).forEach(function (f) { if (!list.some(function (x) { return x.label === f.label; })) list.push(f); });
+    return '<div class="task"><p class="try">✍️ <b>Try it yourself first</b>, on paper. Then open the worked solution.</p>' +
+      (t.q || []).map(function (l) { return '<p>' + fmt(l) + '</p>'; }).join('') + (n ? renderItems(rest.slice(0, n)) : '') +
+      formulaPicker(list) + '<details class="solve"><summary>✅ Show the worked solution</summary>' + renderItems(rest.slice(n)) + '</details></div>';
+  }
   function renderItems(items) {
+    if (items && items[0] && items[0].type === 'task') return taskBlock(items);
     var h = '', ul = false;
     (items || []).forEach(function (it) {
       if (typeof it === 'string') { if (!ul) { h += '<ul>'; ul = true; } h += '<li>' + leadIn(it) + '</li>'; return; }
@@ -50,7 +84,7 @@
             it.rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + fmt(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
           break;
         case 'diagram': h += window.Diagrams.render(it.kind, it.data || {}, it.caption); break;
-        case 'screen': break;
+        case 'screen': h += '<hr class="stepline">'; break;
         default: h += '<p>' + fmt(JSON.stringify(it)) + '</p>';
       }
     });
@@ -281,7 +315,7 @@
   function homeRoute() {
     var p = homeParts(), app = $('#app');
     if (p[0] === 'review') window.Review.view({ state: state, save: save, mods: MODS, app: app, fmt: fmt, award: S.award, confetti: S.confetti });
-    else if (p[0] === 'drills') window.Drills.view({ app: app, man: MAN, esc: esc, fmt: fmt, award: S.award, today: window.Review.dayNum }, p[1] || '');
+    else if (p[0] === 'drills') window.Drills.view({ app: app, man: MAN, esc: esc, fmt: fmt, formulas: function (refs) { var list = []; refs.forEach(function (r) { var p = r.split('/'); list = list.concat(formulasOf(MODS[p[0]], p[1])); }); return formulaPicker(list); }, award: S.award, today: window.Review.dayNum }, p[1] || '');
     else if (p[0] === 'calendar') calendar();
     else home();
     window.scrollTo(0, 0);
@@ -417,7 +451,7 @@
       if (m.when) h += '<p class="stat">Use when: ' + fmt(m.when) + '</p>';
       if (m.mnemonic) h += '<div class="callout hook">🧠 Memory hook: ' + fmt(m.mnemonic) + '</div>';
       h += '<ol class="steps">' + (m.steps || []).map(function (s) { return '<li>' + fmt(String(s).replace(/^\d+[.)]\s*/, '')) + '</li>'; }).join('') + '</ol>';
-      if (m.example) h += '<div class="eg"><b>🧪 Your turn.</b> ' + fmt(m.example.problem) + (m.example.solution ? '<div><button class="sm primary" data-toggle="eg-' + mi + '" data-what="worked answer" data-xp="m:' + code + ':' + esc(m.id) + '">Show worked answer</button></div><div id="eg-' + mi + '" hidden>' + list(m.example.solution) + '</div>' : '') + '</div>';
+      if (m.example) h += '<div class="eg"><b>🧪 Your turn.</b> ' + fmt(m.example.problem) + formulaPicker(formulasOf(M, m.topicId)) + (m.example.solution ? '<div><button class="sm primary" data-toggle="eg-' + mi + '" data-what="worked answer" data-xp="m:' + code + ':' + esc(m.id) + '">Show worked answer</button></div><div id="eg-' + mi + '" hidden>' + list(m.example.solution) + '</div>' : '') + '</div>';
       if (m.diagram) h += window.Diagrams.render(m.diagram.kind, m.diagram.data, m.diagram.caption);
       return h + '</div></details>';
     }).join('');
@@ -430,7 +464,7 @@
     var order = [], groups = {};
     ps.forEach(function (p, i) {
       if (!groups[p.topicId]) { groups[p.topicId] = []; order.push(p.topicId); }
-      groups[p.topicId].push('<div class="card method" id="x-' + esc(p.id) + '" style="margin:10px 0"><span class="badge">' + esc(p.source || '') + '</span> <span class="badge">' + esc(p.marks || '') + ' marks</span> ' + (tt[p.topicId] ? '<span class="badge mod">' + esc(tt[p.topicId].title) + '</span>' : '') + '<p>' + fmt(p.question) + '</p><button class="sm" data-toggle="o-' + i + '" data-xp="q:' + code + ':' + esc(p.id) + '">Show model outline</button><div class="answer" id="o-' + i + '" hidden>' + list(p.outline) + '</div></div>');
+      groups[p.topicId].push('<div class="card method" id="x-' + esc(p.id) + '" style="margin:10px 0"><span class="badge">' + esc(p.source || '') + '</span> <span class="badge">' + esc(p.marks || '') + ' marks</span> ' + (tt[p.topicId] ? '<span class="badge mod">' + esc(tt[p.topicId].title) + '</span>' : '') + '<p>' + fmt(p.question) + '</p>' + (CALC.test(p.question) ? formulaPicker(formulasOf(M, p.topicId)) : '') + '<button class="sm" data-toggle="o-' + i + '" data-xp="q:' + code + ':' + esc(p.id) + '">Show model outline</button><div class="answer" id="o-' + i + '" hidden>' + list(p.outline) + '</div></div>');
     });
     order.sort(function (a, b) { return (tt[a] ? tt[a].priority : 999) - (tt[b] ? tt[b].priority : 999); });
     return '<p class="lead">Real past-paper questions. Pick one topic, attempt a question, then reveal the outline (my synthesis from your notes, not an official scheme).</p>' + order.map(function (id) { return fold(esc(tt[id] ? tt[id].title : 'Other') + ' <span class="badge">' + groups[id].length + '</span>', groups[id].join('')); }).join('');
@@ -494,7 +528,7 @@
     if (q.scenario) h += '<div class="scenario">' + fmt(q.scenario) + '</div>';
     q.parts.forEach(function (p, i) {
       var id = 'a-' + mk.mi + '-' + mk.qi + '-' + i, shown = !!mk.shown[id];
-      h += '<div class="part' + (i === mk.fp ? ' focus' : '') + '" data-p="' + i + '"><b>(' + esc(p.label) + ')</b> ' + fmt(p.text) + ' <span class="badge">' + p.marks + '</span><div><button class="sm" data-ans="' + id + '">' + (shown ? 'Hide' : 'Show') + ' model outline</button></div><div class="answer" id="' + id + '"' + (shown ? '' : ' hidden') + '>' + list(p.outline) + '</div></div>';
+      h += '<div class="part' + (i === mk.fp ? ' focus' : '') + '" data-p="' + i + '"><b>(' + esc(p.label) + ')</b> ' + fmt(p.text) + ' <span class="badge">' + p.marks + '</span>' + (CALC.test(p.text) ? formulaPicker(formulasOf(M, p.topicId)) : '') + '<div><button class="sm" data-ans="' + id + '">' + (shown ? 'Hide' : 'Show') + ' model outline</button></div><div class="answer" id="' + id + '"' + (shown ? '' : ' hidden') + '>' + list(p.outline) + '</div></div>';
     });
     h += '</div></div>';
     v.innerHTML = h;
@@ -518,6 +552,7 @@
   var gPending = false;
   function onKey(e) {
     var t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+    if (t && t.tagName === 'SUMMARY' && (e.key === ' ' || e.key === 'Enter')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } var pr = $('#prefs'); if (pr) { pr.remove(); return; } if (page === 'module' && (tab === 'cards' || tab === 'learn') && !typing) { go('topics'); } if (page === 'home' && location.hash.length > 1) location.hash = ''; return; }
     if (typing) return;
@@ -572,6 +607,7 @@
   if (page === 'home') { homeRoute(); window.addEventListener('hashchange', homeRoute); }
   else {
     code = (new URLSearchParams(location.search).get('m') || '').toUpperCase(); M = MODS[code];
+    window.M_NOW = M;
     if (M && M.exam === undefined) M.exam = {};
     document.title = code + ' revision';
     window.addEventListener('hashchange', route); route();
