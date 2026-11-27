@@ -82,7 +82,14 @@
     (s.items || []).forEach(function (it) {
       var n = words(it), big = it && (it.type === 'table' || it.type === 'diagram' || it.type === 'code');
       if (big) { if (w > 25) flush(); cur.push(it); flush(); return; }
-      if (cur.length && (cur.length >= 4 || w + n > 60)) flush();
+      /* a "p" item introduces what follows: start a screen with it and never leave it stranded at the bottom */
+      if (it && it.type === 'p' && w > 25) flush();
+      if (cur.length && (cur.length >= 5 || w + n > 70)) {
+        var last = cur[cur.length - 1], carry = cur.length > 1 && last && last.type === 'p';
+        if (carry) cur.pop();
+        flush();
+        if (carry) { cur.push(last); w = words(last); }
+      }
       cur.push(it); w += n;
     });
     flush();
