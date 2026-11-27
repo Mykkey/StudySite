@@ -54,8 +54,16 @@ s(i,j) = \frac{\sum_{u} (r(u,i) - \bar{r}_u)(r(u,j) - \bar{r}_u)}{\sqrt{\sum_{u}
 ? It asks whether two items tend to be liked by the same people.
 ? Each rating has that person's own average taken away first, so generous and harsh raters are treated fairly.
 ? If people who rated item i above their usual also rate item j above their usual, the score is near 1.
-> Two people rate films i and j. Compared with their own averages, the first is +2 and +1, the second -2 and -1.
-= s = \frac{(2)(1) + (-2)(-1)}{\sqrt{8 \times 2}} = 1
+> Two people rate films i and j. Each number is how far that rating is above or below the person's own average.
+> Person 1: film i is +2, film j is +1. Person 2: film i is -2, film j is -1.
+> **Top:** for each person multiply their two numbers, then add the people together.
+= (2 \times 1) + (-2 \times -1) = 2 + 2 = 4
+> **Bottom:** for each film, square its numbers and add them. Film i first, then film j.
+= i: 2^2 + (-2)^2 = 4 + 4 = 8
+= j: 1^2 + (-1)^2 = 1 + 1 = 2
+> **Put it together:**
+= s = \frac{4}{\sqrt{8 \times 2}} = \frac{4}{\sqrt{16}} = \frac{4}{4} = 1
+> Both people moved the same way on both films, so the films count as very alike.
 == Item-item prediction
 P(a,i) = \frac{\sum_{j} s(i,j) r(a,j)}{\sum_{j} |s(i,j)|}
 ~ j runs over the k items most similar to i that a has rated. With raw ratings, use only positive similarities.
