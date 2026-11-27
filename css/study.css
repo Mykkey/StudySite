@@ -112,3 +112,28 @@ details.topic > summary .ttl { flex: 1 0 calc(100% - 70px); }
 .screen, .tbody, .fbody, .quiz { overflow-wrap: anywhere; min-width: 0; }
 table.t { overflow-wrap: normal; }
 .lesson pre { max-width: 100%; }
+
+/* ---------- study now, exam dates, review, drills, focus timer ---------- */
+.continue.now { margin-bottom: 8px; }
+.dates { display: grid; gap: 8px; }
+.dates label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; }
+.dates input, .drill input { font: inherit; color: inherit; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+.countdown { margin: 8px 0 0; font-size: .92em; }
+.countdown.soon b { color: var(--bad); }
+.drill label { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 140px) minmax(70px, auto); align-items: center; gap: 8px; margin: 10px 0; }
+.drill input { width: 100%; min-width: 0; }
+.drill em { font-style: normal; font-weight: 700; }
+.drill em.ok { color: var(--good); }
+.drill em.no { color: var(--bad); }
+#ftimer { position: fixed; right: 12px; bottom: 76px; z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 14px; background: var(--panel); border: 2px solid var(--border); border-radius: 14px; box-shadow: 0 6px 24px #0004; max-width: calc(100vw - 24px); }
+#ftimer[hidden] { display: none; }
+#ftimer .row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+#ftimer .time { font-size: 1.6em; font-variant-numeric: tabular-nums; line-height: 1; }
+#ftimer.over { border-color: var(--warn); }
+body.timing:not(.in-lesson) { padding-bottom: 170px; }
+/* in a lesson the timer is a slim bar on top, so it never sits over the Back and Next buttons */
+body.in-lesson #ftimer { top: 0; left: 0; right: 0; bottom: auto; max-width: none; flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 6px 10px; border-width: 0 0 2px; border-radius: 0; }
+body.in-lesson #ftimer .time { font-size: 1.2em; }
+body.in-lesson.timing { padding-top: 56px; }
+body.in-lesson.timing:has(#ftimer.over, #ftimer.idle) { padding-top: 108px; }
+html:has(body.in-lesson.timing) { scroll-padding-top: 60px; }

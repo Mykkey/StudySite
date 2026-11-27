@@ -206,12 +206,14 @@
   function finish() {
     var first = !state.done[L.key];
     X.markDone(L.t.id);
-    delete state.pos[L.key]; X.save();
+    delete state.pos[L.key];
+    state.recent = (state.recent || []).concat(X.code()).slice(-4);
+    X.save();
     award('t:' + L.key, 50);
     if (first) confetti();
   }
   function rate(id, v) {
-    L.rated[id] = v; state.cards[X.code() + ':' + id] = v; X.save();
+    L.rated[id] = v; window.Review.rate(state, X.code() + ':' + id, v); state.cards[X.code() + ':' + id] = v; X.save();
     award('c:' + X.code() + ':' + id, 10);
     L.shown++; render();
   }

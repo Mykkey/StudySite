@@ -110,7 +110,9 @@
   /* ---------- keyboard help ---------- */
   var HELP = {
     'Lesson': [['Space / Enter', 'Next step, or show answer'], ['Right / Left', 'Next / previous step'], ['2 / 1', 'Got it / not yet'], ['Esc', 'Exit lesson']],
-    'Everywhere': [['/', 'Focus search'], ['?', 'This help'], ['D', 'Toggle dark/light'], ['G then H', 'Go home']],
+    'Mixed review': [['Space / Enter', 'Flip card'], ['2 / 1', 'I know it / not yet'], ['Esc', 'Back to home']],
+    'Drills': [['Enter', 'Check answers, then new numbers'], ['Tab', 'Next answer box']],
+    'Everywhere': [['F', 'Focus timer'], ['/', 'Focus search'], ['?', 'This help'], ['D', 'Toggle dark/light'], ['G then H', 'Go home']],
     'Module tabs': [['1 - 6', 'Jump to tab (not on Flashcards)'], [', and .', 'Previous / next tab'], ['[ and ]', 'Previous / next topic'], ['E', 'Expand / collapse all topics'], ['C', 'Mark focused topic complete']],
     'Flashcards': [['Space / Enter', 'Flip card'], ['Right / J', 'Next card'], ['Left / K', 'Previous card'], ['2 or Up', 'I know it (then next)'], ['1 or Down', 'Still learning (then next)'], ['S', 'Shuffle'], ['M', 'Toggle missed-only'], ['R', 'Restart deck']],
     'Mock papers': [['T', 'Start / pause timer'], ['A', 'Show / hide model answer for focused part'], ['Right / Left', 'Next / previous question'], ['Up / Down', 'Move focus between parts']]
@@ -125,17 +127,54 @@
   }
 
   /* ---------- HOME ---------- */
+  function studyNow() {
+    var n = window.Planner.next(state, MODS), due = window.Review.pool(state, MODS).due.length;
+    var title = n.kind === 'review' ? 'Review ' + window.Review.SIZE + ' cards or fewer' : n.kind === 'resume' ? 'Resume: ' + n.topic.title : n.kind === 'topic' ? 'Learn: ' + n.topic.title : n.kind === 'mock' ? 'Mock paper: ' + n.code : 'All done';
+    return '<a class="continue now" href="' + window.Planner.href(n) + '"><span><small>Study now</small><b>' + esc(title) + '</b><small>' + esc(n.why) + '</small></span><span class="go">Start ▶</span></a>' +
+      '<div class="toolbar"><a class="btn" href="#review">🔁 Mixed review' + (due ? ' <span class="badge p1">' + due + ' due</span>' : '') + '</a><a class="btn" href="#drills">🧮 Calculation drills</a></div>';
+  }
+  function examDates() {
+    var set = Object.keys(state.exams || {}).length;
+    return '<details class="fold" id="examdates"><summary>📅 Exam dates <span class="badge">' + (set ? set + ' set' : 'add yours for a countdown') + '</span></summary><div class="fbody"><div class="dates">' +
+      MAN.map(function (mm) { return '<label><span>' + mm.code + ' <small>' + esc(mm.name) + '</small></span><input type="date" data-exam="' + mm.code + '" value="' + esc((state.exams || {})[mm.code] || '') + '"></label>'; }).join('') + '</div></div></details>';
+  }
+  function countdown(code, m) {
+    var i = window.Planner.info(state, code, m, window.Review.dayNum());
+    if (i.days == null) return '';
+    if (i.past) return '<p class="stat">Exam done</p>';
+    return '<p class="countdown' + (i.days <= 7 ? ' soon' : '') + '"><b>' + (i.days === 0 ? 'Today' : i.days + (i.days === 1 ? ' day left' : ' days left')) + '</b>' + (i.left.length ? ' · about ' + i.perDay + (i.perDay === 1 ? ' topic' : ' topics') + ' a day' : ' · main topics done') + '</p>';
+  }
   function home() {
-    var h = '<h1>4th Year Exam Revision</h1><p class="lead">Pick a module and press Continue. One small step at a time.</p>' + S.hud() + '<div class="grid">';
+    window.Review.migrate(state); save();
+    var h = '<h1>4th Year Exam Revision</h1><p class="lead">Press Study now. One small step at a time.</p><div id="studynow">' + studyNow() + '</div>' + S.hud() + examDates() + '<div class="grid">';
     MAN.forEach(function (mm) {
       var s = stats(mm.code), m = MODS[mm.code];
       h += '<a class="card modcard" href="module.html?m=' + mm.code + '" style="--mc:' + mm.colour + '"><h3>' + mm.code + (m && m.evidence === 'estimated' ? ' <span class="badge est" title="No past papers available: ranking estimated from lecture emphasis">estimated</span>' : '') + (m && m.hints ? ' <span class="badge likely">hints</span>' : '') + '</h3><div>' + esc(mm.name) + '</div>';
       if (!m) h += '<p class="stat">Content not built yet.</p>';
-      else { var nx = S.nextTopic(mm.code, m); h += '<div class="rings">' + S.ring(pct(s.done, s.topics), 'topics') + '<span class="stat">Topics<br>' + s.done + '/' + s.topics + '</span>' + S.ring(pct(s.known, s.cards), 'cards') + '<span class="stat">Cards<br>' + s.known + '/' + s.cards + '</span></div><p class="stat">' + (nx ? 'Next up: ' + esc(nx.title) : 'All topics complete') + '</p>'; }
+      else { var nx = S.nextTopic(mm.code, m); h += '<div data-count="' + mm.code + '">' + countdown(mm.code, m) + '</div><div class="rings">' + S.ring(pct(s.done, s.topics), 'topics') + '<span class="stat">Topics<br>' + s.done + '/' + s.topics + '</span>' + S.ring(pct(s.known, s.cards), 'cards') + '<span class="stat">Cards<br>' + s.known + '/' + s.cards + '</span></div><p class="stat">' + (nx ? 'Next up: ' + esc(nx.title) : 'All topics complete') + '</p>'; }
       h += '</a>';
     });
     h += '</div><div class="disclaimer">Content is synthesised from your notes and past papers. Lecturer hints are second-hand and unverified. Mock papers and model answers are AI-written practice material, not official marking schemes.</div>';
     $('#app').innerHTML = h;
+    /* update in place, so the date panel stays open and keeps focus */
+    $$('[data-exam]').forEach(function (inp) {
+      inp.onchange = function () {
+        state.exams = state.exams || {};
+        if (inp.value) state.exams[inp.dataset.exam] = inp.value; else delete state.exams[inp.dataset.exam];
+        save();
+        $('#studynow').innerHTML = studyNow();
+        $$('[data-count]').forEach(function (d) { d.innerHTML = countdown(d.dataset.count, MODS[d.dataset.count]); });
+        var n = Object.keys(state.exams).length; $('#examdates summary .badge').textContent = n ? n + ' set' : 'add yours for a countdown';
+      };
+    });
+  }
+  function homeParts() { return location.hash.replace(/^#/, '').split('/'); }
+  function homeRoute() {
+    var p = homeParts(), app = $('#app');
+    if (p[0] === 'review') window.Review.view({ state: state, save: save, mods: MODS, app: app, fmt: fmt, award: S.award, confetti: S.confetti });
+    else if (p[0] === 'drills') window.Drills.view({ app: app, man: MAN, esc: esc, fmt: fmt, award: S.award, today: window.Review.dayNum }, p[1] || '');
+    else home();
+    window.scrollTo(0, 0);
   }
 
   /* ---------- MODULE ---------- */
@@ -262,7 +301,8 @@
   /* --- methods --- */
   function methodsView() {
     var ms = M.methods || []; if (!ms.length) return '<p>No methods for this module.</p>';
-    return '<p class="lead">One recipe at a time. Open it, learn the hook, try the example, then check.</p>' + ms.map(function (m, mi) {
+    var drill = window.Drills.forCode(code).length ? '<p><a class="btn" href="index.html#drills/' + code + '">🧮 Practise with new numbers</a></p>' : '';
+    return '<p class="lead">One recipe at a time. Open it, learn the hook, try the example, then check.</p>' + drill + ms.map(function (m, mi) {
       var h = '<details class="fold method" id="x-' + esc(m.id) + '"><summary>🪜 ' + esc(m.title) + '</summary><div class="fbody">';
       if (m.when) h += '<p class="stat">Use when: ' + fmt(m.when) + '</p>';
       if (m.mnemonic) h += '<div class="callout hook">🧠 Memory hook: ' + fmt(m.mnemonic) + '</div>';
@@ -318,12 +358,12 @@
     on('#fcprev', function () { cardMove(-1); }); on('#fcnext', function () { cardMove(1); });
     on('#fcknow', function () { cardRate('know'); }); on('#fclearn', function () { cardRate('learn'); });
     on('#fcshuf', cardShuffle); on('#fcreset', cardRestart); on('#fcmiss', cardMissed);
-    on('#fcclear', function () { (M.flashcards || []).forEach(function (c) { delete state.cards[code + ':' + c.id]; }); save(); rebuildDeck(); cardsRender(); });
+    on('#fcclear', function () { (M.flashcards || []).forEach(function (c) { delete state.cards[code + ':' + c.id]; if (state.srs) delete state.srs[code + ':' + c.id]; }); save(); rebuildDeck(); cardsRender(); });
     var sel = $('#fctopic'); if (sel) sel.onchange = function () { fc.topic = sel.value; fc.i = 0; rebuildDeck(); cardsRender(); };
   }
   function cardFlip() { fc.flipped = !fc.flipped; var f = $('#fc'); if (f) f.classList.toggle('flipped', fc.flipped); }
   function cardMove(d) { if (!fc.order.length) return; fc.i = (fc.i + d + fc.order.length) % fc.order.length; fc.flipped = false; cardsRender(); }
-  function cardRate(v) { if (!fc.order.length) return; state.cards[code + ':' + fc.order[fc.i]] = v; save(); S.award('c:' + code + ':' + fc.order[fc.i], 10);
+  function cardRate(v) { if (!fc.order.length) return; window.Review.rate(state, code + ':' + fc.order[fc.i], v); state.cards[code + ':' + fc.order[fc.i]] = v; save(); S.award('c:' + code + ':' + fc.order[fc.i], 10);
     fc.round = fc.round || { n: 0, know: 0 }; fc.round.n++; if (v === 'know') fc.round.know++;
     if (fc.round.n >= 10) { S.toast('Checkpoint: ' + fc.round.know + ' of 10 known'); if (fc.round.know >= 8) S.confetti(); fc.round = null; } if (fc.missed && v === 'know') { var keep = fc.i; fc.order.splice(fc.i, 1); fc.i = Math.min(keep, fc.order.length - 1); fc.flipped = false; cardsRender(); } else cardMove(1); }
   function cardShuffle() { for (var i = fc.order.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = fc.order[i]; fc.order[i] = fc.order[j]; fc.order[j] = t; } fc.i = 0; fc.flipped = false; cardsRender(); }
@@ -369,7 +409,7 @@
   function onKey(e) {
     var t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } var pr = $('#prefs'); if (pr) { pr.remove(); return; } if (page === 'module' && (tab === 'cards' || tab === 'learn') && !typing) { go('topics'); } return; }
+    if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } var pr = $('#prefs'); if (pr) { pr.remove(); return; } if (page === 'module' && (tab === 'cards' || tab === 'learn') && !typing) { go('topics'); } if (page === 'home' && location.hash.length > 1) location.hash = ''; return; }
     if (typing) return;
     var k = e.key, lk = k.length === 1 ? k.toLowerCase() : k;
     if (gPending) { gPending = false; if (lk === 'h') { location.href = 'index.html'; return; } }
@@ -377,6 +417,8 @@
     if (k === '?') { showHelp(); return; }
     if (lk === 'd') { state.theme = (document.documentElement.getAttribute('data-theme') === 'dark' || (!state.theme && matchMedia('(prefers-color-scheme: dark)').matches)) ? 'light' : 'dark'; applyTheme(); save(); return; }
     if (lk === 'g') { gPending = true; setTimeout(function () { gPending = false; }, 900); return; }
+    if (lk === 'f') { window.Timer.toggle(); return; }
+    if (page === 'home' && homeParts()[0] === 'review') { window.Review.key(e); return; }
     if (page !== 'module' || !M) return;
     if (tab === 'learn' && S.key(e)) return;
     var ti = TABS.map(function (x) { return x[0]; }).indexOf(tab);
@@ -415,7 +457,8 @@
   document.addEventListener('keydown', onKey);
   var hb = $('#helpbtn'); if (hb) hb.onclick = showHelp;
   var th = $('#themebtn'); if (th) th.onclick = function () { onKey({ key: 'd', target: document.body }); };
-  if (page === 'home') home();
+  window.Timer.init({ state: state, save: save });
+  if (page === 'home') { homeRoute(); window.addEventListener('hashchange', homeRoute); }
   else {
     code = (new URLSearchParams(location.search).get('m') || '').toUpperCase(); M = MODS[code];
     if (M && M.exam === undefined) M.exam = {};
