@@ -1,0 +1,31 @@
+// "Big picture" graphic per topic. G = boxes of short points, F = step-by-step flow.
+const G = (...g) => ({ kind: 'groups', data: { groups: g.map(([title, items]) => ({ title, items: items.split('|') })) } });
+const F = (...s) => ({ kind: 'flow', data: { direction: 'col', steps: s.map((x, i) => { const [label, sub] = x.split(':'); return { label, sub, color: i % 5 }; }) } });
+module.exports = {
+  'req-attributes': G(['Says WHAT, not HOW', 'Unambiguous|Complete|Necessary|Verifiable'], ['And also', 'Feasible|Consistent|Traceable'], ['Two types', 'Functional|Non-functional']),
+  'agile-manifesto': G(['4 values (left over right)', 'Individuals and interactions|Working software|Customer collaboration|Responding to change'], ['12 principles about', 'Customer value|Working software|People|Continuous improvement']),
+  'sli-slo-sla-error-budget': F('SLI:what you measured', 'SLO:the target for it', 'SLA:the contract with penalties', 'Error budget:100% minus SLO, turned into minutes or requests', 'Decide:actual downtime within budget?'),
+  'git-merge-conflicts': F('git pull:conflict reported', 'Open the file', 'Edit the markers:leave the correct final code', 'git add', 'git commit', 'Test, then git push'),
+  'docker-commands-troubleshooting': F('Image exists?:docker images', 'Container running?:docker ps (-a)', 'Why did it exit?:docker logs', 'Port mapping right?', 'HTTP check'),
+  'github-actions': F('name', 'on:triggers', 'jobs:needs sets the order', 'runs-on:the runner', 'steps:uses an action, or run a command'),
+  'pom-xml': G(['Coordinates', 'groupId|artifactId|version|packaging'], ['properties', 'Java version and settings'], ['dependencies', 'Libraries you use'], ['build', 'Plugins']),
+  'unit-testing-junit': F('Arrange:set up inputs and mocks', 'Act:call the one unit', 'Assert:check the result', 'Cover:normal, boundary and error cases'),
+  'code-critique-flawed-code': G(['Look for', 'Hidden side effects|Null handling|Unclear names|Mutability'], ['And', 'Overloaded one-liners|Untestable coupling'], ['For each, say', 'The problem|Why it matters|The fix']),
+  'jacoco-coverage': G(['Counts', 'Line|Branch|Method|Instruction|Complexity'], ['How', 'JVM agent instruments bytecode|Report in target/site/jacoco'], ['Remember', 'Executed is not the same as checked']),
+  'api-design-openapi': F('Agree the contract:OpenAPI first', 'Nouns for resources:HTTP methods for actions', 'Correct status codes', 'Version:additive, not breaking', 'Secure:auth, rate limit, validate, HTTPS'),
+  'mttd-mttr-mtbf': F('Incident starts', 'Detected:start to here = time to detect', 'Restored:detection to here = time to restore', 'Average:sum divided by number of incidents'),
+  'docker-concepts': G(['Image', 'Immutable template|Built in layers'], ['Container', 'A running instance of an image'], ['vs Virtual machine', 'Containers share the host OS kernel']),
+  'git-version-control': F('Why:roll back, see who changed what, collaborate', 'Git is distributed', 'Feature branch', 'Pull request:review', 'Merge to main'),
+  'sast-dast-zap-sonar': G(['SAST', 'Reads source code|Does not run it|Early|SonarQube'], ['DAST', 'Attacks the running app|No code needed|Later|OWASP ZAP'], ['Pipeline', 'Use both']),
+  'test-doubles-flaky': G(['Doubles', 'Stub: gives answers|Mock: verifies calls|Spy: wraps real object|Fake: simple substitute'], ['Dangers', 'Over-mocking hides bugs'], ['Flaky tests', 'Injected clocks|Controlled async']),
+  'design-patterns-refactoring': G(['Refactoring', 'Same behaviour|Less duplication and coupling'], ['Patterns', 'Polymorphism: replace if/else|Factory: creation|Strategy: payment methods|Observer: notifications'], ['Principle', 'Open/Closed']),
+  'devsecops': F('Plan', 'Code', 'Build', 'Test', 'Release and run:shift left = do security checks near the top'),
+  'agile-vs-devops-sre': G(['Agile', 'Iterations|Customer feedback'], ['DevOps', 'Automation|Dev and Ops collaborate'], ['SRE', 'Software engineering for operations|SLOs and error budgets']),
+  'build-basics': F('Generate sources', 'Compile', 'Compile and run tests', 'Package', 'Run checks', 'Generate reports'),
+  'architecture-monolith-microservices': G(['Monolith', 'Simple to build and deploy|Scales and changes as one'], ['Microservices', 'Deploy and scale alone|Distributed complexity'], ['Record why', 'ADR']),
+  'serverless-faas': F('Event happens', 'Function starts:cold start adds delay', 'Runs:short and stateless', 'Scales automatically', 'Billed per use'),
+  'monitoring-observability': G(['Monitoring', 'Known metrics vs thresholds|Prometheus scrapes|Grafana draws'], ['Observability', 'Explains why|Logs|Metrics|Traces']),
+  'sqa-metrics-complexity': G(['QA vs testing', 'QA: process, prevents defects|Testing: finds defects'], ['Metrics', 'Coverage|Code smells'], ['Cyclomatic', 'E - N + 2P|= decisions + 1']),
+  'sdlc-software-basics': G(['Software is', 'Instructions|Data structures|Documentation'], ['It is', 'Engineered, not manufactured|Does not wear out'], ['Software engineering', 'Large systems|Teams|Process, methods, tools']),
+  'legacy-topics': G(['Older papers asked', 'Z formal specification|Architectural styles|Hypervisors, VirtualBox'], ['Also', 'CAP, ACID, BASE|Cookies, XSS|SQL injection, hashing']),
+};

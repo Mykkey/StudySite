@@ -1,7 +1,7 @@
 /* StudySite app: home page + module page. No dependencies. */
 (function () {
   'use strict';
-  var MODS = window.MODULES, MAN = window.MANIFEST;
+  var MODS = window.MODULES, MAN = window.MANIFEST, S = window.Study;
 
   /* ---------- helpers ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -19,10 +19,12 @@
   applyTheme();
 
   /* ---------- content rendering ---------- */
+  /* "Term: explanation" bullets get a bold term so the eye has somewhere to land */
+  function leadIn(s) { var m = /^([^:`*]{2,40}):\s+(\S[\s\S]*)$/.exec(s); return m ? '<b>' + fmt(m[1]) + ':</b> ' + fmt(m[2]) : fmt(s); }
   function renderItems(items) {
     var h = '', ul = false;
     (items || []).forEach(function (it) {
-      if (typeof it === 'string') { if (!ul) { h += '<ul>'; ul = true; } h += '<li>' + fmt(it) + '</li>'; return; }
+      if (typeof it === 'string') { if (!ul) { h += '<ul>'; ul = true; } h += '<li>' + leadIn(it) + '</li>'; return; }
       if (ul) { h += '</ul>'; ul = false; }
       switch (it.type) {
         case 'p': h += '<p>' + fmt(it.text) + '</p>'; break;
@@ -101,6 +103,7 @@
 
   /* ---------- keyboard help ---------- */
   var HELP = {
+    'Lesson': [['Space / Enter', 'Next step, or show answer'], ['Right / Left', 'Next / previous step'], ['2 / 1', 'Got it / not yet'], ['Esc', 'Exit lesson']],
     'Everywhere': [['/', 'Focus search'], ['?', 'This help'], ['D', 'Toggle dark/light'], ['G then H', 'Go home']],
     'Module tabs': [['1 - 6', 'Jump to tab (not on Flashcards)'], [', and .', 'Previous / next tab'], ['[ and ]', 'Previous / next topic'], ['E', 'Expand / collapse all topics'], ['C', 'Mark focused topic complete']],
     'Flashcards': [['Space / Enter', 'Flip card'], ['Right / J', 'Next card'], ['Left / K', 'Previous card'], ['2 or Up', 'I know it (then next)'], ['1 or Down', 'Still learning (then next)'], ['S', 'Shuffle'], ['M', 'Toggle missed-only'], ['R', 'Restart deck']],
@@ -117,12 +120,12 @@
 
   /* ---------- HOME ---------- */
   function home() {
-    var h = '<h1>4th Year Exam Revision</h1><p class="lead">Topics ranked by how likely they are to score marks. Flashcards, methods, past-paper practice and mock papers for every module.</p><div class="grid">';
+    var h = '<h1>4th Year Exam Revision</h1><p class="lead">Pick a module and press Continue. One small step at a time.</p>' + S.hud() + '<div class="grid">';
     MAN.forEach(function (mm) {
       var s = stats(mm.code), m = MODS[mm.code];
       h += '<a class="card modcard" href="module.html?m=' + mm.code + '" style="--mc:' + mm.colour + '"><h3>' + mm.code + (m && m.evidence === 'estimated' ? ' <span class="badge est" title="No past papers available: ranking estimated from lecture emphasis">estimated</span>' : '') + (m && m.hints ? ' <span class="badge likely">hints</span>' : '') + '</h3><div>' + esc(mm.name) + '</div>';
       if (!m) h += '<p class="stat">Content not built yet.</p>';
-      else h += '<p class="stat">Topics ' + s.done + '/' + s.topics + '</p><div class="bar"><i style="width:' + pct(s.done, s.topics) + '%"></i></div><p class="stat">Flashcards known ' + s.known + '/' + s.cards + '</p><div class="bar"><i style="width:' + pct(s.known, s.cards) + '%"></i></div>';
+      else { var nx = S.nextTopic(mm.code, m); h += '<div class="rings">' + S.ring(pct(s.done, s.topics), 'topics') + '<span class="stat">Topics<br>' + s.done + '/' + s.topics + '</span>' + S.ring(pct(s.known, s.cards), 'cards') + '<span class="stat">Cards<br>' + s.known + '/' + s.cards + '</span></div><p class="stat">' + (nx ? 'Next up: ' + esc(nx.title) : 'All topics complete') + '</p>'; }
       h += '</a>';
     });
     h += '</div><div class="disclaimer">Content is synthesised from your notes and past papers. Lecturer hints are second-hand and unverified. Mock papers and model answers are AI-written practice material, not official marking schemes.</div>';
@@ -135,7 +138,7 @@
 
   function route() {
     var parts = location.hash.replace(/^#/, '').split('/'); tab = parts[0] || 'topics';
-    if (!TABS.some(function (t) { return t[0] === tab; })) tab = 'topics';
+    if (tab !== 'learn' && !TABS.some(function (t) { return t[0] === tab; })) tab = 'topics';
     var target = parts[1] ? decodeURIComponent(parts[1]) : null;
     renderTab(target);
   }
@@ -154,33 +157,39 @@
   }
 
   function renderTab(target) {
+    S.leave();
     if (!moduleShell()) return;
     var v = $('#view');
+    document.body.classList.toggle('in-lesson', tab === 'learn');
+    if (tab === 'learn') { S.lesson(target); window.scrollTo(0, 0); return; }
     if (tab === 'exam') v.innerHTML = examView();
     else if (tab === 'topics') { v.innerHTML = topicsView(); bindTopics(target); }
     else if (tab === 'cards') { cardsInit(target); }
-    else if (tab === 'methods') { v.innerHTML = methodsView(); scrollTo(target); }
+    else if (tab === 'methods') { v.innerHTML = methodsView(); scrollTo(target); bindToggles(v); }
     else if (tab === 'practice') { v.innerHTML = practiceView(); scrollTo(target); bindToggles(v); }
     else if (tab === 'mocks') { mocksView(); }
   }
-  function scrollTo(id) { if (!id) return; var el = document.getElementById('x-' + id); if (el) { if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ block: 'center' }); } }
-  function bindToggles(root) { $$('[data-toggle]', root).forEach(function (b) { b.onclick = function () { var el = document.getElementById(b.dataset.toggle); el.hidden = !el.hidden; b.textContent = el.hidden ? 'Show model outline' : 'Hide model outline'; }; }); }
+  function openUp(el) { for (; el; el = el.parentElement) if (el.tagName === 'DETAILS') el.open = true; }
+  function scrollTo(id) { if (!id) return; var el = document.getElementById('x-' + id); if (el) { openUp(el); el.scrollIntoView({ block: 'center' }); } }
+  function bindToggles(root) { $$('[data-toggle]', root).forEach(function (b) { b.onclick = function () { var el = document.getElementById(b.dataset.toggle); el.hidden = !el.hidden; var what = b.dataset.what || 'model outline'; b.textContent = (el.hidden ? 'Show ' : 'Hide ') + what; if (!el.hidden && b.dataset.xp) S.award(b.dataset.xp, 10); }; }); }
+  function fold(title, body, open) { return '<details class="fold"' + (open ? ' open' : '') + '><summary>' + title + '</summary><div class="fbody">' + body + '</div></details>'; }
 
   /* --- exam --- */
   function examView() {
     var e = M.exam || {}, h = '';
     if (e.summary) h += '<div class="card"><h3 style="margin-top:0">Format at a glance</h3>' + list(e.summary) + '</div>';
     if (M.hints) {
-      var hs = M.hints;
-      h += '<h2>Lecturer hints <span class="badge likely">as reported</span></h2><div class="disclaimer">' + esc(hs.source || 'Second-hand, unverified.') + '</div>';
+      var hs = M.hints, before = h; h = '';
+      h += '<div class="disclaimer">' + esc(hs.source || 'Second-hand, unverified.') + '</div>';
       if (hs.questionShapes) h += '<h3>Question shapes</h3>' + list(hs.questionShapes);
       h += '<div class="grid"><div class="card"><h3 style="margin-top:0">Likely</h3>' + list(hs.likely) + '</div><div class="card"><h3 style="margin-top:0">Unlikely</h3>' + list(hs.unlikely) + '</div></div>';
       if (hs.notes && hs.notes.length) h += '<h3>Other notes</h3>' + list(hs.notes);
+      h = before + fold('🗣️ Lecturer hints <span class="badge likely">as reported</span>', h);
     }
     if (e.structure) h += '<h2>Structure</h2><table class="t"><thead><tr><th>Part</th><th>Details</th></tr></thead><tbody>' + e.structure.map(function (r) { return '<tr><td>' + fmt(r.label) + '</td><td>' + fmt(r.detail) + '</td></tr>'; }).join('') + '</tbody></table>';
     if (e.freq && e.freq.length) h += '<h2>Topic frequency in past papers</h2>' + window.Diagrams.render('bar', { title: 'Appearances (out of ' + (e.freq[0].of || '?') + ' papers)', yLabel: 'papers', bars: e.freq.slice(0, 10).map(function (f, i) { return { label: String(f.topic).slice(0, 14), value: f.count, color: i < 3 ? 4 : 0 }; }) }, 'Top topics by number of papers they appeared in.') + '<table class="t"><thead><tr><th>Topic</th><th>Papers</th></tr></thead><tbody>' + e.freq.map(function (f) { return '<tr><td>' + fmt(f.topic) + '</td><td>' + f.count + '/' + f.of + '</td></tr>'; }).join('') + '</tbody></table>';
-    if (e.years && e.years.length) h += '<h2>Paper by paper</h2><table class="t"><thead><tr><th>Paper</th><th>What was asked</th></tr></thead><tbody>' + e.years.map(function (y) { return '<tr><td>' + fmt(y.year) + '</td><td>' + (y.themes || []).map(fmt).join('<br>') + '</td></tr>'; }).join('') + '</tbody></table>';
-    if (e.tips) h += '<h2>How to score</h2>' + list(e.tips);
+    if (e.years && e.years.length) h += fold('🗂️ Paper by paper', e.years.map(function (y) { return fold(fmt(y.year), list(y.themes)); }).join(''));
+    if (e.tips) h += '<h2>🎯 How to score</h2><div class="tips">' + e.tips.map(function (x) { return '<div class="callout">' + fmt(x) + '</div>'; }).join('') + '</div>';
     if (e.note) h += '<div class="disclaimer">' + fmt(e.note) + '</div>';
     return h;
   }
@@ -190,10 +199,12 @@
     var key = code + ':' + t.id, done = !!state.done[key];
     var h = '<details class="topic' + (done ? ' done' : '') + '" id="x-' + esc(t.id) + '" data-id="' + esc(t.id) + '"><summary><input type="checkbox" aria-label="Mark complete" ' + (done ? 'checked' : '') + ' data-done="' + esc(t.id) + '"><span class="ttl">' + esc(t.title) + '</span>' +
       '<span class="badge' + (t.priority <= 3 ? ' p1' : '') + '">#' + t.priority + '</span>' + (t.freq ? '<span class="badge">' + esc(t.freq) + '</span>' : '') + (t.marks ? '<span class="badge">' + esc(t.marks) + '</span>' : '') +
-      (t.hint ? '<span class="badge ' + esc(t.hint) + '">Lecturer: ' + esc(t.hint) + '</span>' : '') + '</summary><div class="tbody">';
+      (t.hint ? '<span class="badge ' + esc(t.hint) + '">Lecturer: ' + esc(t.hint) + '</span>' : '') +
+      '<a class="btn learn" href="#learn/' + esc(t.id) + '">' + (done ? 'Review' : state.pos[key] ? 'Resume' : 'Learn') + ' ▶ <small>' + S.minutes(M, t) + ' min</small></a></summary><div class="tbody">';
     if (t.summary) h += '<p><b>' + fmt(t.summary) + '</b></p>';
     if (t.mnemonic) h += '<div class="callout hook">Memory hook: ' + fmt(t.mnemonic) + '</div>';
-    (t.sections || []).forEach(function (s) { h += '<h3>' + fmt(s.heading) + '</h3>' + renderItems(s.items); });
+    h += S.visualHtml(t);
+    (t.sections || []).forEach(function (s) { h += fold(fmt(s.heading), renderItems(s.items)); });
     if (t.pitfalls && t.pitfalls.length) h += '<div class="callout warn"><b>Marks are lost by:</b>' + list(t.pitfalls) + '</div>';
     if (t.source) h += '<p class="stat">Source: ' + esc([].concat(t.source).join(', ')) + '</p>';
     return h + '</div></details>';
@@ -202,20 +213,32 @@
     var ts = (M.topics || []).slice().sort(function (a, b) { return a.priority - b.priority; });
     var main = ts.filter(function (t) { return t.tier !== 'low'; }), low = ts.filter(function (t) { return t.tier === 'low'; });
     var s = stats(code);
-    var h = '<div class="toolbar"><button id="expall">Expand / collapse all <span class="kbd">E</span></button><button id="hidedone" aria-pressed="false">Hide completed</button><span class="stat" style="align-self:center">' + s.done + ' of ' + s.topics + ' complete</span></div><div class="bar"><i style="width:' + pct(s.done, s.topics) + '%"></i></div>';
+    var nx = S.nextTopic(code, M);
+    var h = nx ? '<a class="continue" href="#learn/' + esc(nx.id) + '"><span><small>' + (state.pos[code + ':' + nx.id] ? 'Pick up where you left off' : 'Up next') + '</small><b>' + esc(nx.title) + '</b><small>about ' + S.minutes(M, nx) + ' min, in bite-size steps</small></span><span class="go">Continue ▶</span></a>' : '<div class="callout">🎉 Every topic is complete. Try a mock paper.</div>';
+    h += S.hud();
+    h += '<div class="toolbar"><button id="expall">Expand / collapse all <span class="kbd">E</span></button><button id="hidedone" aria-pressed="false">Hide completed</button><span class="stat" style="align-self:center">' + s.done + ' of ' + s.topics + ' complete</span></div><div class="bar"><i style="width:' + pct(s.done, s.topics) + '%"></i></div>';
     h += '<p class="stat">Ordered by likelihood and marks (#1 = revise first). <span class="kbd">[</span> <span class="kbd">]</span> move between topics, <span class="kbd">C</span> marks complete.</p>';
-    h += main.map(topicCard).join('');
+    var openStage = false;
+    for (var i = 0; i < main.length; i += S.STAGE) {
+      var group = main.slice(i, i + S.STAGE), n = i / S.STAGE + 1;
+      var got = group.filter(function (t) { return state.done[code + ':' + t.id]; }).length, isOpen = !openStage && got < group.length;
+      if (isOpen) openStage = true;
+      h += '<details class="stage' + (got === group.length ? ' complete' : '') + '"' + (isOpen ? ' open' : '') + '><summary><span class="num">' + (got === group.length ? '✓' : n) + '</span><span class="ttl">Stage ' + n + '</span><span class="dots">' + group.map(function (t) { return '<i data-dot="' + esc(t.id) + '" class="' + (state.done[code + ':' + t.id] ? 'on' : '') + '"></i>'; }).join('') + '</span><span class="stat">' + got + '/' + group.length + '</span></summary><div class="sbody">' + group.map(topicCard).join('') +
+        '<button class="sm" data-toggle="recap-' + n + '" data-what="stage recap">Show stage recap</button><div class="recap" id="recap-' + n + '" hidden><p class="stat">Say each one from memory before you read it.</p>' + group.map(function (t) { return '<div class="callout"><b>' + esc(t.title) + '</b><br>' + fmt(t.summary || '') + (t.mnemonic ? '<br><small>🧠 ' + fmt(t.mnemonic) + '</small>' : '') + '</div>'; }).join('') + '</div></div></details>';
+    }
     if (low.length) h += '<h2>Only if time (lecturer says unlikely, or low value)</h2><p class="stat">Still examinable in principle: keep a light pass over these.</p>' + low.map(topicCard).join('');
     return h;
   }
   function topicEls() { return $$('details.topic'); }
-  function setFocusT(i) { var els = topicEls(); if (!els.length) return; focusT = Math.max(0, Math.min(els.length - 1, i)); els.forEach(function (e, k) { e.classList.toggle('focus', k === focusT); }); els[focusT].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  function setFocusT(i) { var els = topicEls(); if (!els.length) return; focusT = Math.max(0, Math.min(els.length - 1, i)); els.forEach(function (e, k) { e.classList.toggle('focus', k === focusT); }); openUp(els[focusT].parentElement); els[focusT].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
   function bindTopics(target) {
     $$('input[data-done]').forEach(function (cb) {
       cb.onclick = function (e) { e.stopPropagation(); };
       cb.onchange = function () { toggleDone(cb.dataset.done, cb.checked); };
     });
     $$('details.topic').forEach(function (d, i) { d.addEventListener('toggle', function () { if (d.open) { focusT = i; $$('details.topic').forEach(function (e, k) { e.classList.toggle('focus', k === i); }); } }); });
+    bindToggles($('#view'));
+    $$('a.learn').forEach(function (a) { a.onclick = function (e) { e.stopPropagation(); }; });
     $('#expall').onclick = expandAll;
     $('#hidedone').onclick = function () { var on = this.getAttribute('aria-pressed') !== 'true'; this.setAttribute('aria-pressed', on); $$('details.topic.done').forEach(function (d) { d.style.display = on ? 'none' : ''; }); };
     if (target) scrollTo(target);
@@ -223,22 +246,24 @@
   function toggleDone(id, val) {
     var k = code + ':' + id; if (val) state.done[k] = true; else delete state.done[k]; save();
     var d = document.getElementById('x-' + id); if (d) { d.classList.toggle('done', val); var cb = $('input[data-done]', d); if (cb) cb.checked = val; }
-    var s = stats(code); var bar = $('#view .bar > i'); if (bar) bar.style.width = pct(s.done, s.topics) + '%';
+    var dot = $('[data-dot="' + id + '"]'); if (dot) dot.classList.toggle('on', val);
+    if (val) S.award('t:' + k, 50);
+    var s = stats(code); var bar = $('#view .toolbar + .bar > i'); if (bar) bar.style.width = pct(s.done, s.topics) + '%';
     var st = $('#view .toolbar .stat'); if (st) st.textContent = s.done + ' of ' + s.topics + ' complete';
   }
-  function expandAll() { var els = topicEls(), anyClosed = els.some(function (e) { return !e.open; }); els.forEach(function (e) { e.open = anyClosed; }); }
+  function expandAll() { var els = topicEls(), anyClosed = els.some(function (e) { return !e.open; }); els.forEach(function (e) { e.open = anyClosed; }); if (anyClosed) $$('details.stage').forEach(function (e) { e.open = true; }); }
 
   /* --- methods --- */
   function methodsView() {
     var ms = M.methods || []; if (!ms.length) return '<p>No methods for this module.</p>';
-    return '<p class="lead">Step-by-step recipes for the problem types that come up. Learn the mnemonic, then do the worked example from memory.</p>' + ms.map(function (m) {
-      var h = '<div class="card method" id="x-' + esc(m.id) + '"><h3 style="margin-top:0">' + esc(m.title) + '</h3>';
+    return '<p class="lead">One recipe at a time. Open it, learn the hook, try the example, then check.</p>' + ms.map(function (m, mi) {
+      var h = '<details class="fold method" id="x-' + esc(m.id) + '"><summary>🪜 ' + esc(m.title) + '</summary><div class="fbody">';
       if (m.when) h += '<p class="stat">Use when: ' + fmt(m.when) + '</p>';
-      if (m.mnemonic) h += '<div class="callout hook">Memory hook: ' + fmt(m.mnemonic) + '</div>';
-      h += '<ol>' + (m.steps || []).map(function (s) { return '<li>' + fmt(s) + '</li>'; }).join('') + '</ol>';
-      if (m.example) h += '<div class="eg"><b>Worked example.</b> ' + fmt(m.example.problem) + (m.example.solution ? list(m.example.solution) : '') + '</div>';
+      if (m.mnemonic) h += '<div class="callout hook">🧠 Memory hook: ' + fmt(m.mnemonic) + '</div>';
+      h += '<ol class="steps">' + (m.steps || []).map(function (s) { return '<li>' + fmt(String(s).replace(/^\d+[.)]\s*/, '')) + '</li>'; }).join('') + '</ol>';
+      if (m.example) h += '<div class="eg"><b>🧪 Your turn.</b> ' + fmt(m.example.problem) + (m.example.solution ? '<div><button class="sm primary" data-toggle="eg-' + mi + '" data-what="worked answer" data-xp="m:' + code + ':' + esc(m.id) + '">Show worked answer</button></div><div id="eg-' + mi + '" hidden>' + list(m.example.solution) + '</div>' : '') + '</div>';
       if (m.diagram) h += window.Diagrams.render(m.diagram.kind, m.diagram.data, m.diagram.caption);
-      return h + '</div>';
+      return h + '</div></details>';
     }).join('');
   }
 
@@ -246,9 +271,13 @@
   function practiceView() {
     var ps = M.practice || []; if (!ps.length) return '<p>No past questions recorded.</p>';
     var tt = {}; (M.topics || []).forEach(function (t) { tt[t.id] = t; });
-    return '<p class="lead">Real past-paper questions, grouped by topic. Attempt first, then reveal the outline (my synthesis from your notes, not an official scheme).</p>' + ps.map(function (p, i) {
-      return '<div class="card method" id="x-' + esc(p.id) + '" style="margin:10px 0"><span class="badge">' + esc(p.source || '') + '</span> <span class="badge">' + esc(p.marks || '') + ' marks</span> ' + (tt[p.topicId] ? '<span class="badge mod">' + esc(tt[p.topicId].title) + '</span>' : '') + '<p>' + fmt(p.question) + '</p><button class="sm" data-toggle="o-' + i + '">Show model outline</button><div class="answer" id="o-' + i + '" hidden>' + list(p.outline) + '</div></div>';
-    }).join('');
+    var order = [], groups = {};
+    ps.forEach(function (p, i) {
+      if (!groups[p.topicId]) { groups[p.topicId] = []; order.push(p.topicId); }
+      groups[p.topicId].push('<div class="card method" id="x-' + esc(p.id) + '" style="margin:10px 0"><span class="badge">' + esc(p.source || '') + '</span> <span class="badge">' + esc(p.marks || '') + ' marks</span> ' + (tt[p.topicId] ? '<span class="badge mod">' + esc(tt[p.topicId].title) + '</span>' : '') + '<p>' + fmt(p.question) + '</p><button class="sm" data-toggle="o-' + i + '" data-xp="q:' + code + ':' + esc(p.id) + '">Show model outline</button><div class="answer" id="o-' + i + '" hidden>' + list(p.outline) + '</div></div>');
+    });
+    order.sort(function (a, b) { return (tt[a] ? tt[a].priority : 999) - (tt[b] ? tt[b].priority : 999); });
+    return '<p class="lead">Real past-paper questions. Pick one topic, attempt a question, then reveal the outline (my synthesis from your notes, not an official scheme).</p>' + order.map(function (id) { return fold(esc(tt[id] ? tt[id].title : 'Other') + ' <span class="badge">' + groups[id].length + '</span>', groups[id].join('')); }).join('');
   }
 
   /* --- flashcards --- */
@@ -270,6 +299,8 @@
     var h = '<div class="deckbar"><select id="fctopic" aria-label="Topic filter">' + topicOpts + '</select><button id="fcmiss" aria-pressed="' + fc.missed + '">Missed only <span class="kbd">M</span></button><button id="fcshuf">Shuffle <span class="kbd">S</span></button><button id="fcreset">Restart <span class="kbd">R</span></button><button id="fcclear" title="Forget all know/learning marks for this module">Clear marks</button><span class="stat">Known ' + s.known + '/' + s.cards + '</span></div><div class="bar"><i style="width:' + pct(s.known, s.cards) + '%"></i></div>';
     if (!fc.order.length) { h += '<div class="card"><p>Nothing in this deck' + (fc.missed ? ' (every card here is marked known: nice)' : '') + '.</p></div>'; $('#view').innerHTML = h; bindCards(); return; }
     var c = byId[fc.order[fc.i]], st = state.cards[code + ':' + c.id];
+    var rn = fc.round ? fc.round.n : 0;
+    h += '<div class="round" aria-label="' + rn + ' of 10 in this round">' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return '<i class="' + (i < rn ? 'on' : '') + '"></i>'; }).join('') + '<span class="stat">to checkpoint</span></div>';
     h += '<p class="stat" style="text-align:center">Card ' + (fc.i + 1) + ' of ' + fc.order.length + (tt[c.topicId] ? ' &middot; ' + esc(tt[c.topicId].title) : '') + '</p>';
     h += '<div class="fc' + (fc.flipped ? ' flipped' : '') + (st === 'know' ? ' known' : st === 'learn' ? ' learn' : '') + '" id="fc"><div class="fc-inner"><div class="fc-face front"><span class="tag">Question</span>' + fmt(c.front) + '<small>click or press Space to flip</small></div><div class="fc-face back"><span class="tag">Answer</span><div>' + fmt(c.back) + '</div>' + (c.hook ? '<small>Hook: ' + fmt(c.hook) + '</small>' : '') + '</div></div></div>';
     h += '<div class="actions"><button id="fcprev">&larr; Prev</button><button class="bad" id="fclearn">Still learning <span class="kbd">1</span></button><button class="good" id="fcknow">I know it <span class="kbd">2</span></button><button id="fcnext">Next &rarr;</button></div>';
@@ -286,7 +317,9 @@
   }
   function cardFlip() { fc.flipped = !fc.flipped; var f = $('#fc'); if (f) f.classList.toggle('flipped', fc.flipped); }
   function cardMove(d) { if (!fc.order.length) return; fc.i = (fc.i + d + fc.order.length) % fc.order.length; fc.flipped = false; cardsRender(); }
-  function cardRate(v) { if (!fc.order.length) return; state.cards[code + ':' + fc.order[fc.i]] = v; save(); if (fc.missed && v === 'know') { var keep = fc.i; fc.order.splice(fc.i, 1); fc.i = Math.min(keep, fc.order.length - 1); fc.flipped = false; cardsRender(); } else cardMove(1); }
+  function cardRate(v) { if (!fc.order.length) return; state.cards[code + ':' + fc.order[fc.i]] = v; save(); S.award('c:' + code + ':' + fc.order[fc.i], 10);
+    fc.round = fc.round || { n: 0, know: 0 }; fc.round.n++; if (v === 'know') fc.round.know++;
+    if (fc.round.n >= 10) { S.toast('Checkpoint: ' + fc.round.know + ' of 10 known'); if (fc.round.know >= 8) S.confetti(); fc.round = null; } if (fc.missed && v === 'know') { var keep = fc.i; fc.order.splice(fc.i, 1); fc.i = Math.min(keep, fc.order.length - 1); fc.flipped = false; cardsRender(); } else cardMove(1); }
   function cardShuffle() { for (var i = fc.order.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = fc.order[i]; fc.order[i] = fc.order[j]; fc.order[j] = t; } fc.i = 0; fc.flipped = false; cardsRender(); }
   function cardRestart() { fc.i = 0; rebuildDeck(); cardsRender(); }
   function cardMissed() { fc.missed = !fc.missed; fc.i = 0; rebuildDeck(); cardsRender(); }
@@ -330,7 +363,7 @@
   function onKey(e) {
     var t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } if (page === 'module' && tab === 'cards' && !typing) { go('topics'); } return; }
+    if (e.key === 'Escape') { var hp = $('#help'); if (hp) { hp.remove(); return; } var pr = $('#prefs'); if (pr) { pr.remove(); return; } if (page === 'module' && (tab === 'cards' || tab === 'learn') && !typing) { go('topics'); } return; }
     if (typing) return;
     var k = e.key, lk = k.length === 1 ? k.toLowerCase() : k;
     if (gPending) { gPending = false; if (lk === 'h') { location.href = 'index.html'; return; } }
@@ -339,6 +372,7 @@
     if (lk === 'd') { state.theme = (document.documentElement.getAttribute('data-theme') === 'dark' || (!state.theme && matchMedia('(prefers-color-scheme: dark)').matches)) ? 'light' : 'dark'; applyTheme(); save(); return; }
     if (lk === 'g') { gPending = true; setTimeout(function () { gPending = false; }, 900); return; }
     if (page !== 'module' || !M) return;
+    if (tab === 'learn' && S.key(e)) return;
     var ti = TABS.map(function (x) { return x[0]; }).indexOf(tab);
     if (k === ',' || k === '.') { go(TABS[(ti + (k === '.' ? 1 : -1) + TABS.length) % TABS.length][0]); return; }
     if (tab === 'cards') {
@@ -364,6 +398,13 @@
 
   /* ---------- boot ---------- */
   var page = document.body.getAttribute('data-page');
+  S.init({
+    state: state, save: save, esc: esc, fmt: fmt, renderItems: renderItems, stats: stats, go: go,
+    code: function () { return code; }, M: function () { return M; },
+    markDone: function (id) { state.done[code + ':' + id] = true; save(); },
+    drill: function (id) { fc.topic = id; fc.missed = false; go('cards'); }
+  });
+  var pb = $('#prefbtn'); if (pb) pb.onclick = S.settings;
   initSearch();
   document.addEventListener('keydown', onKey);
   var hb = $('#helpbtn'); if (hb) hb.onclick = showHelp;

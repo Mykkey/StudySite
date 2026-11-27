@@ -168,8 +168,15 @@
     return wrap(h, d.caption);
   }
 
+  /* responsive "mind map": coloured boxes of short points */
+  function groups(d) {
+    var h = (d.title ? '<div class="gtitle">' + esc(d.title) + '</div>' : '') + '<div class="groups">';
+    d.groups.forEach(function (g, i) { h += '<div class="group" style="--gc:' + COLS[i % COLS.length] + '"><b>' + esc(g.title) + '</b><ul>' + g.items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>'; });
+    return wrap(h + '</div>', d.caption);
+  }
+
   window.Diagrams = {
-    kinds: ['line', 'scatter', 'bar', 'graph', 'tree', 'layers', 'flow'],
+    kinds: ['line', 'scatter', 'bar', 'graph', 'tree', 'layers', 'flow', 'groups'],
     render: function (kind, data, caption) {
       var d = Object.assign({}, data, { caption: caption || data.caption });
       try {
@@ -181,6 +188,7 @@
           case 'tree': return tree(d);
           case 'layers': return layers(d);
           case 'flow': return flow(d);
+          case 'groups': return groups(d);
         }
       } catch (e) { return '<div class="callout warn">Diagram error (' + esc(kind) + '): ' + esc(e.message) + '</div>'; }
       return '<div class="callout warn">Unknown diagram kind: ' + esc(kind) + '</div>';

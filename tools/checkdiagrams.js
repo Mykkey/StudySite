@@ -7,7 +7,7 @@ cx.window.MODULES = {};
 let n = 0, bad = 0;
 const walk = (c, where, items) => (items || []).forEach((it, i) => { if (it && it.type === 'diagram') { n++; const h = cx.window.Diagrams.render(it.kind, it.data, it.caption); if (/Diagram error|Unknown diagram|NaN|undefined|Infinity/.test(h)) { bad++; console.log('BAD', c, where, it.kind, (h.match(/Diagram error[^<]*|NaN|undefined|Infinity/) || [])[0]); } } });
 Object.entries(cx.window.MODULES).forEach(([c, m]) => {
-  m.topics.forEach(t => t.sections.forEach(s => walk(c, t.id, s.items)));
+  m.topics.forEach(t => { t.sections.forEach(s => walk(c, t.id, s.items)); if (t.visual) walk(c, t.id, [Object.assign({ type: 'diagram' }, t.visual)]); });
   (m.methods || []).forEach(x => { if (x.diagram) { n++; const h = cx.window.Diagrams.render(x.diagram.kind, x.diagram.data, x.diagram.caption); if (/Diagram error|NaN|undefined|Infinity/.test(h)) { bad++; console.log('BAD', c, x.id); } } });
 });
 console.log(n + ' diagrams, ' + bad + ' bad');

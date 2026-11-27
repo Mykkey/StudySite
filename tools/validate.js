@@ -4,7 +4,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {} }; ctx.window.window = ctx.window; vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'data/manifest.js'), 'utf8'), ctx);
 const codes = process.argv.length > 2 ? process.argv.slice(2) : ctx.window.MANIFEST.map(m => m.code);
-const KINDS = { line: ['series'], scatter: ['series'], bar: ['bars'], graph: ['nodes', 'edges'], tree: ['root'], layers: ['layers'], flow: ['steps'] };
+const KINDS = { line: ['series'], scatter: ['series'], bar: ['bars'], graph: ['nodes', 'edges'], tree: ['root'], layers: ['layers'], flow: ['steps'], groups: ['groups'] };
 let errors = 0, warns = 0;
 const err = (c, m) => { errors++; console.log(`  ERROR [${c}] ${m}`); };
 const warn = (c, m) => { warns++; console.log(`  warn  [${c}] ${m}`); };
