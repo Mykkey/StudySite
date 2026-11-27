@@ -1,6 +1,14 @@
 == Mutation ratio (the slide's name; also called mutation score)
 \text{Mutation Ratio} = \frac{\#\text{Killed}}{\#\text{Total} - \#\text{Equivalent}}
+? Small deliberate bugs (mutants) are planted in the code. A mutant is "killed" when a test fails because of it.
+? The score is the share of bugs your tests noticed.
+? Equivalent mutants behave exactly like the original, so no test could catch them and they are left out.
+> 20 mutants, 3 equivalent, 14 killed.
+= \var{ratio} = \frac{14}{20 - 3} = 0.82
 == Related slide formulas
 \text{Test Pass Rate} = \frac{\#\text{Passed tests}}{\#\text{Total tests}}
 \text{Unit-level coverage} = \frac{\#\text{Units tested at least once}}{\#\text{Total units}}
 ~ Slide example: pass rate 25 / 26 = about 0.96.
+? Pass rate: the share of tests that pass. Coverage: the share of units that any test touches.
+? Neither shows the tests are good: a test can run code and check nothing.
+> 25 of 26 tests pass (0.96), and 8 of 10 units are tested (0.8).

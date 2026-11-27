@@ -1,11 +1,29 @@
 == Bottom-up TAM (per year)
 \var{TAM} = N \times Q \times F \times P
+? Build the market size up from one customer, not down from a big industry figure.
+? Number of customers, times how much each buys, how often, at what price.
+> 2000 customers, 1 unit each time, 12 times a year, EUR 10.
+= \var{TAM} = 2000 \times 1 \times 12 \times 10 = 240000
 == One-time charge, annualised
 \text{Annual revenue per user} = \frac{\text{price per unit} \times \text{units per user}}{\text{average life of product in years}}
+? Something bought once and kept for years does not earn its price every year.
+? So spread the price over the years the product lasts.
+> A EUR 1200 device, one per user, lasting 4 years.
+= \var{revenue} = \frac{1200 \times 1}{4} = 300
 == Budget method
 \text{Annual revenue per user} = \text{total budget per user}
 \quad \times \% \text{ of budget that could go to this solution}
+? Start from what the customer already spends in this area.
+? Then take only the part they could realistically move to you.
+> A budget of EUR 5000, of which 20% could go to your solution.
+= \var{revenue} = 5000 \times 0.2 = 1000
 == Result
 \var{TAM} = 30,306 \times 1 \times 1 \times \var{EUR} 5 = \var{EUR} 151,530 \text{ per year}
+? This is a worked TAM: the number of users times yearly units, frequency and price.
+? Here each of 30,306 users spends EUR 5 once a year.
+> 30,306 × 5 = 151,530 euro a year. Doubling the price or the number of users would double it.
 == Lecture equation
 \var{Innovation} = \var{Invention} \times \var{Commercialisation}
+? An idea alone is not innovation: it also has to be turned into something people pay for.
+? It is a multiplication on purpose. If either part is zero, the result is zero.
+> A brilliant invention (10) that is never sold (0) gives 10 × 0 = 0.

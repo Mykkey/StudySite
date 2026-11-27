@@ -1,83 +1,168 @@
 == Euler update
 \var{Stock}(t + DT) = \var{Stock}(t) + DT \times [ \var{Inflow}(t) - \var{Outflow}(t) ]
+? A stock is like a bath. The new level is the old level plus what flowed in, minus what flowed out.
+? Flows are rates, so multiply by the time step DT. A smaller DT is more accurate.
+> Stock 100, inflow 30, outflow 10, DT = 1.
+= \var{Stock} = 100 + 1 \times (30 - 10) = 120
 == Net flow
 \var{Net}(t) = 30 + 20 - \var{Outflow}(t) = 50 - \var{Outflow}(t)
 \var{Net} = -50 + 20t \quad \text{on [0, 5]}
 \var{Net} = 150 - 20t \quad \text{on [5, 10]}
+? Net flow is everything coming in minus everything going out. Here the two inflows add to 50.
+? When it is positive the stock rises, when negative it falls, and the area under it is the change.
+> For the first line, -50 + 20t, the net flow is negative until t = 2.5, so the stock falls by 62.5 and then climbs back.
 == Net flow#2
 \var{Net} = 50 - 20t \quad \text{on [0, 5]}
 \var{Net} = -50 \quad \text{on [5, 10]}
 \var{Net} = -50 + 20(t - 10) \quad \text{on [10, 15]}
 \var{Net} = +50 \quad \text{on [15, 20]}
 \var{Net} = 50 - 20(t - 20) \quad \text{on [20, 25]}
+? Each line covers one stretch of the graph. The stock changes by the area under that stretch.
+? Where the net flow crosses zero, the stock is at a peak or a low point.
+> On the first line, 50 - 20t, the stock rises until t = 2.5 (area 62.5), then falls back by the same amount.
 == Stock management structure
 \text{Inflow (Hire Rate)} = \var{MAX}(0, \var{Anchor} + \var{Adjustment})
+? To manage a stock, first replace what you expect to lose (anchor), then correct the gap to your target (adjustment).
+? MAX with 0 stops the answer going negative: you cannot hire minus people.
+> Anchor 10 and adjustment 5 give 15 hires. If the adjustment were -20, hires would be 0.
 == Adjustment
 \var{Adjustment} = \frac{\text{Desired Stock} - \var{Stock}}{AT}
 ~ AT = adjustment time.
+? The gap between where you want to be and where you are, closed gradually over the adjustment time.
+> Target 100, current 80, adjustment time 4.
+= \var{Adjustment} = \frac{100 - 80}{4} = 5
 == Anchor
 \var{Anchor} = \text{Expected Outflow}
 ~ The smoothed outflow. In steady state Anchor = Outflow.
+? Even with no gap, things keep leaving the stock. The anchor replaces that expected loss.
+? Without it the stock would settle below the target.
+> If you expect to lose 10 staff a month, start by hiring 10.
 == Anchor delay structure
 \var{EQ}(t + DT) = \var{EQ}(t) + DT \times \frac{\var{Quits} - \var{EQ}}{TAE}
 ~ EQ = Expected Quits. TAE = Time to Adjust Expectation.
+? Your expectation does not jump to the latest figure. It moves part of the way each step.
+? A longer adjustment time means slower, smoother beliefs.
+> Expected quits 10, actual 14, time to adjust 4, DT = 1.
+= \var{EQ} = 10 + 1 \times \frac{14 - 10}{4} = 11
 == Transmission rate beta (per day)
 \beta = c \times i = \frac{R_0}{D}
+? Beta is how many people one infected person infects per day when everyone is susceptible.
+? Contacts per day times the chance each passes it on, which equals R0 spread over the infectious days.
+> R0 = 12 over 7 infectious days.
+= \beta = \frac{12}{7} = 1.71
 == Force of infection lambda (per day, per susceptible)
 \lambda = \beta \times \frac{I}{N}
 ~ The probability per day that a susceptible person is infected.
+? A susceptible person's daily risk: the transmission rate times the share of people who are infected.
+> Beta 0.5, 100 infected out of 10,000.
+= \lambda = 0.5 \times \frac{100}{10000} = 0.005
 == Infection rate
 \var{IR} = S \times \lambda = \frac{\beta \times S \times I}{N} = c \times i \times \frac{S}{N} \times I
 ~ IR = Infection Rate.
+? New infections per day: the number who can catch it times each one's daily risk.
+? It is small at the start (few infected) and at the end (few left to infect), and largest in between.
+> 9000 susceptible with risk 0.005.
+= \var{IR} = 9000 \times 0.005 = 45
 == Net (effective) reproduction number
 R_n = R_0 \times \frac{S}{N}
 ~ Changes over time as S falls.
+? R0 assumes everyone can catch it. Only the susceptible share still can.
+? Above 1 the outbreak grows, below 1 it shrinks.
+> R0 = 3 with half the people still susceptible.
+= R_n = 3 \times 0.5 = 1.5
 == Herd immunity threshold
 \var{HIT} = 1 - \frac{1}{R_0}
+? The share who must be immune so that each case infects fewer than one other.
+? A more contagious disease needs a higher share.
+> R0 = 12.
+= \var{HIT} = 1 - \frac{1}{12} = 0.92
 == Differential form
 \frac{dS}{dt} = - \frac{\beta S I}{N}
 \frac{dI}{dt} = \frac{\beta S I}{N} - \frac{I}{D}
 \frac{dR}{dt} = \frac{I}{D}
+? People move one way: Susceptible to Infected to Recovered.
+? What leaves S enters I, and what leaves I (after D days on average) enters R.
+> Beta 0.5, S = 9900, I = 100, N = 10,000, D = 5. S changes by -49.5 a day, I by +29.5 and R by +20.
 == Difference (Euler) form
 S(t + DT) = S(t) - DT \times \var{IR}(t)
 I(t + DT) = I(t) + DT \times (\var{IR}(t) - \var{RR}(t))
 R(t + DT) = R(t) + DT \times \var{RR}(t)
+? The same model computed in time steps: each box is its old value plus or minus the flows times DT.
+> S = 9900, I = 100, infections 49.5, recoveries 20, DT = 1. Next: S = 9850.5, I = 129.5, R = 20.
 == Fractional increase
 \var{Inflow} = \var{Stock} \times g
 ~ g = fractional growth rate (per time unit).
+? The inflow is a fixed fraction of the stock, so the more you have the faster it grows. This gives exponential growth.
+> A stock of 1000 growing at 0.05 per year gains 50 this year.
 == Fractional decrease
 \var{Outflow} = \var{Stock} \times f = \frac{\var{Stock}}{L}
 ~ f = fractional decrease rate. L = 1/f = average lifetime.
+? The outflow is a fixed fraction of what is there, so it slows as the stock empties.
+? A fraction of 1/L means things last L time units on average.
+> 1000 items with an average life of 20 years: 50 leave per year.
 == Adjustment to a goal
 \text{Net flow} = \frac{\var{Goal} - \var{Stock}}{AT}
 ~ AT = adjustment time (time constant).
+? The further from the goal, the faster you move. You slow down as you get close.
+> Goal 100, stock 60, adjustment time 5.
+= \var{Net} = \frac{100 - 60}{5} = 8
 == Equations
 \var{Outflow} = S \times G
 G(t + DT) = G(t) + DT \times \frac{G^{*} - G}{AT}
 ~ G(0) = the initial fraction (for example 0).
+? The outflow is a fraction G of the stock, but that fraction is not fixed.
+? G starts at its initial value and drifts towards the target fraction, taking about AT to get there.
+> G = 0, target 0.1, AT = 5, DT = 1: next G is 0.02. With a stock of 1000 the outflow is then 20.
 == First-order material delay
 \var{Outflow} = \frac{\var{Stock}}{D}
 \text{steady state: } \var{Stock} = \var{Inflow} \times D
+? Things enter and leave after about D time units on average, like parcels in the post.
+? When nothing is changing, the amount in the middle is the inflow times the delay.
+> 20 enter per day and stay 5 days, so 100 are in the system and 20 leave per day.
 == Exponential smoothing
 \var{Sm}(t + DT) = \var{Sm}(t) + DT \times \frac{\var{Input} - \var{Sm}(t)}{ST}
 ~ Sm = the smoothed value. ST = smoothing (perception) time.
+? The smoothed value chases the real one, closing part of the gap each step, so sudden spikes are softened.
+> Smoothed 100, input 120, smoothing time 4, DT = 1.
+= \var{Sm} = 100 + \frac{120 - 100}{4} = 105
 == Cohort force of infection
 \lambda_j = i \times \sum_{k} c_{jk} \times \frac{I_k}{N_k}
 \var{IR}_j = S_j \times \lambda_j \quad \var{RR}_j = \frac{I_j}{D_j}
+? With age groups, each group's risk adds up its contacts with every group, times the share infected there.
+? The group's infections are its susceptibles times that risk.
+> Chance per contact 0.05. You meet 10 of one group (1% infected) and 2 of another (2% infected). 1000 susceptible.
+= \lambda = 0.05 (10 \times 0.01 + 2 \times 0.02) = 0.007
+> That gives 1000 × 0.007 = 7 infections a day.
 == Stock equation (Euler form)
 \var{Stock}(t + DT) = \var{Stock}(t) + DT \times (\var{Inflow} - \var{Outflow})
+? The new level is the old level plus the net flow over one time step.
+> Stock 50, inflow 10, outflow 4, DT = 0.5.
+= \var{Stock} = 50 + 0.5 \times (10 - 4) = 53
 == Continuous form
 \frac{d(\var{Stock})}{dt} = \var{Inflow} - \var{Outflow}
 \var{Stock}(0) = \text{initial value}
+? The same idea for infinitely small steps: how fast the stock changes right now is inflow minus outflow.
+? You also need the starting level, or you only know the shape, not the height.
+> Inflow 10 and outflow 4: the stock rises by 6 per time unit from wherever it started.
 == SEIR
 \frac{dS}{dt} = - \frac{\beta S I}{N}
 \frac{dE}{dt} = \frac{\beta S I}{N} - \frac{E}{L}
 \frac{dI}{dt} = \frac{E}{L} - \frac{I}{D}
 \frac{dR}{dt} = \frac{I}{D}
 ~ L = latent time.
+? SIR with a waiting room: E holds people who caught it but are not yet infectious.
+? They move to I after about L days, which delays and spreads out the outbreak.
+> Beta 0.5, S = 990, E = 20, I = 10, N = 1000, L = 2, D = 5. E changes by 4.95 - 10 = -5.05 and I by 10 - 2 = +8.
 == Force of infection (three infectious compartments)
 \lambda = c \times i \times \frac{\text{Pre-clinical} + \var{Clinical} + M \times \text{Sub-clinical}}{N}
 ~ M = the sub-clinical multiplier.
+? Three kinds of people can pass it on. Add them, counting sub-clinical cases at M times the strength.
+? Then multiply by contacts and chance per contact, divided by the population.
+> c × i = 0.6, 10 pre-clinical, 20 clinical, 30 sub-clinical, M = 0.5, N = 1000.
+= \lambda = 0.6 \times \frac{10 + 20 + 15}{1000} = 0.027
 == R0 for this model
 R_0 = c i [ CF (2.1 + 2.9) + (1 - CF) \times 0.5 \times 5 ]
 \quad = 0.6 \times [ 0.6 \times 5 + 0.4 \times 2.5 ] = 0.6 \times 4 = 2.4
+? One case's total infections: infections per day times days infectious, averaged over the two routes.
+? A fraction CF turns clinical (2.1 + 2.9 days). The rest stay sub-clinical (5 days at half strength).
+> With CF = 0.6: 0.6 × (0.6 × 5 + 0.4 × 2.5) = 2.4.

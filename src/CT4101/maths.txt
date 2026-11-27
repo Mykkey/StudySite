@@ -1,134 +1,302 @@
 == Accuracy
 \var{accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
 ~ Fraction of all decisions that are correct.
+? Out of every decision, the share that was right.
+? It misleads when one class is rare: always saying "no" can still score very high.
+> 40 true positives, 130 true negatives, 10 false positives, 20 false negatives.
+= \var{accuracy} = \frac{40 + 130}{200} = 0.85
 == Precision (positive predictive value)
 \var{precision} = \frac{TP}{TP + FP}
 ~ Of the cases predicted positive, how many really are.
+? When the model says "yes", how often is it right?
+? Use it when a false alarm is costly.
+> 40 correct alarms and 10 false ones.
+= \var{precision} = \frac{40}{50} = 0.8
 == Recall (sensitivity, true positive rate)
 \var{recall} = \frac{TP}{TP + FN}
 ~ Of the actual positives, how many did we find.
+? Of all the real "yes" cases, how many did the model catch?
+? Use it when missing a case is costly, such as a disease.
+> 40 caught and 20 missed.
+= \var{recall} = \frac{40}{60} = 0.67
 == Specificity (true negative rate)
 \var{specificity} = \frac{TN}{TN + FP}
 \var{FPR} = 1 - \var{specificity} = \frac{FP}{FP + TN}
 ~ Of the actual negatives, how many did we correctly reject.
+? Of all the real "no" cases, how many did the model correctly leave alone?
+? The false positive rate is the rest: the "no" cases wrongly flagged.
+> 130 correctly left alone and 10 flagged.
+= \var{specificity} = \frac{130}{140} = 0.93
 == F1 score
 F_1 = 2 \times \frac{\var{precision} \times \var{recall}}{\var{precision} + \var{recall}} = \frac{2 TP}{2 TP + FP + FN}
 ~ Harmonic mean: low if either is low. Ignores TN.
+? One number combining precision and recall.
+? It stays low if either is low, so both must be decent.
+> Precision 0.8, recall 0.667.
+= F_1 = \frac{2 \times 40}{2 \times 40 + 10 + 20} = 0.73
 == F-beta
 F_{\beta} = \frac{(1 + \beta^2) \times P \times R}{\beta^2 \times P + R}
 ~ β > 1 weights recall more, β < 1 weights precision more.
+? The same idea as F1, with a dial for which side matters more.
+? Beta of 2 leans towards recall, beta of 0.5 towards precision.
+> Precision 0.8, recall 0.667, beta 2.
+= F_2 = \frac{5 \times 0.8 \times 0.667}{4 \times 0.8 + 0.667} = 0.69
 == MAE
 \var{MAE} = \frac{1}{n} \sum |y_i - \hat{y}_i|
 ~ Same units as the target; robust to outliers; each unit of error costs the same.
+? The average size of the miss, ignoring whether it was too high or too low.
+? It reads directly: "on average we are this far off".
+> True values 10, 12, 20 and predictions 11, 12, 16.
+= \var{MAE} = \frac{1 + 0 + 4}{3} = 1.67
 == MSE and RMSE
 \var{MSE} = \frac{1}{n} \sum (y_i - \hat{y}_i)^2
 \var{RMSE} = \sqrt{\var{MSE}}
 ~ Squaring penalises large errors strongly. RMSE is in target units.
+? Square each miss, then average. Squaring makes big misses count far more than small ones.
+? The square root brings the number back to the original units.
+> The misses are 1, 0 and 4.
+= \var{MSE} = \frac{1 + 0 + 16}{3} = 5.67
+= \var{RMSE} = \sqrt{5.67} = 2.38
 == R squared
 R^2 = 1 - \frac{\var{SSE}}{\var{SST}}
 \var{SSE} = \sum (y - \hat{y})^2 \quad \var{SST} = \sum (y - \bar{y})^2
 ~ Fraction of variance explained. 0 = no better than predicting the mean; can be negative on test data.
+? It compares your model with the laziest one: always guessing the average.
+? SSE is your squared error, SST is the lazy model's. The less of it you have left, the closer to 1.
+> True values 2, 4, 6 and predictions 2, 5, 5. SSE is 2 and SST is 8.
+= R^2 = 1 - \frac{2}{8} = 0.75
 == Entropy of a node
 H(S) = - \sum_{c} p_c \log_2 p_c
 ~ p_c = proportion of class c. 0 = pure, 1 = a 50/50 binary node, log2(C) is the maximum for C classes. Take 0 log 0 = 0.
+? It measures how mixed a group is, and so how unsure you would be guessing the class of one item.
+? A group of one class scores 0. A 50/50 group scores 1.
+> 6 of one class and 2 of the other.
+= H = - 0.75 \log_2 0.75 - 0.25 \log_2 0.25 = 0.81
 == Information gain of splitting S on feature A
 \var{IG}(S, A) = H(S) - \sum_{v} \frac{|S_v|}{|S|} H(S_v)
 ~ Parent entropy minus the size-weighted child entropy.
+? How much less mixed the groups are after asking one question.
+? Take the mix before, subtract the average mix after, counting bigger groups more. A tree picks the question with the largest gain.
+> 4 yes and 4 no (entropy 1) split into a group of 3 yes (entropy 0) and a group of 1 yes, 4 no (entropy 0.722).
+= \var{IG} = 1 - \frac{3}{8} \times 0 - \frac{5}{8} \times 0.722 = 0.55
 == Gini impurity
 \var{Gini}(S) = 1 - \sum_{c} p_c^2
 \var{gain} = \var{Gini}(S) - \sum_{v} \frac{|S_v|}{|S|} \var{Gini}(S_v)
 ~ 0 = pure, 0.5 is the maximum for two classes.
+? The chance you would be wrong if you labelled a random item by drawing a label from the same group.
+? It does the same job as entropy and is quicker to compute.
+> 6 of one class and 2 of the other.
+= \var{Gini} = 1 - (0.75^2 + 0.25^2) = 0.375
+> A split that makes both groups pure gains the whole 0.375.
 == Sum of squared errors / MSE
 \var{SSE} = \sum (y_i - \hat{y}_i)^2 \quad \var{MSE} = \frac{\var{SSE}}{n}
 ~ Fitting means choosing w to minimise SSE.
+? Square each miss and add them up (SSE), or average them (MSE).
+? Training a regression means finding the weights that make this as small as possible.
+> The misses are 1, 0 and 4, so SSE is 17 and MSE is 5.67.
 == Simple regression closed form
 w_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2}
 w_0 = \bar{y} - w_1 \bar{x}
+? The slope is how much x and y move together, divided by how much x moves on its own.
+? The intercept then makes the line pass through the average point.
+> x = 1, 2, 3 and y = 3, 5, 7.
+= w_1 = \frac{4}{2} = 2
+= w_0 = 5 - 2 \times 2 = 1
+> The line is y = 1 + 2x.
 == Normal equation (multiple)
 w = (X^T X)^{-1} X^T y
 ~ Needs X^T X to be invertible; fails or is unstable with collinear features.
+? It jumps straight to the best weights for many features at once, with no step-by-step training.
+? X holds one row per example, y the true values.
+> For x = 1, 2, 3 and y = 3, 5, 7 (with a column of ones for the intercept), it gives intercept 1 and slope 2.
 == Update rule
 w_j \leftarrow w_j - \alpha \frac{\partial J}{\partial w_j}
 ~ α = learning rate.
+? The gradient says which way is uphill on the error. Step the opposite way.
+? The learning rate sets the step size: too big overshoots, too small is slow.
+> Weight 5, gradient 4, learning rate 0.1.
+= w = 5 - 0.1 \times 4 = 4.6
 == Gradients for J = (1/n) sum (y_hat - y)^2
 \frac{\partial J}{\partial w_0} = \frac{2}{n} \sum (\hat{y}_i - y_i)
 \frac{\partial J}{\partial w_1} = \frac{2}{n} \sum (\hat{y}_i - y_i) x_i
+? For the intercept: twice the average miss.
+? For the slope: the same, but each miss is multiplied by its x, because x scales the slope's effect.
+> Predictions 1, 2 for true values 2, 4 at x = 1, 2. The misses are -1 and -2.
+= \frac{\partial J}{\partial w_0} = \frac{2}{2} (-1 - 2) = -3
+= \frac{\partial J}{\partial w_1} = \frac{2}{2} (-1 - 4) = -5
+> Both are negative, so both weights should go up.
 == Ridge (L2)
 J = \var{MSE} + \lambda \sum w_j^2
 w = (X^T X + \lambda I)^{-1} X^T y
 ~ Shrinks all weights towards zero, none exactly to zero. The second line is the closed form.
+? Add a fine for large weights to the error, so the model prefers gentler answers and overfits less.
+? A larger lambda means a stronger fine.
+> One feature with X^T X = 14 and X^T y = 28. Plain fitting gives 2.
+= w = \frac{28}{14 + 14} = 1
+> With lambda = 14 the weight is halved.
 == Lasso (L1)
 J = \var{MSE} + \lambda \sum |w_j|
 ~ Can set weights exactly to zero: built-in feature selection, a sparse model.
+? The fine is on the size of each weight, not its square.
+? This can push useless weights to exactly 0, which removes those features.
+> Weights 3 and -2, lambda 0.1. The fine added is 0.1 × (3 + 2) = 0.5.
 == Elastic Net
 J = \var{MSE} + \lambda [ r \sum |w_j| + \frac{1 - r}{2} \sum w_j^2 ]
 ~ A mix of L1 sparsity and L2 stability.
+? A blend of the two fines. r chooses how much is Lasso and how much is Ridge.
+> Weights 3 and -2, lambda 0.1, r = 0.5.
+= \var{fine} = 0.1 [ 0.5 \times 5 + 0.25 \times 13 ] = 0.575
 == Score and sigmoid
 z = w_0 + w_1 x_1 + \dots + w_d x_d
 p = \sigma(z) = \frac{1}{1 + e^{-z}} = P(y = 1 | x)
+? First make a weighted sum of the features. It can be any number.
+? The sigmoid squashes it into 0 to 1, so it can be read as a probability.
+> A score of 2.
+= p = \frac{1}{1 + e^{-2}} = 0.88
+> A score of 0 would give 0.5.
 == Odds and log-odds (logit)
 \var{odds} = \frac{p}{1 - p}
 \ln \frac{p}{1 - p} = w_0 + w \cdot x
+? Odds compare the chance it happens with the chance it does not.
+? Logistic regression is a straight line in the log of the odds.
+> A probability of 0.8.
+= \var{odds} = \frac{0.8}{0.2} = 4
+= \ln 4 = 1.39
 == Log-loss
 L = - \frac{1}{n} \sum [ y_i \ln p_i + (1 - y_i) \ln (1 - p_i) ]
+? It scores the probabilities, not just the yes or no.
+? Being confidently right costs almost nothing. Being confidently wrong costs a lot.
+> A true "yes" given 0.9 and a true "no" given 0.2.
+= L = - \frac{\ln 0.9 + \ln 0.8}{2} = 0.16
 == Decomposition (squared error)
 E[(y - \hat{y})^2] = \var{Bias}^2 + \var{Variance} + \text{Irreducible noise}
+? Error has three sources. Bias: the model is too simple and misses the pattern.
+? Variance: the model changes a lot with different training data. Noise: randomness no model can remove.
+> Squared bias 4, variance 3, noise 1: the expected error is 8.
 == Euclidean (L2)
 d(a, b) = \sqrt{\sum_{j} (a_j - b_j)^2}
 ~ Straight line.
+? The straight-line distance, from Pythagoras.
+> From (1, 2) to (4, 6).
+= d = \sqrt{3^2 + 4^2} = 5
 == Manhattan (L1)
 d(a, b) = \sum_{j} |a_j - b_j|
 ~ Axis-aligned steps; cheaper, less sensitive to outliers.
+? The distance if you can only move along the grid, like city blocks.
+> From (1, 2) to (4, 6): 3 + 4 = 7.
 == Minkowski
 d(a, b) = (\sum_{j} |a_j - b_j|^p)^{\frac{1}{p}}
 ~ p = 1 is Manhattan, p = 2 is Euclidean.
+? One formula covering both: p = 1 gives Manhattan, p = 2 gives Euclidean.
+? A larger p lets the biggest single difference dominate.
+> The same points with p = 3.
+= d = (3^3 + 4^3)^{\frac{1}{3}} = 4.5
 == Distance-weighted vote and regression
 w_i = \frac{1}{d_i^2} \quad \text{(or } \frac{1}{d} \text{)}
 \hat{y} = \frac{\sum w_i y_i}{\sum w_i}
 ~ Class score = the sum of the weights of the neighbours in that class. The second line is for regression.
+? Nearer neighbours get a bigger say.
+? For a number, take the weighted average of the neighbours' values.
+> A neighbour 1 away has value 10, one 2 away has value 20. Weights are 1 and 0.25.
+= \hat{y} = \frac{1 \times 10 + 0.25 \times 20}{1.25} = 12
 == Neuron
 z = w_1 x_1 + \dots + w_d x_d + b = w \cdot x + b
 a = \phi(z)
 ~ w = weights, b = bias, φ = activation function, a = output.
+? A neuron makes a weighted sum of its inputs, adds a bias, then passes it through an activation function.
+? Without the activation, stacked layers would act like a single straight line.
+> Weights (2, -1), inputs (3, 4), bias 1, ReLU activation.
+= z = 2 \times 3 - 1 \times 4 + 1 = 3
+> ReLU keeps positive numbers, so the output is 3.
 == Binary cross-entropy
 L = - [ y \ln p + (1 - y) \ln (1 - p) ]
 ~ p = predicted P(y = 1).
+? Only one term survives: the log of the probability given to the correct answer.
+? A confident correct answer gives a loss near 0.
+> The true answer is "yes" and the model says 0.9.
+= L = - \ln 0.9 = 0.11
 == Categorical cross-entropy
 L = - \sum_{c} y_c \ln p_c = - \ln p_{\text{true class}}
 ~ y is one-hot.
+? With several classes, look only at the probability the model gave the true one.
+? The loss is minus its log.
+> The true class gets 0.7.
+= L = - \ln 0.7 = 0.36
 == L2 penalised loss
 J = \var{Loss} + \lambda \sum_{j} w_j^2
 ~ λ ≥ 0 is the strength; the bias is not penalised.
+? Add the squared weights to the loss to discourage large ones, which reduces overfitting.
+> Loss 0.5, lambda 0.1, weights 3 and -2.
+= J = 0.5 + 0.1 (9 + 4) = 1.8
 == L1 penalised loss
 J = \var{Loss} + \lambda \sum_{j} |w_j|
+? Add the sizes of the weights instead. This tends to set some to exactly 0.
+> Loss 0.5, lambda 0.1, weights 3 and -2.
+= J = 0.5 + 0.1 (3 + 2) = 1
 == Additive model
 F_m(x) = F_{m-1}(x) + \eta \times h_m(x)
 ~ F_(m-1) = the current ensemble prediction, η = learning rate controlling the update size, h_m = new weak learner fitted to the current error signal.
+? This is boosting. Keep what you have and add a small new model that fixes its current mistakes.
+? The learning rate takes only part of each fix, which avoids overreacting.
+> Current prediction 10, the new learner says add 5, learning rate 0.1.
+= F = 10 + 0.1 \times 5 = 10.5
 == Objective (inertia / within-cluster SSE)
 \var{SSE} = \sum_{j} \sum_{x \in C_j} \| x - \mu_j \|^2
 ~ Summed over clusters j and the points x in each. μ_j = centroid = mean of C_j.
+? It adds up how far every point is from the centre of its own cluster, squared.
+? Smaller means tighter clusters. k-means tries to reduce it.
+> One cluster holds 1 and 3 (centre 2), another 10 and 12 (centre 11). Each point is 1 away, so the total is 4.
 == Explained variance ratio
 \var{EVR}_j = \frac{\lambda_j}{\lambda_1 + \dots + \lambda_d}
 ~ λ_j = the j-th eigenvalue. The trace of C is the total variance.
+? The share of the data's total spread that one principal component keeps.
+? Use it to decide how many components to keep.
+> Eigenvalues 6, 3 and 1.
+= \var{EVR}_1 = \frac{6}{10} = 0.6
 == Standardisation (z-score)
 z = \frac{x - \var{mean}}{\var{std}}
 ~ Gives mean 0, std 1. Take mean and std from the training set.
+? How many standard deviations a value is above or below the average.
+? It puts features with different units on an equal footing.
+> Value 70, mean 60, standard deviation 5.
+= z = \frac{70 - 60}{5} = 2
 == Min-max scaling
 x' = \frac{x - \min}{\max - \min}
 ~ Maps to [0, 1]; sensitive to outliers.
+? Where the value sits between the smallest (0) and largest (1).
+> Value 30, smallest 10, largest 50.
+= x' = \frac{30 - 10}{50 - 10} = 0.5
 == Robust scaling
 x' = \frac{x - \var{median}}{\var{IQR}}
 ~ IQR = Q3 - Q1. Resistant to outliers.
+? Like standardising, but using the median and the middle half's width, which outliers barely affect.
+> Value 90, median 50, IQR 20.
+= x' = \frac{90 - 50}{20} = 2
 == Output size
 O = \frac{N + 2P - K}{S} + 1
 ~ N = input size, K = kernel size, P = padding, S = stride. Round down if not a whole number.
+? Count how many places the filter can sit across the input.
+? Padding adds room at the edges and a bigger stride skips places.
+> Input 32, kernel 5, no padding, stride 1.
+= O = \frac{32 + 0 - 5}{1} + 1 = 28
 == Conv layer parameters
 \var{params} = (K \times K \times C_{in} + 1) \times C_{out}
 ~ The +1 is the bias for each filter.
+? Each filter has one weight per kernel cell per input channel, plus a bias.
+? The count does not depend on the image size, because the filter is reused everywhere.
+> 3×3 kernel, 3 input channels, 16 filters.
+= \var{params} = (3 \times 3 \times 3 + 1) \times 16 = 448
 == RNN step
 h_t = \tanh(W_x x_t + W_h h_{t-1} + b)
 y_t = W_y h_t
 ~ The same weights are shared across time steps. h_t = hidden state (memory).
+? The new memory mixes the current input with the previous memory, so earlier words can affect later ones.
+? tanh keeps the memory between -1 and 1.
+> Input weight 0.5, input 1, old memory 0, bias 0.
+= h = \tanh(0.5) = 0.46
 == Scaled dot-product attention
 \var{Attention}(Q, K, V) = \var{softmax}(\frac{Q K^T}{\sqrt{d_k}}) V
 ~ Q = queries, K = keys, V = values, d_k = key dimension. Scaling prevents a saturated softmax.
+? Each query is compared with every key to see how relevant it is.
+? Softmax turns those scores into shares adding to 1, and the output is that blend of the values.
+> Scaled scores of 1 and 0 become shares 0.73 and 0.27. With values 10 and 0 the output is 7.3.

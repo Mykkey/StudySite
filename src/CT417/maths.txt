@@ -1,22 +1,51 @@
 == Availability SLI (time based)
 \var{SLI} \% = \frac{\text{Total time} - \text{Downtime}}{\text{Total time}} \times 100
+? The share of the time the service was up, as a percentage.
+? Take the downtime from the total, then divide by the total.
+> A 30-day window is 43,200 minutes. The service was down for 25.
+= \var{SLI} = \frac{43200 - 25}{43200} \times 100 = 99.94
 == Request based SLI
 \var{SLI} \% = \frac{\text{good requests}}{\text{valid (total) requests}} \times 100
+? The share of requests that went well. Busy periods weigh more than quiet ones.
+> 9,990 good requests out of 10,000.
+= \var{SLI} = \frac{9990}{10000} \times 100 = 99.9
 == Error budget (percentage)
 \text{Error budget} \% = 100\% - \var{SLO} \%
+? If the target is not 100%, the gap is how much failure you are allowed.
+? Teams can spend it on risky changes while some is left.
+> A target of 99.9% leaves a budget of 0.1%.
 == Allowed downtime
 \text{Allowed downtime} = (1 - \var{SLO}) \times \text{window length}
 ~ For example 0.001 × 43,200 min = 43.2 min
+? Turn the budget percentage into minutes: the allowed fraction times the length of the window.
+> 99.9% over 43,200 minutes.
+= \var{allowed} = 0.001 \times 43200 = 43.2
 == Budget remaining / consumed
 \text{Remaining} = \text{Allowed} - \text{Actual downtime}
 \text{Consumed} \% = \frac{\text{Actual}}{\text{Allowed}} \times 100
+? Remaining: what you may still spend. Consumed: the share already used.
+> 43.2 minutes allowed and 25 used. 18.2 remain.
+= \var{consumed} = \frac{25}{43.2} \times 100 = 57.87
 == Burn rate
 \text{Burn rate} = \frac{\text{fraction of budget consumed}}{\text{fraction of window elapsed}} = \frac{\text{actual error rate}}{\text{allowed error rate}}
+? How fast the budget is going compared with an even pace.
+? Above 1 means it will run out before the window ends.
+> 57.9% of the budget is gone after 50% of the window.
+= \var{burn} = \frac{57.9}{50} = 1.16
 == Time until budget exhausted
 \text{Time to exhaustion} = \frac{\text{window}}{\text{burn rate}}
 ~ A burn rate of 1 is exactly on budget.
+? At an even pace (burn rate 1) the budget lasts exactly the window. Burning twice as fast halves that.
+> A 30-day window with burn rate 2 runs out in 15 days (counted from the start of the window).
 == SLO met?
 \text{Met if } \var{SLI} \ge \var{SLO}
 \text{or equivalently } \text{Downtime} \le \text{Allowed downtime}
+? SLI is what happened, SLO is the target. You pass if what happened is at least the target.
+? Saying downtime is within the allowance means the same thing.
+> The service measured 99.94% against a 99.9% target, so it is met. 25 minutes is within 43.2.
 == Cyclomatic complexity
 \var{CC} = E - N + 2P
+? It counts the independent paths through code, drawn as a graph of steps (N) and arrows (E).
+? More paths means more tests needed and harder code to follow. P is the number of separate graphs, usually 1.
+> 9 arrows, 8 steps, one function.
+= \var{CC} = 9 - 8 + 2 \times 1 = 3

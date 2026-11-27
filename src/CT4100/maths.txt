@@ -51,126 +51,292 @@ w'(a,u) = \frac{\min(|I(a,u)|, 50)}{50} \times w(a,u)
 == Adjusted cosine item similarity
 s(i,j) = \frac{\sum_{u} (r(u,i) - \bar{r}_u)(r(u,j) - \bar{r}_u)}{\sqrt{\sum_{u} (r(u,i) - \bar{r}_u)^2 \times \sum_{u} (r(u,j) - \bar{r}_u)^2}}
 ~ The sums are over users who rated both i and j.
+? It asks whether two items tend to be liked by the same people.
+? Each rating has that person's own average taken away first, so generous and harsh raters are treated fairly.
+? If people who rated item i above their usual also rate item j above their usual, the score is near 1.
+> Two people rate films i and j. Compared with their own averages, the first is +2 and +1, the second -2 and -1.
+= s = \frac{(2)(1) + (-2)(-1)}{\sqrt{8 \times 2}} = 1
 == Item-item prediction
 P(a,i) = \frac{\sum_{j} s(i,j) r(a,j)}{\sum_{j} |s(i,j)|}
 ~ j runs over the k items most similar to i that a has rated. With raw ratings, use only positive similarities.
+? To guess your rating for an item, look at your own ratings of items like it.
+? The more alike an item is, the more your rating of it counts. Dividing by the total similarity keeps the answer on the rating scale.
+> You rated a similar film (0.8) 5 and a less similar one (0.2) 3.
+= P = \frac{0.8 \times 5 + 0.2 \times 3}{0.8 + 0.2} = 4.6
 == AvgIDF / MaxIDF
 \var{AvgIDF}(q) = \frac{1}{|q|} \sum_{t \in q} \log \frac{N}{df(t)}
 \var{MaxIDF}(q) = \max_{t} \log \frac{N}{df(t)}
 ~ N = documents in the collection, df(t) = documents containing t. High = specific = easier.
+? A rare word narrows the search down, so a query with rare words is usually easier to answer well.
+? Each word scores the log of N / df: rare words score high. AvgIDF averages the scores, MaxIDF keeps the best one.
+> 1000 documents. One query word is in 10 of them (score 2), the other in 100 (score 1), using log base 10.
+> AvgIDF is 1.5 and MaxIDF is 2.
 == Query scope
 \var{Scope}(q) = \frac{|\{ d \in C : d \text{ contains a query term} \}|}{|C|}
 ~ "computer science": 8000/10000 = 0.80 (broad). "algorthim recusion": 30/10000 = 0.003 (misspelling or missing coverage).
+? It is the share of the collection that matches at least one query word.
+? A large share means the query is vague. A tiny share can mean a typo or a missing topic.
+> A query matches 30 of 10,000 documents.
+= \var{Scope} = \frac{30}{10000} = 0.003
 == Term relatedness: average pointwise mutual information
 \var{PMI}(t_1,t_2) = \log \frac{P(t_1,t_2)}{P(t_1) P(t_2)}
 P(t) = \frac{df(t)}{N} \quad P(t_1,t_2) = \frac{df(t_1,t_2)}{N}
 ~ The predictor is the average PMI over all pairs of query terms. "neural network training" (terms co-occur) beats "neural banana training". Undefined for single-term queries.
+? It asks whether two words appear together more often than chance would give.
+? The bottom is the chance of seeing both if they had nothing to do with each other.
+? Above 0 means they belong together, 0 means chance, below 0 means they avoid each other.
+> One word is in 1% of documents, the other in 2%, and both in 0.2%. Log base 10.
+= \var{PMI} = \log \frac{0.002}{0.01 \times 0.02} = \log 10 = 1
 == Collection-query similarity (SCQ, Zhao et al.; extra, not on the slides)
 \var{SCQ}(t) = (1 + \ln cf(t)) \times \ln (1 + \frac{N}{df(t)})
 ~ SCQ(q) = the sum or max over query terms. cf = collection frequency. Higher = the query is more similar to the collection = easier.
+? It rewards a query word that is used a lot overall (first part) but sits in few documents (second part).
+? Such a word is concentrated in particular documents, which makes them easy to pick out.
+> A word occurs 100 times in total, in 50 of 1000 documents.
+= \var{SCQ} = (1 + \ln 100) \times \ln (1 + 20) = 17.07
 == Clarity score
 \var{Clarity}(q) = \sum_{w} P(w|Q) \log_2 \frac{P(w|Q)}{P(w|C)}
 ~ P(w|Q) is the word distribution of the top-k retrieved documents (weighted by retrieval score). P(w|C) is the collection distribution.
+? It compares the words in the top results with the words in the whole collection.
+? If the results use words very differently from average, they are clearly about something, so the query was clear.
+? A score near 0 means the results look like a random sample.
+> A two-word vocabulary. The results use the words 80% and 20%, the collection 50% and 50%.
+= \var{Clarity} = 0.8 \log_2 1.6 + 0.2 \log_2 0.4 = 0.28
 == Normalised Query Commitment (NQC)
 \var{NQC}(q) = \frac{\sqrt{\frac{1}{k} \sum_{d \in \text{top-k}} (s(d) - \mu)^2}}{|s(C)|}
 ~ s(d) = retrieval score of d, μ = mean of the top-k scores, s(C) = score of the collection treated as one document (the normaliser).
+? The top part is the spread (standard deviation) of the top retrieval scores.
+? A wide spread means some documents clearly stand out, which suggests a good result. Flat scores suggest guessing.
+? Dividing by the collection's score makes different queries comparable.
+> Top scores 5, 3, 1 (mean 3), collection score 2.
+= \var{NQC} = \frac{\sqrt{(4 + 0 + 4) / 3}}{2} = 0.82
 == Statistical accuracy
 \var{MAE} = \frac{1}{|T|} \sum |p(u,i) - r(u,i)|
 \var{RMSE} = \sqrt{\frac{1}{|T|} \sum (p(u,i) - r(u,i))^2}
 ~ Over the test set T. RMSE punishes large errors more (Netflix prize metric).
+? Both measure how far predicted ratings are from real ones. Lower is better.
+? MAE is the plain average miss. RMSE squares the misses first, so one big miss hurts much more.
+> The misses are 1, 1 and 4.
+= \var{MAE} = \frac{1 + 1 + 4}{3} = 2
+= \var{RMSE} = \sqrt{\frac{1 + 1 + 16}{3}} = 2.45
 == Ideal query vector (needs complete relevance knowledge)
 q_{ideal} = \frac{1}{|C_R|} \sum_{d \in C_R} d - \frac{1}{N - |C_R|} \sum_{d \notin C_R} d
 ~ The difference of the two centroids.
+? Take the average relevant document and subtract the average non-relevant one.
+? The result points towards what relevant documents have and others do not.
+? It is ideal only in theory, because you would need to know which documents are relevant already.
+> With two words: the relevant average is (0.75, 0.25) and the non-relevant average is (0, 1).
+> The ideal query is (0.75, -0.75): want the first word, avoid the second.
 == Rocchio
 q_{new} = \alpha q_{orig} + \frac{\beta}{|D_R|} \sum_{d \in D_R} d - \frac{\gamma}{|D_N|} \sum_{d \in D_N} d
+? Keep some of the old query, move towards documents marked relevant, and move away from the non-relevant ones.
+? The three Greek letters say how much each of those three matters.
+> Weights 1, 0.75 and 0.25. Old query (1, 0), relevant average (0, 1), non-relevant average (1, 0).
+= q_{new} = (1, 0) + 0.75 (0, 1) - 0.25 (1, 0) = (0.75, 0.75)
+> The second word, which only relevant documents had, is now in the query.
 == Graded Rocchio
 q_{new} = \alpha q_{orig} + \beta \frac{\sum_{d : f(d) > 0} f(d) d}{\sum f(d)} - \gamma \frac{\sum_{d : f(d) < 0} |f(d)| d}{\sum |f(d)|}
+? The same idea as Rocchio, but feedback has strength: a document rated very relevant pulls harder than one rated slightly relevant.
+? Each document is multiplied by its grade, and dividing by the total grades gives a weighted average.
+> One document (1, 0) has grade 2 and another (0, 1) has grade 1.
+> The weighted average is (0.67, 0.33), leaning towards the better-rated one.
 == Association cluster (Jaccard over documents)
 M(i,j) = \frac{f(i,j)}{f(i) + f(j) - f(i,j)}
 ~ f(i) = number of local documents containing term i. f(i,j) = number containing both.
+? It scores how often two words share a document, out of all documents that have either one.
+? 0 means never together, 1 means always together.
+> One word is in 4 documents, another in 6, and 2 documents have both.
+= M = \frac{2}{4 + 6 - 2} = 0.25
 == Metric cluster (proximity)
 M(i,j) = \sum_{(t_i, t_j)} \frac{1}{dist(t_i, t_j)}
 ~ Summed over pairs of occurrences. Closer occurrences contribute more.
+? Words that appear close together are more likely to be related than words far apart in the same document.
+? Each pair of occurrences adds 1 divided by the gap, so a small gap adds a lot.
+> Two pairs of occurrences, 1 word apart and 4 words apart.
+= M = \frac{1}{1} + \frac{1}{4} = 1.25
 == Scalar cluster (similar contexts)
 v_i = (M(i,1), \dots, M(i,n))
 S(t_i,t_j) = \frac{v_i \cdot v_j}{|v_i| |v_j|}
 ~ Terms that co-occur with the same other terms are related even if they never appear together (synonyms).
+? Describe each word by the list of how strongly it goes with every other word.
+? Then compare the two lists with cosine similarity. Words with the same company are related, even if never seen together.
+> One word's list is (2, 1) and another's is (4, 2). They point the same way, so S = 1.
 == RankNet pairwise loss
 P(i \triangleright j) = \frac{1}{1 + \exp(-(s_i - s_j))}
 \var{loss} = - \log P(i \triangleright j)
 ~ The loss applies when i is truly more relevant. s = model score.
+? The model gives two documents scores. The gap is turned into the probability that it puts them in the right order.
+? The loss is small when that probability is near 1, and large when the model prefers the wrong document.
+> The truly better document scores 2 points higher.
+= P = \frac{1}{1 + \exp(-2)} = 0.88
+= \var{loss} = - \ln 0.88 = 0.13
 == Pointwise loss (regression)
 L = \sum_{(q,d)} (f(x_{q,d}) - y_{q,d})^2
 ~ Example: label 3, prediction 2.4 gives loss 0.36.
+? Treat ranking as guessing each document's relevance label one at a time.
+? Add up the squared misses. Training changes the model to make this total small.
+> The true label is 3 and the model says 2.4.
+= L = (2.4 - 3)^2 = 0.36
 == MMR
 \var{next} = \argmax_{d \in C \setminus S} [ \lambda \cdot rel(d,q) - (1 - \lambda) \cdot \max_{d_j \in S} sim(d, d_j) ]
 ~ C = candidates. S = items already selected. λ is between 0 and 1 (1 = pure relevance, 0 = pure novelty).
+? It picks results one at a time, rewarding relevance and punishing being a near copy of something already picked.
+? This gives a list that is useful and varied.
+> Weight 0.7. Item A has relevance 0.9 but is 0.8 similar to a chosen item. Item B has relevance 0.7 and is 0.1 similar.
+= A = 0.7 \times 0.9 - 0.3 \times 0.8 = 0.39
+= B = 0.7 \times 0.7 - 0.3 \times 0.1 = 0.46
+> B is picked, although A is more relevant on its own.
 == Precision and recall
 \var{Precision} = \frac{|R \cap A|}{|A|} = \frac{TP}{TP + FP}
 \var{Recall} = \frac{|R \cap A|}{|R|} = \frac{TP}{TP + FN}
+? Precision: of what the system returned, how much is relevant.
+? Recall: of everything relevant, how much the system returned.
+? Returning more usually raises recall and lowers precision, so quote both.
+> 10 results, 6 of them relevant, and 12 relevant documents exist. Precision is 6/10 = 0.6 and recall is 6/12 = 0.5.
 == F-measure (weighted harmonic mean)
 F_{\beta} = \frac{(\beta^2 + 1) P R}{\beta^2 P + R}
 F_1 = \frac{2 P R}{P + R}
 ~ β > 1 emphasises recall, β < 1 emphasises precision.
+? It rolls precision and recall into one number.
+? This kind of average stays low if either one is low, so you cannot cheat by maximising just one.
+> Precision 0.6, recall 0.5.
+= F_1 = \frac{2 \times 0.6 \times 0.5}{0.6 + 0.5} = 0.55
 == Basic tf-idf (Spärck Jones / Salton & Fox)
 w(t,d) = f(t,d) \times \log \frac{N}{n_t}
 ~ f = (possibly normalised) frequency of t in d, N = number of documents, n_t = number of documents containing t.
+? A word matters to a document if it appears often there (first part) but in few documents overall (log part).
+? A word found everywhere gets a weight near 0, because it cannot tell documents apart.
+> A word appears 3 times in a document and is in 10 of 1000 documents. Log base 10.
+= w = 3 \times \log \frac{1000}{10} = 6
 == Max-tf normalised document weight (Salton & Buckley)
 w(t,d) = \frac{tf(t,d)}{\max_{s} tf(s,d)} \times \log \frac{N}{df(t)}
+? Long documents repeat words more, so each count is divided by the count of the document's most frequent word.
+? Then it is multiplied by the rarity score as usual.
+> The word appears 2 times, the top word 4 times, and the rarity score is 2.
+= w = \frac{2}{4} \times 2 = 1
 == Query weight (Salton & Buckley)
 w(t,q) = (0.5 + 0.5 \times \frac{tf(t,q)}{\max_{s} tf(s,q)}) \times \log \frac{N}{df(t)}
 ~ Every query term starts at 0.5 and rises with its frequency in the query.
+? Queries are short, so counts say little. Every query word starts at half strength and gains up to the other half by being repeated.
+? That is then multiplied by the rarity score.
+> A word appears once, the most frequent query word twice, and the rarity score is 2.
+= w = (0.5 + 0.5 \times \frac{1}{2}) \times 2 = 1.5
 == Sublinear tf
 w(t,d) = 1 + \log tf(t,d) \quad \text{if tf > 0, else 0}
 ~ Base 10: tf 1, 10, 30, 100 gives 1, 2, 2.48, 3. 30 occurrences is not 30 times as significant as 1.
+? Seeing a word 100 times does not make a document 100 times more about it.
+? The log makes each extra repeat count for less.
+> A word appears 100 times. Log base 10.
+= w = 1 + \log 100 = 3
 == Local x global x query
 sim(q,d) = \sum_{t \in q \cap d} ntf(t,d) \times gwt(t) \times qwt(t,q)
 ~ ntf = normalised local frequency, gwt = global weight (idf), qwt = weight of t in the query.
+? For each word shared by query and document, multiply three things and add up the results.
+? The three are: how much the document uses it, how rare it is overall, and how much the query stresses it.
+> Two shared words: 0.5 × 2 × 1 for the first and 1 × 1 × 1 for the second, so the score is 2.
 == Cosine similarity
 sim(q,d) = \frac{q \cdot d}{|q| |d|} = \frac{\sum_{t} w(t,q) w(t,d)}{\sqrt{\sum_{t} w(t,q)^2} \times \sqrt{\sum_{t} w(t,d)^2}}
 ~ Range 0 to 1 for non-negative weights.
+? The query and document are arrows with one direction per word. The score is how closely they point the same way.
+? Dividing by the lengths stops long documents winning just for being long.
+> Query weights (1, 1), document weights (3, 4).
+= sim = \frac{1 \times 3 + 1 \times 4}{\sqrt{2} \times \sqrt{25}} = 0.99
 == BM25 score of document d for query q
 score(q,d) = \sum_{t \in q} \log \frac{N - df_t + 0.5}{df_t + 0.5}
 \quad \times \frac{tf_{t,d} (k_1 + 1)}{tf_{t,d} + k_1 ((1 - b) + b \frac{|d|}{avgdl})} \times tf_{t,q}
 ~ One formula over two lines: the second line is inside the sum.
+? For each query word: how rare it is, times how often the document uses it, then add up.
+? Repeats help less and less, and long documents are marked down. k1 controls the first effect and b the second.
+> 1000 documents, the word is in 10, appears twice in an average-length document, k1 = 1.2, b = 0.75. Natural log.
+= score = \ln \frac{990.5}{10.5} \times \frac{2 \times 2.2}{2 + 1.2} = 6.25
 == Precision at k
 P@k = \frac{\text{relevant documents in top k}}{k}
 \var{R-precision} = P@R
+? People look at the first few results, so only the top k are judged.
+? R-precision sets k to the number of relevant documents that exist, so a perfect system scores 1.
+> 3 of the top 5 results are relevant.
+= P@5 = \frac{3}{5} = 0.6
 == Average precision (AP) and MAP
 \var{AP}(q) = \frac{1}{|R_q|} \sum_{k : d_k \text{ relevant}} P@k
 \var{MAP} = \frac{1}{|Q|} \sum_{q} \var{AP}(q)
 ~ Divide by ALL relevant documents, so unretrieved relevant documents count as precision 0.
+? Each time a relevant document appears, note the precision at that point, then average over all relevant documents.
+? Finding them early scores higher. MAP is the average of this over many queries.
+> 3 relevant documents exist. Two are found, at ranks 1 and 3, and one is missed.
+= \var{AP} = \frac{1 + \frac{2}{3} + 0}{3} = 0.56
 == Mean reciprocal rank
 \var{MRR} = \frac{1}{|Q|} \sum_{q} \frac{1}{rank_q}
 ~ rank_q = rank of the first relevant document for query q.
+? It cares only about how soon the first good answer appears.
+? Rank 1 scores 1, rank 2 scores a half, rank 4 a quarter. Then average over queries.
+> First relevant results at ranks 1, 2 and 4.
+= \var{MRR} = \frac{1 + 0.5 + 0.25}{3} = 0.58
 == DCG and nDCG
 \var{DCG}@k = \sum_{i=1}^{k} \frac{rel_i}{\log_2 (i + 1)}
 \var{nDCG}@k = \frac{\var{DCG}@k}{\var{IDCG}@k}
 ~ IDCG = DCG of the ideal ordering (sorted by relevance). nDCG is between 0 and 1. A variant uses gain 2^rel - 1.
+? Each result adds its relevance, shrunk the lower it appears, so good results near the top count most.
+? Dividing by the best possible order gives a score from 0 to 1 that can be compared across queries.
+> Relevance in ranked order: 3, 0, 2. Best order: 3, 2, 0.
+= \var{DCG} = 3 + 0 + \frac{2}{\log_2 4} = 4
+= \var{IDCG} = 3 + \frac{2}{\log_2 3} = 4.26
+= \var{nDCG} = \frac{4}{4.26} = 0.94
 == Purity
 \var{purity}(\Omega, C) = \frac{1}{N} \sum_{k} \max_{j} |\omega_k \cap c_j|
 ~ For each cluster take the count of its majority class, add them up, divide by the total number of points.
+? In each cluster, count the items belonging to its most common true class. Add those counts and divide by all items.
+? 1 means every cluster is one class. Beware: very many tiny clusters also score high.
+> 10 items in 2 clusters. The majority counts are 4 and 3.
+= \var{purity} = \frac{4 + 3}{10} = 0.7
 == Rand index (pair counting)
 \var{RI} = \frac{TP + TN}{TP + FP + FN + TN}
 ~ Over all N(N-1)/2 document pairs. TP = same class and same cluster; FP = different classes but same cluster; FN = same class but different clusters; TN = different in both.
+? Look at every pair of items and ask whether the clustering made the right call: together or apart.
+? The score is the share of pairs it got right.
+> Of 6 pairs: 2 correctly together, 2 correctly apart, and 2 wrong.
+= \var{RI} = \frac{2 + 2}{6} = 0.67
 == p-norm similarity for two terms (p between 1 and infinity)
 sim(d, t_1 \text{ OR } t_2) = (\frac{w_1^p + w_2^p}{2})^{\frac{1}{p}}
 sim(d, t_1 \text{ AND } t_2) = 1 - (\frac{(1 - w_1)^p + (1 - w_2)^p}{2})^{\frac{1}{p}}
 ~ NOT t has weight (1 - w).
+? It is a softer version of Boolean OR and AND, so partial matches still get a score.
+? OR is high if either word matches. AND is high only when both are close to 1.
+? At p = 1 the two behave like a plain average. As p grows they behave more like strict Boolean logic.
+> p = 2, the document has the first word (weight 1) but not the second (weight 0).
+= \var{OR} = \sqrt{\frac{1 + 0}{2}} = 0.71
+= \var{AND} = 1 - \sqrt{\frac{0 + 1}{2}} = 0.29
 == PageRank
 \var{PR}(W) = \frac{T}{N} + (1 - T) [ \frac{\var{PR}(W_1)}{O(W_1)} + \frac{\var{PR}(W_2)}{O(W_2)} + \dots + \frac{\var{PR}(W_n)}{O(W_n)} ]
 ~ W_i = pages linking to W; O(W_i) = number of outlinks of W_i; T = teleportation probability (damping factor d = 1 - T, typically 0.85); N = number of pages.
+? Imagine someone clicking links at random, who sometimes jumps to any page. A page's score is how often they land on it.
+? Each page linking to W passes it a share of its own score, split between all its outlinks.
+? So links from important, choosy pages are worth most.
+> Jump chance 0.15, 4 pages. W is linked by a page scoring 0.25 with 2 links, and one scoring 0.25 with 1 link.
+= \var{PR} = \frac{0.15}{4} + 0.85 (\frac{0.25}{2} + \frac{0.25}{1}) = 0.36
 == Matrix form
 a \leftarrow M^T h \quad h \leftarrow M a
 a \propto M^T M a \quad h \propto M M^T h
 ~ M is the adjacency matrix (M_ij = 1 if page i links to page j). Repeated multiplication (power method) converges to the principal eigenvector of M^T M (authorities) and of M M^T (hubs).
+? This is HITS. A good authority is linked to by good hubs, and a good hub links to good authorities.
+? So each score is worked out from the other, over and over, until they stop changing (rescaling each round).
+> Pages A and B both link to C. Starting hubs at 1, C gets authority 2. Then A and B each get hub score 2.
 == Coverage and novelty
 \var{Coverage} = \frac{|AU|}{|U|}
 \var{Novelty} = \frac{|New|}{|New| + |AU|}
+? Coverage: of the relevant documents you already knew about, how many did the search find.
+? Novelty: of the relevant documents it found, how many were new to you.
+> You knew of 100 and it found 80 of those, so coverage is 0.8. Of 10 relevant results, 3 are new, so novelty is 0.3.
 == Zipf
 f \times r \approx \text{constant} \quad f \approx \frac{C}{r}
 f \propto r^{-\alpha} \quad \alpha \approx 1
 ~ A straight line on a log-log plot. r = rank by frequency, f = frequency.
+? In any large text, a few words are very common and most are rare.
+? The second most common word appears about half as often as the first, the tenth about a tenth as often.
+> If the top word appears 1000 times, expect about 500 for rank 2 and 100 for rank 10.
 == Heaps
 M = k T^{\beta}
 ~ M = vocabulary size (types), T = collection size in tokens, typically 10 ≤ k ≤ 100 and 0.4 ≤ β ≤ 0.6.
+? As you read more text, you keep meeting new words, but more and more slowly.
+? So an index's word list grows much more slowly than the collection.
+> k = 10, exponent 0.5, one million words of text.
+= M = 10 \times \sqrt{1000000} = 10000
