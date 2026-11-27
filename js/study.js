@@ -78,6 +78,12 @@
   }
   function chunkSection(s) {
     var out = [], cur = [], w = 0;
+    /* a section that marks its own screen breaks is split only there */
+    if ((s.items || []).some(function (it) { return it && it.type === 'screen'; })) {
+      s.items.forEach(function (it) { if (it && it.type === 'screen') { if (cur.length) out.push(cur); cur = []; } else cur.push(it); });
+      if (cur.length) out.push(cur);
+      return out;
+    }
     function flush() { if (cur.length) out.push(cur); cur = []; w = 0; }
     (s.items || []).forEach(function (it) {
       var n = words(it), big = it && (it.type === 'table' || it.type === 'diagram' || it.type === 'code');

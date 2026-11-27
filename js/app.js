@@ -50,6 +50,7 @@
             it.rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + fmt(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
           break;
         case 'diagram': h += window.Diagrams.render(it.kind, it.data || {}, it.caption); break;
+        case 'screen': break;
         default: h += '<p>' + fmt(JSON.stringify(it)) + '</p>';
       }
     });

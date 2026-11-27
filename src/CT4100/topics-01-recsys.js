@@ -204,38 +204,454 @@ module.exports = [
             ]
           },
           {
-            "type": "p",
-            "text": "**Step 1, Ken and Lee.** Both rated messages 1, 2, 4 and 5."
-          },
-          "Ken gave 1, 5, 2, 4 (average 3). Lee gave 4, 2, 5, 1 (average 3).",
-          "Take away the average. Ken: -2, 2, -1, 1. Lee: 1, -1, 2, -2.",
-          "Multiply them in pairs: -2, -2, -2, -2. They add to -8.",
-          "Square each list and add: both come to 10.",
-          "w = -8 / √(10 × 10) = **-0.8**. Lee has nearly the opposite taste to Ken.",
-          {
-            "type": "p",
-            "text": "**Ken and the others.**"
-          },
-          "Ken and Meg share only messages 1 and 2. w = **+1.0**, but that is very little evidence.",
-          "Ken and Nan: the pairs multiply to 2, 2, -2, -2, which adds to 0. w = **0**, so no link.",
-          {
-            "type": "p",
-            "text": "**Step 2, neighbours.** Lee and Meg rated message 6. Nan did not."
+            "type": "screen"
           },
           {
             "type": "p",
-            "text": "**Step 3, prediction.**"
+            "text": "**The plan.** This example uses **Pearson** similarity, then **Prediction 2** (mean-centred)."
           },
-          "Averages over all their own ratings: Ken 3, Lee 2.8, Meg 3.5.",
-          "P = 3 + [(2 - 2.8)(-0.8) + (5 - 3.5)(1.0)] / (|-0.8| + |1.0|)",
-          "P = 3 + (0.64 + 1.5) / 1.8 = **4.19**",
-          "That is a high score, so recommend message 6 to Ken.",
+          "Step 1: score how similar each person is to Ken.",
+          "Step 2: keep the people who rated message 6.",
+          "Step 3: combine their ratings, giving similar people more say.",
+          {
+            "type": "formula",
+            "label": "Worked example: Pearson",
+            "text": "w = Σ (a - ā)(u - ū) / sqrt( Σ (a - ā)² × Σ (u - ū)² ), over messages both rated."
+          },
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 1a, Ken and Lee.** Both rated messages 1, 2, 4 and 5."
+          },
+          "First, each average over those four messages:",
+          {
+            "type": "formula",
+            "label": "Worked example: Ken and Lee averages",
+            "text": "Ken: (1+5+2+4)/4 = 3. Lee: (4+2+5+1)/4 = 3."
+          },
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 1a, the table.** Take 3 from every rating, then multiply and square, one row at a time."
+          },
+          {
+            "type": "table",
+            "head": [
+              "Msg",
+              "Ken",
+              "Lee",
+              "Ken − 3",
+              "Lee − 3",
+              "Multiply",
+              "(Ken − 3)²",
+              "(Lee − 3)²"
+            ],
+            "rows": [
+              [
+                "1",
+                "1",
+                "4",
+                "-2",
+                "1",
+                "-2",
+                "4",
+                "1"
+              ],
+              [
+                "2",
+                "5",
+                "2",
+                "2",
+                "-1",
+                "-2",
+                "4",
+                "1"
+              ],
+              [
+                "4",
+                "2",
+                "5",
+                "-1",
+                "2",
+                "-2",
+                "1",
+                "4"
+              ],
+              [
+                "5",
+                "4",
+                "1",
+                "1",
+                "-2",
+                "-2",
+                "1",
+                "4"
+              ],
+              [
+                "**Total**",
+                "",
+                "",
+                "",
+                "",
+                "**-8**",
+                "**10**",
+                "**10**"
+              ]
+            ]
+          },
+          "Row 1: Ken 1 − 3 = -2. Lee 4 − 3 = 1. Multiply: -2 × 1 = -2. Squares: 4 and 1.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 1a, the answer.** Put the three totals into the formula."
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: Ken and Lee result",
+            "text": "w = -8 / sqrt(10 × 10) = -8 / 10 = -0.8"
+          },
+          "Close to -1, so Lee has nearly the **opposite** taste to Ken.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 1b, Ken and Meg.** Both rated only messages 1 and 2."
+          },
+          "Ken: (1 + 5) / 2 = 3. Meg: (2 + 4) / 2 = 3.",
+          {
+            "type": "table",
+            "head": [
+              "Msg",
+              "Ken",
+              "Meg",
+              "Ken − 3",
+              "Meg − 3",
+              "Multiply",
+              "(Ken − 3)²",
+              "(Meg − 3)²"
+            ],
+            "rows": [
+              [
+                "1",
+                "1",
+                "2",
+                "-2",
+                "-1",
+                "2",
+                "4",
+                "1"
+              ],
+              [
+                "2",
+                "5",
+                "4",
+                "2",
+                "1",
+                "2",
+                "4",
+                "1"
+              ],
+              [
+                "**Total**",
+                "",
+                "",
+                "",
+                "",
+                "**4**",
+                "**8**",
+                "**2**"
+              ]
+            ]
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: Ken and Meg result",
+            "text": "w = 4 / sqrt(8 × 2) = 4 / 4 = 1"
+          },
+          "A perfect match, but from only two messages, so it is weak evidence.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 1c, Ken and Nan.** Both rated messages 1, 2, 4 and 5."
+          },
+          "Ken averages 3. Nan: (2 + 4 + 5 + 1) / 4 = 3.",
+          {
+            "type": "table",
+            "head": [
+              "Msg",
+              "Ken",
+              "Nan",
+              "Ken − 3",
+              "Nan − 3",
+              "Multiply",
+              "(Ken − 3)²",
+              "(Nan − 3)²"
+            ],
+            "rows": [
+              [
+                "1",
+                "1",
+                "2",
+                "-2",
+                "-1",
+                "2",
+                "4",
+                "1"
+              ],
+              [
+                "2",
+                "5",
+                "4",
+                "2",
+                "1",
+                "2",
+                "4",
+                "1"
+              ],
+              [
+                "4",
+                "2",
+                "5",
+                "-1",
+                "2",
+                "-2",
+                "1",
+                "4"
+              ],
+              [
+                "5",
+                "4",
+                "1",
+                "1",
+                "-2",
+                "-2",
+                "1",
+                "4"
+              ],
+              [
+                "**Total**",
+                "",
+                "",
+                "",
+                "",
+                "**0**",
+                "**10**",
+                "**10**"
+              ]
+            ]
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: Ken and Nan result",
+            "text": "w = 0 / sqrt(10 × 10) = 0"
+          },
+          "No link either way.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 2, pick the neighbours.** Who can tell us about message 6?"
+          },
+          {
+            "type": "table",
+            "head": [
+              "Person",
+              "Similarity to Ken",
+              "Rated message 6?",
+              "Use them?"
+            ],
+            "rows": [
+              [
+                "Lee",
+                "-0.8",
+                "yes, 2",
+                "yes"
+              ],
+              [
+                "Meg",
+                "1.0",
+                "yes, 5",
+                "yes"
+              ],
+              [
+                "Nan",
+                "0",
+                "no",
+                "no"
+              ]
+            ]
+          },
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 3a, averages for the prediction.** Now use **every** message each person rated, including message 6."
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: overall averages",
+            "text": "Ken (1+5+2+4)/4 = 3. Lee (4+2+5+1+2)/5 = 2.8. Meg (2+4+3+5)/4 = 3.5."
+          },
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 3b, how each felt about message 6**, compared with their own usual rating."
+          },
+          {
+            "type": "table",
+            "head": [
+              "Person",
+              "Rating − average",
+              "Difference",
+              "× similarity",
+              "Result"
+            ],
+            "rows": [
+              [
+                "Lee",
+                "2 − 2.8",
+                "-0.8",
+                "-0.8 × -0.8",
+                "0.64"
+              ],
+              [
+                "Meg",
+                "5 − 3.5",
+                "1.5",
+                "1.5 × 1.0",
+                "1.50"
+              ],
+              [
+                "**Total**",
+                "",
+                "",
+                "",
+                "**2.14**"
+              ]
+            ]
+          },
+          "Lee disliked it, and Lee is Ken's opposite, so that counts **in favour** (minus times minus is plus).",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Step 3c, the prediction.** Divide by the total similarity, ignoring minus signs, then add Ken's average."
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: prediction",
+            "text": "P = 3 + 2.14 / (0.8 + 1.0) = 3 + 1.19 = 4.19"
+          },
+          "**4.19 out of 5**, which is above Ken's usual 3, so recommend message 6.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Same question with cosine.** Cosine takes no averages away. A dash, and Ken's unknown rating, count as 0."
+          },
+          {
+            "type": "table",
+            "head": [
+              "Message",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "Sum of squares"
+            ],
+            "rows": [
+              [
+                "Ken",
+                "1",
+                "5",
+                "0",
+                "2",
+                "4",
+                "0",
+                "46"
+              ],
+              [
+                "Lee",
+                "4",
+                "2",
+                "0",
+                "5",
+                "1",
+                "2",
+                "50"
+              ],
+              [
+                "Meg",
+                "2",
+                "4",
+                "3",
+                "0",
+                "0",
+                "5",
+                "54"
+              ],
+              [
+                "Nan",
+                "2",
+                "4",
+                "0",
+                "5",
+                "1",
+                "0",
+                "46"
+              ]
+            ]
+          },
+          "Top of the fraction: multiply Ken's row by the other row, square by square, and add.",
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**The three cosine scores.**"
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: cosine scores",
+            "text": "Lee 28/sqrt(46×50) = 0.58. Meg 22/sqrt(46×54) = 0.44. Nan 36/sqrt(46×46) = 0.78."
+          },
+          {
+            "type": "screen"
+          },
+          {
+            "type": "p",
+            "text": "**Cosine prediction** (Prediction 1). Only Lee and Meg rated message 6."
+          },
+          {
+            "type": "formula",
+            "label": "Worked example: cosine prediction",
+            "text": "P = (2 × 0.58 + 5 × 0.44) / (0.58 + 0.44) = 3.3"
+          },
+          "Cosine says Lee is fairly like Ken, which is wrong: their tastes are opposite. Counting gaps as 0 and keeping every rating positive hides that.",
+          {
+            "type": "screen"
+          },
           {
             "type": "p",
             "text": "**Extras worth a sentence.**"
           },
-          "Cosine (with 0 for gaps) gives: Lee 0.58, Meg 0.44, Nan 0.78.",
-          "It says Lee is fairly like Ken, which is wrong. This shows the empty-square problem.",
           "With significance weighting, Meg's weight drops to 0.04 and the guess is about 4.07.",
           "If you require 3 shared items, Meg is dropped and the guess is about 3.80.",
           "All versions still point towards recommending it."
