@@ -79,7 +79,14 @@ details.topic.done > summary .ttl { text-decoration: line-through; color: var(--
 .callout { border-left: 4px solid var(--accent); background: var(--panel2); padding: 8px 12px; border-radius: 6px; margin: 10px 0; }
 .callout.warn { border-left-color: var(--warn); }
 .callout.hook { border-left-color: var(--c4); }
-.formula { font-family: ui-monospace, Consolas, monospace; background: var(--code-bg); padding: 8px 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; white-space: pre; }
+.formula { background: var(--code-bg); padding: 10px 14px; border-radius: 8px; margin: 8px 0; }
+.formula small { display: block; margin-bottom: 4px; }
+.ftext { font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap; }
+.fline { overflow-x: auto; overflow-y: hidden; padding: 6px 0; font-size: 1.2em; }
+.fline math { margin: 0; }
+.fwhere { margin: 6px 0 0; font-size: .92em; }
+math { font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', math; }
+:not(.fline) > math { font-size: 1.08em; }
 pre, code { font-family: ui-monospace, Consolas, "Cascadia Mono", monospace; }
 code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
 pre { background: var(--code-bg); padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; font-size: .88rem; line-height: 1.45; }
@@ -143,3 +150,8 @@ figure.diagram figcaption { color: var(--muted); font-size: .85rem; }
   .qpane { display: block !important; }
   .answer { display: none; }
 }
+
+.im { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; padding: 2px 0; }
+
+/* long exam-frequency notes wrap instead of widening the page */
+.badge { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }

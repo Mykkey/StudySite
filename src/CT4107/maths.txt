@@ -1,0 +1,11 @@
+== Bottom-up TAM (per year)
+\var{TAM} = N \times Q \times F \times P
+== One-time charge, annualised
+\text{Annual revenue per user} = \frac{\text{price per unit} \times \text{units per user}}{\text{average life of product in years}}
+== Budget method
+\text{Annual revenue per user} = \text{total budget per user}
+\quad \times \% \text{ of budget that could go to this solution}
+== Result
+\var{TAM} = 30,306 \times 1 \times 1 \times \var{EUR} 5 = \var{EUR} 151,530 \text{ per year}
+== Lecture equation
+\var{Innovation} = \var{Invention} \times \var{Commercialisation}

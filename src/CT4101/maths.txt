@@ -1,0 +1,134 @@
+== Accuracy
+\var{accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+~ Fraction of all decisions that are correct.
+== Precision (positive predictive value)
+\var{precision} = \frac{TP}{TP + FP}
+~ Of the cases predicted positive, how many really are.
+== Recall (sensitivity, true positive rate)
+\var{recall} = \frac{TP}{TP + FN}
+~ Of the actual positives, how many did we find.
+== Specificity (true negative rate)
+\var{specificity} = \frac{TN}{TN + FP}
+\var{FPR} = 1 - \var{specificity} = \frac{FP}{FP + TN}
+~ Of the actual negatives, how many did we correctly reject.
+== F1 score
+F_1 = 2 \times \frac{\var{precision} \times \var{recall}}{\var{precision} + \var{recall}} = \frac{2 TP}{2 TP + FP + FN}
+~ Harmonic mean: low if either is low. Ignores TN.
+== F-beta
+F_{\beta} = \frac{(1 + \beta^2) \times P \times R}{\beta^2 \times P + R}
+~ β > 1 weights recall more, β < 1 weights precision more.
+== MAE
+\var{MAE} = \frac{1}{n} \sum |y_i - \hat{y}_i|
+~ Same units as the target; robust to outliers; each unit of error costs the same.
+== MSE and RMSE
+\var{MSE} = \frac{1}{n} \sum (y_i - \hat{y}_i)^2
+\var{RMSE} = \sqrt{\var{MSE}}
+~ Squaring penalises large errors strongly. RMSE is in target units.
+== R squared
+R^2 = 1 - \frac{\var{SSE}}{\var{SST}}
+\var{SSE} = \sum (y - \hat{y})^2 \quad \var{SST} = \sum (y - \bar{y})^2
+~ Fraction of variance explained. 0 = no better than predicting the mean; can be negative on test data.
+== Entropy of a node
+H(S) = - \sum_{c} p_c \log_2 p_c
+~ p_c = proportion of class c. 0 = pure, 1 = a 50/50 binary node, log2(C) is the maximum for C classes. Take 0 log 0 = 0.
+== Information gain of splitting S on feature A
+\var{IG}(S, A) = H(S) - \sum_{v} \frac{|S_v|}{|S|} H(S_v)
+~ Parent entropy minus the size-weighted child entropy.
+== Gini impurity
+\var{Gini}(S) = 1 - \sum_{c} p_c^2
+\var{gain} = \var{Gini}(S) - \sum_{v} \frac{|S_v|}{|S|} \var{Gini}(S_v)
+~ 0 = pure, 0.5 is the maximum for two classes.
+== Sum of squared errors / MSE
+\var{SSE} = \sum (y_i - \hat{y}_i)^2 \quad \var{MSE} = \frac{\var{SSE}}{n}
+~ Fitting means choosing w to minimise SSE.
+== Simple regression closed form
+w_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2}
+w_0 = \bar{y} - w_1 \bar{x}
+== Normal equation (multiple)
+w = (X^T X)^{-1} X^T y
+~ Needs X^T X to be invertible; fails or is unstable with collinear features.
+== Update rule
+w_j \leftarrow w_j - \alpha \frac{\partial J}{\partial w_j}
+~ α = learning rate.
+== Gradients for J = (1/n) sum (y_hat - y)^2
+\frac{\partial J}{\partial w_0} = \frac{2}{n} \sum (\hat{y}_i - y_i)
+\frac{\partial J}{\partial w_1} = \frac{2}{n} \sum (\hat{y}_i - y_i) x_i
+== Ridge (L2)
+J = \var{MSE} + \lambda \sum w_j^2
+w = (X^T X + \lambda I)^{-1} X^T y
+~ Shrinks all weights towards zero, none exactly to zero. The second line is the closed form.
+== Lasso (L1)
+J = \var{MSE} + \lambda \sum |w_j|
+~ Can set weights exactly to zero: built-in feature selection, a sparse model.
+== Elastic Net
+J = \var{MSE} + \lambda [ r \sum |w_j| + \frac{1 - r}{2} \sum w_j^2 ]
+~ A mix of L1 sparsity and L2 stability.
+== Score and sigmoid
+z = w_0 + w_1 x_1 + \dots + w_d x_d
+p = \sigma(z) = \frac{1}{1 + e^{-z}} = P(y = 1 | x)
+== Odds and log-odds (logit)
+\var{odds} = \frac{p}{1 - p}
+\ln \frac{p}{1 - p} = w_0 + w \cdot x
+== Log-loss
+L = - \frac{1}{n} \sum [ y_i \ln p_i + (1 - y_i) \ln (1 - p_i) ]
+== Decomposition (squared error)
+E[(y - \hat{y})^2] = \var{Bias}^2 + \var{Variance} + \text{Irreducible noise}
+== Euclidean (L2)
+d(a, b) = \sqrt{\sum_{j} (a_j - b_j)^2}
+~ Straight line.
+== Manhattan (L1)
+d(a, b) = \sum_{j} |a_j - b_j|
+~ Axis-aligned steps; cheaper, less sensitive to outliers.
+== Minkowski
+d(a, b) = (\sum_{j} |a_j - b_j|^p)^{\frac{1}{p}}
+~ p = 1 is Manhattan, p = 2 is Euclidean.
+== Distance-weighted vote and regression
+w_i = \frac{1}{d_i^2} \quad \text{(or } \frac{1}{d} \text{)}
+\hat{y} = \frac{\sum w_i y_i}{\sum w_i}
+~ Class score = the sum of the weights of the neighbours in that class. The second line is for regression.
+== Neuron
+z = w_1 x_1 + \dots + w_d x_d + b = w \cdot x + b
+a = \phi(z)
+~ w = weights, b = bias, φ = activation function, a = output.
+== Binary cross-entropy
+L = - [ y \ln p + (1 - y) \ln (1 - p) ]
+~ p = predicted P(y = 1).
+== Categorical cross-entropy
+L = - \sum_{c} y_c \ln p_c = - \ln p_{\text{true class}}
+~ y is one-hot.
+== L2 penalised loss
+J = \var{Loss} + \lambda \sum_{j} w_j^2
+~ λ ≥ 0 is the strength; the bias is not penalised.
+== L1 penalised loss
+J = \var{Loss} + \lambda \sum_{j} |w_j|
+== Additive model
+F_m(x) = F_{m-1}(x) + \eta \times h_m(x)
+~ F_(m-1) = the current ensemble prediction, η = learning rate controlling the update size, h_m = new weak learner fitted to the current error signal.
+== Objective (inertia / within-cluster SSE)
+\var{SSE} = \sum_{j} \sum_{x \in C_j} \| x - \mu_j \|^2
+~ Summed over clusters j and the points x in each. μ_j = centroid = mean of C_j.
+== Explained variance ratio
+\var{EVR}_j = \frac{\lambda_j}{\lambda_1 + \dots + \lambda_d}
+~ λ_j = the j-th eigenvalue. The trace of C is the total variance.
+== Standardisation (z-score)
+z = \frac{x - \var{mean}}{\var{std}}
+~ Gives mean 0, std 1. Take mean and std from the training set.
+== Min-max scaling
+x' = \frac{x - \min}{\max - \min}
+~ Maps to [0, 1]; sensitive to outliers.
+== Robust scaling
+x' = \frac{x - \var{median}}{\var{IQR}}
+~ IQR = Q3 - Q1. Resistant to outliers.
+== Output size
+O = \frac{N + 2P - K}{S} + 1
+~ N = input size, K = kernel size, P = padding, S = stride. Round down if not a whole number.
+== Conv layer parameters
+\var{params} = (K \times K \times C_{in} + 1) \times C_{out}
+~ The +1 is the bias for each filter.
+== RNN step
+h_t = \tanh(W_x x_t + W_h h_{t-1} + b)
+y_t = W_y h_t
+~ The same weights are shared across time steps. h_t = hidden state (memory).
+== Scaled dot-product attention
+\var{Attention}(Q, K, V) = \var{softmax}(\frac{Q K^T}{\sqrt{d_k}}) V
+~ Q = queries, K = keys, V = values, d_k = key dimension. Scaling prevents a saturated softmax.

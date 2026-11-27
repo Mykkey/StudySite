@@ -1,0 +1,83 @@
+== Euler update
+\var{Stock}(t + DT) = \var{Stock}(t) + DT \times [ \var{Inflow}(t) - \var{Outflow}(t) ]
+== Net flow
+\var{Net}(t) = 30 + 20 - \var{Outflow}(t) = 50 - \var{Outflow}(t)
+\var{Net} = -50 + 20t \quad \text{on [0, 5]}
+\var{Net} = 150 - 20t \quad \text{on [5, 10]}
+== Net flow#2
+\var{Net} = 50 - 20t \quad \text{on [0, 5]}
+\var{Net} = -50 \quad \text{on [5, 10]}
+\var{Net} = -50 + 20(t - 10) \quad \text{on [10, 15]}
+\var{Net} = +50 \quad \text{on [15, 20]}
+\var{Net} = 50 - 20(t - 20) \quad \text{on [20, 25]}
+== Stock management structure
+\text{Inflow (Hire Rate)} = \var{MAX}(0, \var{Anchor} + \var{Adjustment})
+== Adjustment
+\var{Adjustment} = \frac{\text{Desired Stock} - \var{Stock}}{AT}
+~ AT = adjustment time.
+== Anchor
+\var{Anchor} = \text{Expected Outflow}
+~ The smoothed outflow. In steady state Anchor = Outflow.
+== Anchor delay structure
+\var{EQ}(t + DT) = \var{EQ}(t) + DT \times \frac{\var{Quits} - \var{EQ}}{TAE}
+~ EQ = Expected Quits. TAE = Time to Adjust Expectation.
+== Transmission rate beta (per day)
+\beta = c \times i = \frac{R_0}{D}
+== Force of infection lambda (per day, per susceptible)
+\lambda = \beta \times \frac{I}{N}
+~ The probability per day that a susceptible person is infected.
+== Infection rate
+\var{IR} = S \times \lambda = \frac{\beta \times S \times I}{N} = c \times i \times \frac{S}{N} \times I
+~ IR = Infection Rate.
+== Net (effective) reproduction number
+R_n = R_0 \times \frac{S}{N}
+~ Changes over time as S falls.
+== Herd immunity threshold
+\var{HIT} = 1 - \frac{1}{R_0}
+== Differential form
+\frac{dS}{dt} = - \frac{\beta S I}{N}
+\frac{dI}{dt} = \frac{\beta S I}{N} - \frac{I}{D}
+\frac{dR}{dt} = \frac{I}{D}
+== Difference (Euler) form
+S(t + DT) = S(t) - DT \times \var{IR}(t)
+I(t + DT) = I(t) + DT \times (\var{IR}(t) - \var{RR}(t))
+R(t + DT) = R(t) + DT \times \var{RR}(t)
+== Fractional increase
+\var{Inflow} = \var{Stock} \times g
+~ g = fractional growth rate (per time unit).
+== Fractional decrease
+\var{Outflow} = \var{Stock} \times f = \frac{\var{Stock}}{L}
+~ f = fractional decrease rate. L = 1/f = average lifetime.
+== Adjustment to a goal
+\text{Net flow} = \frac{\var{Goal} - \var{Stock}}{AT}
+~ AT = adjustment time (time constant).
+== Equations
+\var{Outflow} = S \times G
+G(t + DT) = G(t) + DT \times \frac{G^{*} - G}{AT}
+~ G(0) = the initial fraction (for example 0).
+== First-order material delay
+\var{Outflow} = \frac{\var{Stock}}{D}
+\text{steady state: } \var{Stock} = \var{Inflow} \times D
+== Exponential smoothing
+\var{Sm}(t + DT) = \var{Sm}(t) + DT \times \frac{\var{Input} - \var{Sm}(t)}{ST}
+~ Sm = the smoothed value. ST = smoothing (perception) time.
+== Cohort force of infection
+\lambda_j = i \times \sum_{k} c_{jk} \times \frac{I_k}{N_k}
+\var{IR}_j = S_j \times \lambda_j \quad \var{RR}_j = \frac{I_j}{D_j}
+== Stock equation (Euler form)
+\var{Stock}(t + DT) = \var{Stock}(t) + DT \times (\var{Inflow} - \var{Outflow})
+== Continuous form
+\frac{d(\var{Stock})}{dt} = \var{Inflow} - \var{Outflow}
+\var{Stock}(0) = \text{initial value}
+== SEIR
+\frac{dS}{dt} = - \frac{\beta S I}{N}
+\frac{dE}{dt} = \frac{\beta S I}{N} - \frac{E}{L}
+\frac{dI}{dt} = \frac{E}{L} - \frac{I}{D}
+\frac{dR}{dt} = \frac{I}{D}
+~ L = latent time.
+== Force of infection (three infectious compartments)
+\lambda = c \times i \times \frac{\text{Pre-clinical} + \var{Clinical} + M \times \text{Sub-clinical}}{N}
+~ M = the sub-clinical multiplier.
+== R0 for this model
+R_0 = c i [ CF (2.1 + 2.9) + (1 - CF) \times 0.5 \times 5 ]
+\quad = 0.6 \times [ 0.6 \times 5 + 0.4 \times 2.5 ] = 0.6 \times 4 = 2.4

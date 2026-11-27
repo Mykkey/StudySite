@@ -1,0 +1,140 @@
+== Pearson correlation between active user a and user u
+w(a,u) = \frac{\sum_{i} (r(a,i) - \bar{r}_a)(r(u,i) - \bar{r}_u)}{\sqrt{\sum_{i} (r(a,i) - \bar{r}_a)^2 \times \sum_{i} (r(u,i) - \bar{r}_u)^2}}
+~ The sums are over i in I(a,u), the items rated by both. w is between -1 and 1.
+== Cosine (vector) similarity
+\cos(a,u) = \frac{a \cdot u}{|a| |u|}
+~ Users are rating vectors, with 0 for "not rated".
+== Prediction 1: weighted average of ratings
+P(a,i) = \frac{\sum_{u} r(u,i) w(a,u)}{\sum_{u} |w(a,u)|}
+~ Assumes everyone uses the rating scale in the same way.
+== Prediction 2: mean-centred weighted average (preferred)
+P(a,i) = \bar{r}_a + \frac{\sum_{u} (r(u,i) - \bar{r}_u) w(a,u)}{\sum_{u} |w(a,u)|}
+~ The sums are over the n neighbours who rated i.
+== Significance weighting (Herlocker 1999)
+w'(a,u) = \frac{\min(|I(a,u)|, 50)}{50} \times w(a,u)
+== Adjusted cosine item similarity
+s(i,j) = \frac{\sum_{u} (r(u,i) - \bar{r}_u)(r(u,j) - \bar{r}_u)}{\sqrt{\sum_{u} (r(u,i) - \bar{r}_u)^2 \times \sum_{u} (r(u,j) - \bar{r}_u)^2}}
+~ The sums are over users who rated both i and j.
+== Item-item prediction
+P(a,i) = \frac{\sum_{j} s(i,j) r(a,j)}{\sum_{j} |s(i,j)|}
+~ j runs over the k items most similar to i that a has rated. With raw ratings, use only positive similarities.
+== AvgIDF / MaxIDF
+\var{AvgIDF}(q) = \frac{1}{|q|} \sum_{t \in q} \log \frac{N}{df(t)}
+\var{MaxIDF}(q) = \max_{t} \log \frac{N}{df(t)}
+~ N = documents in the collection, df(t) = documents containing t. High = specific = easier.
+== Query scope
+\var{Scope}(q) = \frac{|\{ d \in C : d \text{ contains a query term} \}|}{|C|}
+~ "computer science": 8000/10000 = 0.80 (broad). "algorthim recusion": 30/10000 = 0.003 (misspelling or missing coverage).
+== Term relatedness: average pointwise mutual information
+\var{PMI}(t_1,t_2) = \log \frac{P(t_1,t_2)}{P(t_1) P(t_2)}
+P(t) = \frac{df(t)}{N} \quad P(t_1,t_2) = \frac{df(t_1,t_2)}{N}
+~ The predictor is the average PMI over all pairs of query terms. "neural network training" (terms co-occur) beats "neural banana training". Undefined for single-term queries.
+== Collection-query similarity (SCQ, Zhao et al.; extra, not on the slides)
+\var{SCQ}(t) = (1 + \ln cf(t)) \times \ln (1 + \frac{N}{df(t)})
+~ SCQ(q) = the sum or max over query terms. cf = collection frequency. Higher = the query is more similar to the collection = easier.
+== Clarity score
+\var{Clarity}(q) = \sum_{w} P(w|Q) \log_2 \frac{P(w|Q)}{P(w|C)}
+~ P(w|Q) is the word distribution of the top-k retrieved documents (weighted by retrieval score). P(w|C) is the collection distribution.
+== Normalised Query Commitment (NQC)
+\var{NQC}(q) = \frac{\sqrt{\frac{1}{k} \sum_{d \in \text{top-k}} (s(d) - \mu)^2}}{|s(C)|}
+~ s(d) = retrieval score of d, μ = mean of the top-k scores, s(C) = score of the collection treated as one document (the normaliser).
+== Statistical accuracy
+\var{MAE} = \frac{1}{|T|} \sum |p(u,i) - r(u,i)|
+\var{RMSE} = \sqrt{\frac{1}{|T|} \sum (p(u,i) - r(u,i))^2}
+~ Over the test set T. RMSE punishes large errors more (Netflix prize metric).
+== Ideal query vector (needs complete relevance knowledge)
+q_{ideal} = \frac{1}{|C_R|} \sum_{d \in C_R} d - \frac{1}{N - |C_R|} \sum_{d \notin C_R} d
+~ The difference of the two centroids.
+== Rocchio
+q_{new} = \alpha q_{orig} + \frac{\beta}{|D_R|} \sum_{d \in D_R} d - \frac{\gamma}{|D_N|} \sum_{d \in D_N} d
+== Graded Rocchio
+q_{new} = \alpha q_{orig} + \beta \frac{\sum_{d : f(d) > 0} f(d) d}{\sum f(d)} - \gamma \frac{\sum_{d : f(d) < 0} |f(d)| d}{\sum |f(d)|}
+== Association cluster (Jaccard over documents)
+M(i,j) = \frac{f(i,j)}{f(i) + f(j) - f(i,j)}
+~ f(i) = number of local documents containing term i. f(i,j) = number containing both.
+== Metric cluster (proximity)
+M(i,j) = \sum_{(t_i, t_j)} \frac{1}{dist(t_i, t_j)}
+~ Summed over pairs of occurrences. Closer occurrences contribute more.
+== Scalar cluster (similar contexts)
+v_i = (M(i,1), \dots, M(i,n))
+S(t_i,t_j) = \frac{v_i \cdot v_j}{|v_i| |v_j|}
+~ Terms that co-occur with the same other terms are related even if they never appear together (synonyms).
+== RankNet pairwise loss
+P(i \triangleright j) = \frac{1}{1 + \exp(-(s_i - s_j))}
+\var{loss} = - \log P(i \triangleright j)
+~ The loss applies when i is truly more relevant. s = model score.
+== Pointwise loss (regression)
+L = \sum_{(q,d)} (f(x_{q,d}) - y_{q,d})^2
+~ Example: label 3, prediction 2.4 gives loss 0.36.
+== MMR
+\var{next} = \argmax_{d \in C \setminus S} [ \lambda \cdot rel(d,q) - (1 - \lambda) \cdot \max_{d_j \in S} sim(d, d_j) ]
+~ C = candidates. S = items already selected. λ is between 0 and 1 (1 = pure relevance, 0 = pure novelty).
+== Precision and recall
+\var{Precision} = \frac{|R \cap A|}{|A|} = \frac{TP}{TP + FP}
+\var{Recall} = \frac{|R \cap A|}{|R|} = \frac{TP}{TP + FN}
+== F-measure (weighted harmonic mean)
+F_{\beta} = \frac{(\beta^2 + 1) P R}{\beta^2 P + R}
+F_1 = \frac{2 P R}{P + R}
+~ β > 1 emphasises recall, β < 1 emphasises precision.
+== Basic tf-idf (Spärck Jones / Salton & Fox)
+w(t,d) = f(t,d) \times \log \frac{N}{n_t}
+~ f = (possibly normalised) frequency of t in d, N = number of documents, n_t = number of documents containing t.
+== Max-tf normalised document weight (Salton & Buckley)
+w(t,d) = \frac{tf(t,d)}{\max_{s} tf(s,d)} \times \log \frac{N}{df(t)}
+== Query weight (Salton & Buckley)
+w(t,q) = (0.5 + 0.5 \times \frac{tf(t,q)}{\max_{s} tf(s,q)}) \times \log \frac{N}{df(t)}
+~ Every query term starts at 0.5 and rises with its frequency in the query.
+== Sublinear tf
+w(t,d) = 1 + \log tf(t,d) \quad \text{if tf > 0, else 0}
+~ Base 10: tf 1, 10, 30, 100 gives 1, 2, 2.48, 3. 30 occurrences is not 30 times as significant as 1.
+== Local x global x query
+sim(q,d) = \sum_{t \in q \cap d} ntf(t,d) \times gwt(t) \times qwt(t,q)
+~ ntf = normalised local frequency, gwt = global weight (idf), qwt = weight of t in the query.
+== Cosine similarity
+sim(q,d) = \frac{q \cdot d}{|q| |d|} = \frac{\sum_{t} w(t,q) w(t,d)}{\sqrt{\sum_{t} w(t,q)^2} \times \sqrt{\sum_{t} w(t,d)^2}}
+~ Range 0 to 1 for non-negative weights.
+== BM25 score of document d for query q
+score(q,d) = \sum_{t \in q} \log \frac{N - df_t + 0.5}{df_t + 0.5}
+\quad \times \frac{tf_{t,d} (k_1 + 1)}{tf_{t,d} + k_1 ((1 - b) + b \frac{|d|}{avgdl})} \times tf_{t,q}
+~ One formula over two lines: the second line is inside the sum.
+== Precision at k
+P@k = \frac{\text{relevant documents in top k}}{k}
+\var{R-precision} = P@R
+== Average precision (AP) and MAP
+\var{AP}(q) = \frac{1}{|R_q|} \sum_{k : d_k \text{ relevant}} P@k
+\var{MAP} = \frac{1}{|Q|} \sum_{q} \var{AP}(q)
+~ Divide by ALL relevant documents, so unretrieved relevant documents count as precision 0.
+== Mean reciprocal rank
+\var{MRR} = \frac{1}{|Q|} \sum_{q} \frac{1}{rank_q}
+~ rank_q = rank of the first relevant document for query q.
+== DCG and nDCG
+\var{DCG}@k = \sum_{i=1}^{k} \frac{rel_i}{\log_2 (i + 1)}
+\var{nDCG}@k = \frac{\var{DCG}@k}{\var{IDCG}@k}
+~ IDCG = DCG of the ideal ordering (sorted by relevance). nDCG is between 0 and 1. A variant uses gain 2^rel - 1.
+== Purity
+\var{purity}(\Omega, C) = \frac{1}{N} \sum_{k} \max_{j} |\omega_k \cap c_j|
+~ For each cluster take the count of its majority class, add them up, divide by the total number of points.
+== Rand index (pair counting)
+\var{RI} = \frac{TP + TN}{TP + FP + FN + TN}
+~ Over all N(N-1)/2 document pairs. TP = same class and same cluster; FP = different classes but same cluster; FN = same class but different clusters; TN = different in both.
+== p-norm similarity for two terms (p between 1 and infinity)
+sim(d, t_1 \text{ OR } t_2) = (\frac{w_1^p + w_2^p}{2})^{\frac{1}{p}}
+sim(d, t_1 \text{ AND } t_2) = 1 - (\frac{(1 - w_1)^p + (1 - w_2)^p}{2})^{\frac{1}{p}}
+~ NOT t has weight (1 - w).
+== PageRank
+\var{PR}(W) = \frac{T}{N} + (1 - T) [ \frac{\var{PR}(W_1)}{O(W_1)} + \frac{\var{PR}(W_2)}{O(W_2)} + \dots + \frac{\var{PR}(W_n)}{O(W_n)} ]
+~ W_i = pages linking to W; O(W_i) = number of outlinks of W_i; T = teleportation probability (damping factor d = 1 - T, typically 0.85); N = number of pages.
+== Matrix form
+a \leftarrow M^T h \quad h \leftarrow M a
+a \propto M^T M a \quad h \propto M M^T h
+~ M is the adjacency matrix (M_ij = 1 if page i links to page j). Repeated multiplication (power method) converges to the principal eigenvector of M^T M (authorities) and of M M^T (hubs).
+== Coverage and novelty
+\var{Coverage} = \frac{|AU|}{|U|}
+\var{Novelty} = \frac{|New|}{|New| + |AU|}
+== Zipf
+f \times r \approx \text{constant} \quad f \approx \frac{C}{r}
+f \propto r^{-\alpha} \quad \alpha \approx 1
+~ A straight line on a log-log plot. r = rank by frequency, f = frequency.
+== Heaps
+M = k T^{\beta}
+~ M = vocabulary size (types), T = collection size in tokens, typically 10 ≤ k ≤ 100 and 0.4 ≤ β ≤ 0.6.

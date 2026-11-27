@@ -1,0 +1,6 @@
+== Mutation ratio (the slide's name; also called mutation score)
+\text{Mutation Ratio} = \frac{\#\text{Killed}}{\#\text{Total} - \#\text{Equivalent}}
+== Related slide formulas
+\text{Test Pass Rate} = \frac{\#\text{Passed tests}}{\#\text{Total tests}}
+\text{Unit-level coverage} = \frac{\#\text{Units tested at least once}}{\#\text{Total units}}
+~ Slide example: pass rate 25 / 26 = about 0.96.

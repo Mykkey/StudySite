@@ -5,7 +5,13 @@
 
   /* ---------- helpers ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-  function fmt(s) { return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>'); }
+  function fmt(s) { return window.Maths.html(s); }   /* bold, code and paper-style maths */
+  function formula(it) {
+    var h = '<div class="formula">' + (it.label ? '<small>' + esc(it.label) + '</small>' : '');
+    if (!it.math) return h + '<div class="ftext">' + esc(it.text) + '</div></div>';
+    h += it.math.map(function (l) { return '<div class="fline">' + window.Maths.tex(l, true) + '</div>'; }).join('');
+    return h + (it.where ? '<p class="fwhere">' + fmt(it.where) + '</p>' : '') + '</div>';
+  }
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function plain(s) { return String(s == null ? '' : s).replace(/[`*]/g, ''); }
@@ -30,7 +36,7 @@
         case 'p': h += '<p>' + fmt(it.text) + '</p>'; break;
         case 'note': h += '<div class="callout">' + fmt(it.text) + '</div>'; break;
         case 'warn': h += '<div class="callout warn">' + fmt(it.text) + '</div>'; break;
-        case 'formula': h += '<div class="formula" title="' + esc(it.label || '') + '">' + (it.label ? '<small>' + esc(it.label) + '</small>\n' : '') + esc(it.text) + '</div>'; break;
+        case 'formula': h += formula(it); break;
         case 'code': h += '<pre><code>' + esc(it.text) + '</code></pre>'; break;
         case 'table':
           h += '<table class="t"><thead><tr>' + it.head.map(function (c) { return '<th>' + fmt(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +

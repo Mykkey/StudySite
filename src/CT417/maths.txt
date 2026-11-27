@@ -1,0 +1,22 @@
+== Availability SLI (time based)
+\var{SLI} \% = \frac{\text{Total time} - \text{Downtime}}{\text{Total time}} \times 100
+== Request based SLI
+\var{SLI} \% = \frac{\text{good requests}}{\text{valid (total) requests}} \times 100
+== Error budget (percentage)
+\text{Error budget} \% = 100\% - \var{SLO} \%
+== Allowed downtime
+\text{Allowed downtime} = (1 - \var{SLO}) \times \text{window length}
+~ For example 0.001 × 43,200 min = 43.2 min
+== Budget remaining / consumed
+\text{Remaining} = \text{Allowed} - \text{Actual downtime}
+\text{Consumed} \% = \frac{\text{Actual}}{\text{Allowed}} \times 100
+== Burn rate
+\text{Burn rate} = \frac{\text{fraction of budget consumed}}{\text{fraction of window elapsed}} = \frac{\text{actual error rate}}{\text{allowed error rate}}
+== Time until budget exhausted
+\text{Time to exhaustion} = \frac{\text{window}}{\text{burn rate}}
+~ A burn rate of 1 is exactly on budget.
+== SLO met?
+\text{Met if } \var{SLI} \ge \var{SLO}
+\text{or equivalently } \text{Downtime} \le \text{Allowed downtime}
+== Cyclomatic complexity
+\var{CC} = E - N + 2P
