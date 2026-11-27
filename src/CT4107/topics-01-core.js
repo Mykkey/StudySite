@@ -232,16 +232,14 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture extras: examples, funnel and narrowing form",
+        "heading": "Lecture examples and how to narrow to one market",
         "items": [
-          "**Slide wording**: focus your resources on one key area and win it **before** moving into larger markets.",
-          "**Proverb**: a person who chases two rabbits catches neither.",
-          "**Ryanair's beachhead**: flyers who want low cost with the extras removed.",
-          "The slides ask about Facebook, Pinterest and Apple but give no answer. (Not on slides: Facebook began with college students.)",
-          "**Lecture result** for the smart rack: **high-end chain gyms** (Equinox, Boston Sports Clubs, LA Fitness, 24 Hour Fitness, Anytime Fitness, David Barton Gym).",
+          "Your **beachhead** is the one small market you focus on and win **before** moving into bigger ones. \"A person who chases two rabbits catches neither.\"",
+          "**Ryanair's beachhead**: flyers who want low cost and will give up the extras.",
+          "**Smart weightlifting rack** (a rack that tracks your lifting): the lecture picks **high-end chain gyms**, such as Equinox.",
           {
             "type": "p",
-            "text": "Narrowing form: six questions per candidate, then rank"
+            "text": "Six questions to ask of each candidate market, then rank"
           },
           "**1.** Can the sales team reach them easily?",
           "**2.** Do they have money?",
@@ -249,7 +247,7 @@ module.exports = [
           "**4.** Can you deliver the whole product?",
           "**5.** Is there entrenched competition?",
           "**6.** Can this market lead into others?",
-          "These match the seven worksheet criteria.",
+          "These are the seven criteria from before in shorter form.",
           {
             "type": "diagram",
             "kind": "flow",
@@ -439,7 +437,7 @@ module.exports = [
           "**Brainstorm form**: \"What is my idea? Who could it apply to?\" Columns: industry, end users, what they would use it for.",
           "**Narrow form**: the six questions (reach, money, reason to buy, whole product, competition, route to other markets) plus a rank. The result is your top 5-6.",
           "**Key slide**: see the world through the **customer's** eyes, not the company's.",
-          "**Week 4 deliverable**: segmentation, beachhead analysis and end-user profile.",
+          "**Week 4 deliverable**: your segmentation, beachhead analysis and **end-user profile** (a description of the typical person who would use it).",
           {
             "type": "note",
             "text": "McKinsey's six actions: (1) find the journeys customers take, from their view; (2) see how they move between contact points; (3) anticipate needs at each stage; (4) see what works and what does not; (5) prioritise the biggest gaps; (6) fix root causes and redesign the journey."
@@ -578,7 +576,14 @@ module.exports = [
       {
         "heading": "Worked example 1: top-down then bottom-up (pregnancy app, Ireland)",
         "items": [
-{"type":"task","show":0,"q":["A pregnancy app in Ireland. Females: 2,465,802. Pregnancies a year: about 75,713. First-time mothers: about 30,306.","Estimate the yearly TAM bottom-up with one app each at €5. Is it big enough as a first market?"]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "A pregnancy app in Ireland. Females: 2,465,802. Pregnancies a year: about 75,713. First-time mothers: about 30,306.",
+              "Estimate the yearly TAM bottom-up with one app each at €5. Is it big enough as a first market?"
+            ]
+          },
           "A pregnancy app in Ireland.",
           {
             "type": "p",
@@ -627,7 +632,13 @@ module.exports = [
       {
         "heading": "Worked example 2: Perch-style smart gym racks (USA)",
         "items": [
-{"type":"task","show":2,"q":["Find the beachhead size in units, the TAM at $5,000 per rack, and the yearly figure if a rack lasts 5 years."]},
+          {
+            "type": "task",
+            "show": 2,
+            "q": [
+              "Find the beachhead size in units, the TAM at $5,000 per rack, and the yearly figure if a rack lasts 5 years."
+            ]
+          },
           "Smart gym racks in the USA.",
           "35,000 gyms, of which 3,000 are high-end chains. Each would buy 4 racks.",
           "Beachhead = 3,000 × 4 = **12,000 units**. All gyms would be 140,000 units.",
@@ -658,7 +669,14 @@ module.exports = [
       {
         "heading": "Worked example 3: per-user annual revenue (workbook method)",
         "items": [
-{"type":"task","show":0,"q":["Estimate yearly revenue per user three ways: a one-time price of 1,200 lasting 4 years; a budget of 10,000 of which 5% could go to you; a comparable product at 400 a year.","Then find the TAM for 3,000 users."]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Estimate yearly revenue per user three ways: a one-time price of 1,200 lasting 4 years; a budget of 10,000 of which 5% could go to you; a comparable product at 400 a year.",
+              "Then find the TAM for 3,000 users."
+            ]
+          },
           "**One-time**: price 1,200, 1 unit, lasts 4 years: 1,200 × 1 / 4 = **300 a year**.",
           "**Budget**: budget 10,000, 5% could go to this: 10,000 × 0.05 = **500 a year**.",
           "**Comparable product**: 400 a year.",
@@ -667,28 +685,17 @@ module.exports = [
         ]
       },
       {
-        "heading": "More lecture material: sanity check, three levels, rental example, top-down worksheet",
+        "heading": "Sanity check and the three market levels",
         "items": [
+          "**TAM** (total addressable market) is the yearly money available if every customer in your market bought. The slides use it as a **sanity check** that you are heading the right way.",
+          "**Too small**: not worth it. **Too big**: you cannot dominate it.",
+          "Also ask what share of the world market you could win, how many customers that is, and the revenue per customer.",
+          "**Bottom-up** (counting your own likely customers, first market only) is far more convincing than **top-down** (starting from industry reports).",
           {
             "type": "p",
-            "text": "Why the slides call it a sanity check"
+            "text": "Three levels"
           },
-          "It tells you that you are heading the right way.",
-          "**Too small**: not interesting. **Too big**: you cannot dominate it. The sweet spot can give positive cash flow.",
-          "Also ask what share of the global market you could win, how many customers, and revenue per customer.",
-          {
-            "type": "p",
-            "text": "Prefer bottom-up"
-          },
-          "Estimate your **first market only**.",
-          "Use your own research to count customers, then extrapolate.",
-          "Top-down (from market reports) helps but is much less convincing, because it misses important details.",
-          {
-            "type": "p",
-            "text": "The other labels on the slide"
-          },
-          "**Total** market (everyone), **served available** (reachable by your sales channel), **target** (your first buyers).",
-          "The slides call TAM both \"Total Addressable\" and \"Total Available\". Use the Step 4 definition.",
+          "**Total** market (everyone), **served available** (those your way of selling can reach), **target** (your first buyers). The slides call TAM both \"Total Addressable\" and \"Total Available\".",
           {
             "type": "table",
             "head": [
@@ -718,28 +725,31 @@ module.exports = [
               ]
             ]
           },
-          "**Sources** on the slide: US Dept of Housing and Urban Development 2015, National Multifamily Housing Council, landlordstation.com.",
-          "**Assumptions**: 2 residents per unit, 30% adoption, $1 per month per user. Always state yours.",
+          "**Assumptions** used: 2 residents per unit, 30% take it up (**adoption**), $1 per person per month. Always state yours.",
+          "Sources on the slide: US Dept of Housing and Urban Development 2015, National Multifamily Housing Council, landlordstation.com."
+        ]
+      },
+      {
+        "heading": "Top-down worksheet, the Perch rack and revenue per user",
+        "items": [
           {
             "type": "p",
             "text": "Top-down worksheet"
           },
-          "Start with your biggest group, then filter three times using the user profile.",
-          "Every filter needs a %, an assumption and a source.",
-          "It ends at the users in the beachhead.",
+          "Start with your biggest group, then filter it three times using your user profile.",
+          "Every filter needs a percentage, an assumption and a source. You end at the users in your beachhead.",
           {
             "type": "p",
-            "text": "Perch (the slide's smart rack)"
+            "text": "Perch, the smart rack on the slides"
           },
-          "It uses cameras and machine learning to track lifting and give instant feedback. It attaches to any rack in minutes and nothing is worn.",
-          "35,000 gyms, then 3,000 high-end chains, then 4 racks each: 12k+ units.",
-          "Context: 34 million Americans lifted weights in 2014, up 38% since 2000.",
-          "**Next markets**: mainstream and budget chains. **Other possible beachheads**: sports performance, professional and college facilities.",
+          "It uses cameras to track lifting and give instant feedback. It clips onto any rack, and nothing is worn.",
+          "35,000 gyms, narrowed to 3,000 high-end chains, with 4 racks each = over 12,000 units.",
+          "Next markets: mainstream and budget chains. Other possible first markets: sports performance centres, professional and college gyms.",
           {
             "type": "p",
-            "text": "Workbook layout for revenue per user"
+            "text": "Workbook columns for revenue per user"
           },
-          "**I** one-time charge, **II** budget available, **III** comparables, **IV** your interpretation: the range and how you got it."
+          "**I** a one-time price, **II** the customer's available budget, **III** prices of comparable products, **IV** your conclusion: a range and how you got it."
         ]
       },
       {
@@ -949,8 +959,9 @@ module.exports = [
         ]
       },
       {
-        "heading": "More lecture examples with numbers",
+        "heading": "More value proposition examples with numbers",
         "items": [
+          "A **QVP** (quantified value proposition) states your benefit as numbers, comparing **as-is** (today) with **to-be** (with your product).",
           {
             "type": "table",
             "head": [
@@ -984,9 +995,8 @@ module.exports = [
               ]
             ]
           },
-          "**Total**: 21+10+7+30 = 68 days now, against 14+5+7+30 = 56 days with the tool.",
-          "That is **18% faster** to launch (12/68 = 17.6%).",
-          "Slide rule: **have a source or reason for every number**.",
+          "**Total**: 68 days now against 56 with the tool, so **18% faster** to launch.",
+          "Have a source or a reason for every number.",
           {
             "type": "table",
             "head": [
@@ -1012,10 +1022,8 @@ module.exports = [
               ]
             ]
           },
-          "**Sports app**: students struggle to join clubs and clubs struggle to recruit.",
-          "Value: students stay active and social; clubs gain members, income and morale.",
-          "That is words only. A QVP would add numbers, such as sign-ups.",
-          "**Slide exercise**: give Ryanair's value proposition, QVP and USP."
+          "**Sports club app** (words only): students stay active and social; clubs gain members and income. To make it a QVP, add numbers such as sign-ups.",
+          "**Slide exercise**: give Ryanair's value proposition, its QVP and its **USP** (unique selling point: the thing only you offer)."
         ]
       },
       {

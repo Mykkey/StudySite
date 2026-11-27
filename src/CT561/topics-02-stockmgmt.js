@@ -212,33 +212,42 @@ module.exports = [
       {
         "heading": "Material delay (first order)",
         "items": [
-          "A stock between two flows: Outflow = Stock / Delay Time. Items stay on average Delay Time (average residence time).",
+          "A **material delay** is when things take time to move through: people, goods or work wait in a stock before coming out.",
+          "**First order** means there is just one stock between the two flows.",
           {
             "type": "formula",
             "label": "First-order material delay",
             "text": "Outflow = Stock / D;  steady state: Stock = Inflow x D"
           },
-          "Example: Trainees progress to Experienced at Trainee / 12 per month (progression delay 12 months). With 100 trainees, progression = 8.33 per month.",
-          "It is a fractional decrease flow with fraction 1/D; step response of the output is an exponential approach with time constant D."
+          "Items stay on average the **Delay Time** (called the average residence time). At a steady state, Stock = Inflow x D.",
+          "Example: trainees become Experienced at Trainee / 12 per month (a 12-month delay). With 100 trainees that is 8.33 per month.",
+          "It is the same as a fractional decrease with fraction 1/D. After a sudden change in the input (a **step**), the output approaches its new value quickly at first, then ever more slowly, with **time constant** D."
         ]
       },
       {
         "heading": "Information delay (smoothing)",
         "items": [
+          "An **information delay** is when it takes time to notice or believe a change.",
+          "**Smoothing** means the perceived value moves only part of the way towards the real one each step.",
           {
             "type": "formula",
             "label": "Exponential smoothing",
             "text": "Smoothed(t + DT) = Smoothed(t) + DT x (Input - Smoothed(t))/ST,  ST = smoothing (perception) time"
           },
-          "Models how perceptions, expectations or anchors lag reality. Smoothed value moves 63% towards a step change in one ST.",
-          "Material is conserved in a material delay (output eventually equals input); an information delay only passes on a number, nothing is conserved.",
-          "Higher-order delays are chains of first-order stocks; they make the output response S-shaped and sharper."
+          "It models how perceptions, expectations or anchors lag behind reality. After a sudden change, the smoothed value covers 63% of it in one smoothing time (ST).",
+          {
+            "type": "p",
+            "text": "The difference between the two delays"
+          },
+          "In a **material** delay nothing is lost: everything that goes in eventually comes out.",
+          "An **information** delay only passes on a number, so nothing is conserved.",
+          "**Higher-order** delays chain several stocks together; the response becomes S-shaped and sharper."
         ]
       },
       {
         "heading": "Why delays matter",
         "items": [
-          "In a balancing loop, delays can cause **overshoot and oscillation** (acting on stale information).",
+          "In a **balancing loop** (one that pushes towards a goal), delays can cause **overshoot and oscillation** (shooting past and swinging back), because you act on out-of-date information.",
           "In the stock management structure the anchor smoothing and hiring/training delays slow the response.",
           "Euler needs DT well below the smallest delay (a quarter or less)."
         ]

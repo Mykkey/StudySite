@@ -103,7 +103,13 @@ module.exports = [
       {
         "heading": "Worked example (200 cases)",
         "items": [
-{"type":"task","show":1,"q":["Work out accuracy, precision, recall, specificity, F1 and balanced accuracy, and compare with always predicting \"negative\"."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Work out accuracy, precision, recall, specificity, F1 and balanced accuracy, and compare with always predicting \"negative\"."
+            ]
+          },
           "200 cases: TP = 40, FP = 10, FN = 20, TN = 130.",
           "So 60 are really positive and 140 are really negative.",
           {
@@ -252,49 +258,55 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 4)",
+        "heading": "Testing the whole process, and baselines",
+        "items": [
+          "You are testing the **whole workflow** (preparing the data and predicting): how well will it work on future cases?",
+          {
+            "type": "p",
+            "text": "Three kinds of error"
+          },
+          "**Training error** (on the data it learned from): useful for spotting problems, but too optimistic.",
+          "**Validation error** (on data held back for choosing): used to pick models and settings. Reuse it too often and you start fitting to it.",
+          "**Test error** (on data never touched): kept for one final check.",
+          {
+            "type": "p",
+            "text": "Three kinds of baseline to beat"
+          },
+          "A **baseline** is something simple your model has to do better than.",
+          "**Dummy**: always guess the most common class, or the average number.",
+          "**Simple model**: linear or logistic regression, or a small decision tree.",
+          "**Business rule**: whatever is used today.",
+          "A complex model that barely beats the dummy is not a success.",
+          {
+            "type": "p",
+            "text": "Say what your result covers"
+          },
+          "**Who** the data is about, whether the split copies **time** order, whether the rows are **independent**, whether the target can be trusted, which **errors matter**, and **what you chose** using the validation data."
+        ]
+      },
+      {
+        "heading": "Three qualities, other error measures and residuals",
         "items": [
           {
             "type": "p",
-            "text": "The big question (Week 4)"
+            "text": "Three separate qualities of a classifier"
           },
-          "How well will the **whole workflow** (preparing data and predicting) work on future cases?",
-          "**Training error**: useful for diagnosis, but biased.",
-          "**Validation error**: used to choose models and settings. Reusing it too much overfits it.",
-          "**Test error**: kept for one final check.",
+          "**Discrimination**: does it score the \"yes\" cases above the \"no\" cases?",
+          "**Calibration**: are the probabilities honest (of cases given 80%, are about 80% \"yes\")?",
+          "**Decision value**: do they help you act, given what each mistake costs?",
+          "AUC only measures the first. It does not pick a threshold or include costs.",
           {
             "type": "p",
-            "text": "State what your result covers"
+            "text": "Other error measures for number predictions"
           },
-          "**Population** (who), **time** (does the split mimic the future), **unit** (are rows independent), **outcome** (can the target be trusted), **metric** (which errors matter) and **procedure** (what was chosen on validation).",
+          "**Median absolute error**: the middle-sized miss. It ignores rare huge ones.",
+          "**Quantile loss**: penalises guessing too low and too high by different amounts.",
+          "**Domain cost**: measure the error in what it actually costs (time, energy, money, risk).",
           {
             "type": "p",
-            "text": "Three kinds of baseline"
+            "text": "Checking residuals (real value minus predicted)"
           },
-          "**Dummy**: most common class, or the average.",
-          "**Simple model**: linear or logistic regression, a shallow tree.",
-          "**Business rule**: what is used today.",
-          "A complex model that barely beats a dummy is not a success.",
-          {
-            "type": "p",
-            "text": "Three separate qualities"
-          },
-          "**Discrimination**: does it rank positives above negatives?",
-          "**Calibration**: are the probabilities honest?",
-          "**Decision value**: do they support an action with known costs?",
-          "AUC does not choose the threshold or include real costs.",
-          {
-            "type": "p",
-            "text": "Other error measures"
-          },
-          "**Median absolute error**: typical error, but hides rare large ones.",
-          "**Quantile loss**: for when guessing too low and too high cost differently.",
-          "**Domain cost**: time, energy, money or risk.",
-          {
-            "type": "p",
-            "text": "Checking residuals"
-          },
-          "Plot against predictions, look at their distribution, split by group or range, and study the worst cases."
+          "Plot them against the predictions, look at their spread, compare groups or ranges, and study the worst cases."
         ]
       }
     ],
@@ -384,7 +396,20 @@ module.exports = [
       {
         "heading": "Worked example: 5-fold CV",
         "items": [
-{"type":"task","show":2,"q":["Find the average accuracy, the variance and the standard deviation."],"own":[{"type":"formula","label":"Mean and variance of fold scores","text":"mean = sum of scores / k. variance = sum of (score − mean)² / (k − 1). standard deviation = square root of the variance."}]},
+          {
+            "type": "task",
+            "show": 2,
+            "q": [
+              "Find the average accuracy, the variance and the standard deviation."
+            ],
+            "own": [
+              {
+                "type": "formula",
+                "label": "Mean and variance of fold scores",
+                "text": "mean = sum of scores / k. variance = sum of (score − mean)² / (k − 1). standard deviation = square root of the variance."
+              }
+            ]
+          },
           "100 examples, 5 folds: each round trains on 80 and checks on 20.",
           {
             "type": "table",
@@ -455,50 +480,53 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 4)",
+        "heading": "Splitting without cheating",
+        "items": [
+          "Typical sizes: train 65-80%, validation 10-20%, test 10-20%. These are choices, not rules.",
+          {
+            "type": "p",
+            "text": "When a random split gives a false answer"
+          },
+          "It fails when the same person, device, household, document or future time period appears in more than one part.",
+          "The model then looks good because it has already seen something very close to the test cases.",
+          "Group these together: one patient's visits, one sensor's readings, repeat listings of one property, pieces of one document.",
+          "With data over time, watch for features that use past values, answers that arrive late, seasons, and overlapping time windows.",
+          {
+            "type": "p",
+            "text": "Which splitter in scikit-learn"
+          },
+          "**KFold**: plain split, for regression or balanced classes.",
+          "**StratifiedKFold**: keeps the class mix the same in every fold.",
+          "**GroupKFold**: keeps each group (such as one patient) in one fold.",
+          "**TimeSeriesSplit**: always trains on the past and tests on the future.",
+          "**Repeated CV**: repeats the split to see how much it matters.",
+          "`cross_validate` runs it with several measures. `GridSearchCV` also tries each setting and refits the best one."
+        ]
+      },
+      {
+        "heading": "Recording results, and six common failures",
         "items": [
           {
             "type": "p",
-            "text": "Sizes (Week 4)"
+            "text": "What to write down"
           },
-          "Train 65-80%, validation 10-20%, test 10-20%. These are choices, not rules.",
-          {
-            "type": "p",
-            "text": "When random splitting fails"
-          },
-          "When the same person, device, household, document source or future period lands in more than one part.",
-          "A neat split can answer the wrong question.",
-          "Group examples: patient visits, sensor windows, repeat property listings, segments of one document.",
-          "For time data watch lag features, late labels, seasons and overlapping windows.",
-          {
-            "type": "p",
-            "text": "Which splitter"
-          },
-          "**KFold** (regression or balanced), **StratifiedKFold** (classification), **GroupKFold**, **TimeSeriesSplit**, **Repeated CV** (to see how much the split matters), or your own.",
-          "Do not report only the best fold.",
-          "Code: `cross_validate` with several scorers and `return_train_score`; `GridSearchCV(..., param_grid={\"model__C\": [...]}, cv=cv, refit=True)`.",
-          {
-            "type": "p",
-            "text": "What to record"
-          },
-          "**Data** (source, version, exclusions, split), **code**, **environment** (versions), **settings**, **random seeds** and **results**.",
-          "Report the average and spread, the final test score with context, and error details.",
-          "Do not claim more precision than the data supports.",
+          "The **data** (source, version, what was left out, the split), the **code**, library **versions**, **settings**, **random seeds** (so it can be repeated) and **results**.",
+          "Report the average and the spread, not just the best fold, then the final test score. Do not claim more precision than the data supports.",
           {
             "type": "p",
             "text": "Six common failures"
           },
           "**1.** Tuning on the test set.",
-          "**2.** Preparing data before CV.",
-          "**3.** Splitting by the wrong unit.",
-          "**4.** Reporting only the flattering measure.",
-          "**5.** One lucky split.",
-          "**6.** Ignoring that the future class mix may differ.",
+          "**2.** Preparing the data before splitting it for cross-validation.",
+          "**3.** Splitting by the wrong unit (rows instead of people).",
+          "**4.** Reporting only the most flattering measure.",
+          "**5.** Relying on one lucky split.",
+          "**6.** Ignoring that the future mix of classes may differ.",
           {
             "type": "p",
-            "text": "Portfolio plan"
+            "text": "A testing plan covers"
           },
-          "Context, test strategy, splitter and folds, a main measure plus two others, baselines, three leakage risks, an experiment log with fixed seeds, and a rule for when to open the test set."
+          "The context, the splitter and number of folds, one main measure plus two others, baselines, three ways data could leak, a log of experiments with fixed seeds, and the rule for when the test set is opened."
         ]
       }
     ],

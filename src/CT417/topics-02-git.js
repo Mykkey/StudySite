@@ -424,7 +424,7 @@ module.exports = [
           "Pull/rebase main into your branch regularly so you resolve small conflicts early.",
           "Small, focused pull requests with review; agree code ownership and split work by file/module.",
           "Consistent formatting (formatter, linter) so whitespace changes do not cause noise.",
-          "Branch protection: PR required, CI must pass, at least one reviewer.",
+          "**Branch protection** is a repository setting that blocks direct changes to main. It requires a **pull request** (PR: a request to merge your branch, which others can review), at least one reviewer, and a passing **CI** run (continuous integration: an automatic build and test of every change).",
           "Communication: tell the team when refactoring shared files."
         ]
       },
@@ -513,8 +513,9 @@ module.exports = [
       {
         "heading": "Feature branch workflow and pull requests",
         "items": [
-          "Git encourages a branch for every feature, regardless of size. When the feature is complete it is merged into trunk (main).",
-          "A pull request asks another developer/maintainer to merge your feature into their repository; the team reviews and discusses before merge. Leads can track changes.",
+          "Git encourages a separate **branch** (a parallel line of work) for every feature, however small. When the feature is finished it is merged into **trunk** (the main branch).",
+          "A **pull request** asks someone responsible for the project to merge your work. The team reviews and discusses it first, which also lets team leads track changes.",
+          "A **fork** is your own copy of someone else's repository on GitHub.",
           "pull = fetch + merge (can run individually); push uploads local commits; clone copies a remote repository."
         ]
       },

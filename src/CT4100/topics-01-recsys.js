@@ -1052,8 +1052,9 @@ module.exports = [
     ],
     "sections": [
       {
-        "heading": "Why predict difficulty",
+        "heading": "What it is and why predict difficulty",
         "items": [
+          "**Query performance prediction (QPP)** means guessing how well a search will go **without** knowing which documents are actually relevant.",
           "Even good search systems do badly on some queries.",
           "An average score hides those failures. Results that swing a lot between queries are a **robustness** problem.",
           {
@@ -1073,84 +1074,13 @@ module.exports = [
           "**System**: can expand only the hard queries, change ranking model, or ask \"did you mean...?\"",
           "**Administrator**: can spot gaps in the collection.",
           "**Distributed search** (many sources): can trust sources with better predicted quality.",
-          "**RAG** (a chatbot that searches first): can decide whether to search, or warn of low confidence.",
+          "**RAG** (retrieval-augmented generation: a chatbot that searches first, then answers from what it found): can decide whether to search, or warn of low confidence.",
           {
             "type": "p",
             "text": "Hard for whom?"
           },
           "Difficulty depends on the collection and the system. A query hard for one may be easy for another.",
-          "Even human experts judged difficulty poorly in the TREC Robust Track (2003-05). Their match with real system performance was only r = 0.26."
-        ]
-      },
-      {
-        "heading": "Lecture details: robust track, evaluation example, linguistic predictors",
-        "items": [
-          "**Query performance prediction (QPP)**: guess how well a system will do on a query **without** knowing which documents are relevant.",
-          "The predicted numbers are not on the same scale as AP (average precision, the real score).",
-          "So we judge a predictor by whether it **ranks** queries correctly, not by its exact values.",
-          {
-            "type": "p",
-            "text": "Example"
-          },
-          "Real AP for q1, q2, q3: 0.62, 0.15, 0.40.",
-          "Predicted: 0.81, 0.34, 0.52.",
-          "The order is identical, so Spearman ρ = Kendall τ = 1.0 and Pearson r is about 0.99.",
-          {
-            "type": "p",
-            "text": "TREC Robust Track (2003-2005, written up by Carmel and Yom-Tov 2010)"
-          },
-          "It focused on difficult search topics.",
-          "It rewarded consistency using GMAP (geometric mean of AP) as well as AP.",
-          "Experts agreed poorly with real performance (r = 0.26) and with each other (r = 0.39).",
-          "Teams ranked topics by predicted difficulty before seeing the judgements. This proved hard.",
-          "Some methods had **negative correlation**: they pointed the wrong way.",
-          "This led to today's before-search and after-search predictors.",
-          "Difficulty is fairly consistent across collections in some studies. But systems differ: exact word matching fails on \"car hire\" vs \"vehicle rental\", while embeddings may connect them.",
-          {
-            "type": "p",
-            "text": "Language-based predictors"
-          },
-          "They look at ambiguity, number of word meanings (for example WordNet senses), names and sentence structure.",
-          "Most predict poorly. Multiple meanings and complex structure are exceptions.",
-          "LLMs make this analysis easier, so interest has returned.",
-          "\"jaguar speed\" is ambiguous but may still work, since there are many pages about the animal's speed.",
-          {
-            "type": "p",
-            "text": "Query scope examples"
-          },
-          "**Scope** = the share of documents containing any query word.",
-          "\"computer science\": 8,000/10,000 = 0.80 (very broad).",
-          "\"graph embedding\": 2,000/10,000 = 0.20.",
-          "\"algorthim recusion\": 30/10,000 = 0.003 (misspelt, or not covered).",
-          "Adding words can only increase scope.",
-          {
-            "type": "p",
-            "text": "Stability example"
-          },
-          "Original ranking: A, B, C, D, E.",
-          "Small change gives A, C, B, D, E: Overlap@5 = 1.0 and Overlap@3 = 1.0. **Stable.**",
-          "Small change gives X, Y, Z, A, B: Overlap@5 = 0.4 and Overlap@3 = 0.0. **Unstable.**",
-          "You can disturb the query (drop a word), the documents (add noise) or the system (try several).",
-          {
-            "type": "p",
-            "text": "Lecture exercises, with answers"
-          },
-          "**1.** Combine before-search and after-search predictors in a learned model.",
-          "**2.** For a music recommender, predict hard users or items from profile size, neighbour similarity and score spread. To tell if query expansion helped, compare score spread or overlap before and after.",
-          "**3.** High AvgIDF, low scope and flat scores disagree: rare words, little coverage or a typo, and no clear winners. Probably difficult.",
-          "**4.** Test a new predictor by correlating (Pearson, Spearman, Kendall τ) its scores with real AP over many queries.",
-          "**5.** RAG deciding **whether** to search can only use before-search predictors. After searching, it can use after-search ones to flag low confidence."
-        ]
-      },
-      {
-        "heading": "Evaluating a predictor",
-        "items": [
-          "Run many queries. Compare the predicted scores with the real AP (or P@k).",
-          "**Pearson r**: is the relationship a straight line?",
-          "**Spearman ρ**: do the rankings agree?",
-          "**Kendall τ**: (agreeing pairs - disagreeing pairs) / total pairs. This one is reported most.",
-          "A good predictor puts queries in the right order of difficulty.",
-          "A negative correlation means it is misleading."
+          "Even human experts are poor at guessing which queries will be hard."
         ]
       },
       {
@@ -1161,25 +1091,28 @@ module.exports = [
             "type": "p",
             "text": "Type 1: the query's wording"
           },
-          "Look at query length, ambiguity (number of word meanings, names) and sentence structure.",
-          "Most are weak. Multiple meanings is one exception.",
+          "Look at query length, ambiguity (how many meanings each word has, whether it names a person or place) and sentence structure.",
+          "A dictionary such as **WordNet** lists the meanings of each word, so a program can count them. LLMs can now do this kind of analysis too.",
+          "Most of these predict poorly. The exceptions are multiple meanings and complex sentence structure.",
+          "Ambiguity is not always fatal: \"jaguar speed\" is ambiguous but may still work, because many pages are about the animal's speed.",
           {
             "type": "p",
             "text": "Type 2: statistics about the collection"
           },
-          "**AvgIDF**: are the query words rare? Rare words are specific, so the query is easier.",
+          "**IDF** (inverse document frequency) scores how rare a word is: high if few documents contain it.",
+          "**AvgIDF** is the average IDF of the query words. Rare words are specific, so a high AvgIDF suggests an easier query.",
           {
             "type": "formula",
             "label": "AvgIDF / MaxIDF",
             "text": "AvgIDF(q) = (1/|q|) Σ_{t in q} log(N / df(t));  MaxIDF(q) = max_t log(N / df(t)). N = documents in collection, df(t) = documents containing t. High = specific = easier."
           },
-          "**Scope**: how much of the collection does the query touch?",
+          "**Scope**: what share of the documents contains at least one query word? Adding words to a query can only increase it.",
           {
             "type": "formula",
             "label": "Query scope",
             "text": "Scope(q) = |{d in C : d contains at least one query term}| / |C|.  Example: \"computer science\" 8000/10000 = 0.80 (broad); \"algorthim recusion\" 30/10000 = 0.003 (misspelling or missing coverage)."
           },
-          "**PMI**: do the query words tend to appear together?",
+          "**PMI** (pointwise mutual information): do the query words appear together more often than chance would explain?",
           {
             "type": "formula",
             "label": "Term relatedness: average pointwise mutual information",
@@ -1187,13 +1120,13 @@ module.exports = [
           },
           "\"neural network training\" (words that go together) should do better than \"neural banana training\".",
           "PMI does not work for one-word queries.",
-          "**SCQ**: how similar is the query to the collection as a whole?",
+          "**SCQ** (collection-query similarity): how strongly does the collection as a whole match the query words?",
           {
             "type": "formula",
             "label": "Collection-query similarity (SCQ, Zhao et al.; extra, not on the slides)",
             "text": "SCQ(t) = (1 + ln cf(t)) × ln(1 + N/df(t)); SCQ(q) = sum or max over query terms. cf = collection frequency. Higher = collection similarity of the query is higher = easier."
           },
-          "Other ideas: how much the query words' tf-idf weights vary (more variation means some words discriminate well), and how well the words hang together.",
+          "Other ideas: how much a word's **tf-idf** weight (how often it is in a document, times how rare it is) varies between documents. More variation means the word separates documents well.",
           {
             "type": "p",
             "text": "Cautions"
@@ -1212,8 +1145,9 @@ module.exports = [
             "text": "Clarity"
           },
           "Do the top results use distinctive words, or do they read like random text?",
-          "Distinctive (high **KL divergence**, a measure of how different two word mixes are) means a clear query.",
-          "Random-looking means ambiguous or poor.",
+          "Compare the words in the top results with the words in the whole collection. **KL divergence** is a number for how different those two word mixes are.",
+          "Very different (high) means the results are about something specific, so the query is clear.",
+          "Much like the collection in general (low) means the query is ambiguous or poor.",
           {
             "type": "formula",
             "label": "Clarity score",
@@ -1229,7 +1163,10 @@ module.exports = [
           },
           "A reliable ranking should barely change after a small disturbance.",
           "Drop a query word, add noise to documents, or try other systems.",
-          "Measure the change with overlap@k or Kendall τ.",
+          "To measure the change, use **overlap@k**: the share of the original top k results still in the new top k.",
+          "Original top 5: A, B, C, D, E.",
+          "New list A, C, B, D, E: all five are still there, overlap@5 = 1.0. **Stable**, so predicted easier.",
+          "New list X, Y, Z, A, B: only A and B remain, overlap@5 = 2/5 = 0.4. **Unstable**, so predicted harder.",
           "Caution: a good rewording can rightly change the ranking.",
           {
             "type": "p",
@@ -1247,7 +1184,7 @@ module.exports = [
           "Query B scores: 6.1, 5.9, 5.8, 5.7, 5.6, 5.5, 5.4, 5.3 (mean 5.66, standard deviation 0.25).",
           "A is spread out, so the system is confident about its top documents. A is predicted **easier**.",
           "Caution: those top documents could still be wrong.",
-          "Also exist (not on the slides): Weighted Information Gain (WIG) and BERT-based predictors."
+          "Two more exist but are not on the slides: Weighted Information Gain (WIG) and predictors built on the BERT language model."
         ]
       },
       {
@@ -1300,6 +1237,70 @@ module.exports = [
           "Flag low-confidence results.",
           "Find topics the collection covers poorly.",
           "You can combine predictors (for example with regression), or use the same idea in recommenders to predict hard users or items."
+        ]
+      },
+      {
+        "heading": "How to test a predictor",
+        "items": [
+          "To test a predictor you need queries where the real result is known.",
+          "The real result is usually **AP** (average precision): one score from 0 to 1 for how well the relevant documents were ranked for a query.",
+          "The predictor's numbers are on a different scale from AP, so we check that it puts the queries **in the right order**, not that the values match.",
+          {
+            "type": "p",
+            "text": "Example with three queries"
+          },
+          "Real AP for q1, q2, q3: 0.62, 0.15, 0.40.",
+          "Predicted: 0.81, 0.34, 0.52.",
+          "Both say q1 is easiest, then q3, then q2. The order is the same, so this predictor did well here.",
+          {
+            "type": "p",
+            "text": "Three ways to put a number on the agreement"
+          },
+          "Each is a **correlation**: +1 means perfect agreement, 0 means no link, -1 means exactly backwards (misleading).",
+          "**Pearson r**: do the two sets of values rise together in a straight line? In the example it is about 0.99.",
+          "**Spearman ρ** (rho): do the two rankings agree? In the example it is 1.0.",
+          "**Kendall τ** (tau): take every pair of queries and ask whether both lists put them the same way round. τ = (pairs that agree - pairs that disagree) / total pairs. In the example all 3 pairs agree, so τ = 1.0. This is the one reported most."
+        ]
+      },
+      {
+        "heading": "Background: where this research came from",
+        "items": [
+          "**TREC** is a yearly research competition where teams test search systems on the same data. Its **Robust Track** (2003-2005) looked only at difficult queries.",
+          "It scored systems with **GMAP** as well as the usual average. GMAP multiplies the AP scores together and takes a root, so one very bad query pulls it down sharply. This rewards systems that are reliable on every query.",
+          "Human experts guessed which queries would be hard. Their guesses barely matched what happened (correlation 0.26), and they did not agree much with each other either (0.39).",
+          "Teams also tried to rank the queries by difficulty automatically. This proved hard, and some methods even had a **negative** correlation (they pointed the wrong way).",
+          "That work led to the before-search and after-search predictors above."
+        ]
+      },
+      {
+        "heading": "Lecture exercises, with answers",
+        "items": [
+          {
+            "type": "p",
+            "text": "1. How could you do better than any one predictor?"
+          },
+          "Feed several before-search and after-search predictors into a model that learns how to combine them.",
+          {
+            "type": "p",
+            "text": "2. Where else could these ideas be used?"
+          },
+          "A music recommender could predict which users or items will be hard, from how much listening history there is, how similar the nearest neighbours are and how spread out the scores are.",
+          "To check whether adding words to a query (query expansion) helped, compare the score spread or overlap before and after.",
+          {
+            "type": "p",
+            "text": "3. A query has rare words (high AvgIDF), tiny scope and flat scores. Easy or hard?"
+          },
+          "Probably hard. The rare words may be a typo or barely covered by the collection, and no result stands out.",
+          {
+            "type": "p",
+            "text": "4. How would you test a new predictor?"
+          },
+          "Run many queries and correlate its scores with the real AP (Pearson, Spearman or Kendall τ).",
+          {
+            "type": "p",
+            "text": "5. Which predictors can a RAG chatbot use to decide whether to search?"
+          },
+          "Only before-search ones, since there are no results yet. After searching it can use after-search ones to warn that it is not confident."
         ]
       },
       {

@@ -62,7 +62,13 @@ module.exports = [
       {
         "heading": "Worked example: least squares",
         "items": [
-{"type":"task","show":1,"q":["Fit the least squares line y = w0 + w1 x."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Fit the least squares line y = w0 + w1 x."
+            ]
+          },
           "Data: x = 1,2,3,4,5 and y = 2,4,5,4,5. Averages: x = 3, y = 4.",
           "**Sxy** = (-2)(-2) + (-1)(0) + (0)(1) + (1)(0) + (2)(1) = 6.",
           "**Sxx** = 4 + 1 + 0 + 1 + 4 = 10.",
@@ -251,51 +257,47 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 5)",
+        "heading": "Reading and trusting the coefficients",
+        "items": [
+          "A **coefficient** is how much the prediction changes when one feature goes up by one and the others stay fixed.",
+          "Start with linear regression because it is **fast**, **readable** and often good enough. If a complex model is not clearly better, keep this one.",
+          {
+            "type": "p",
+            "text": "Cautions"
+          },
+          "A coefficient depends on which other features are in the model.",
+          "\"One unit more, everything else fixed\" may be impossible in real life.",
+          "For categories, each coefficient is a comparison with one chosen **reference** category.",
+          "With an **interaction** (two features multiplied together), the single coefficients change meaning.",
+          "Scaling changes their size: unscaled is per original unit, standardised is per standard deviation.",
+          "Predicting well does **not** show that changing x causes y to change.",
+          "Check that coefficients stay similar across different samples of the data."
+        ]
+      },
+      {
+        "heading": "Residual plots and features that overlap",
         "items": [
           {
             "type": "p",
-            "text": "Why start here (Week 5)"
+            "text": "Reading the residual plot (real minus predicted)"
           },
-          "It is **fast**, **readable** and often **competitive**.",
-          "If a complex model is not clearly better, keep this one.",
+          "A random cloud is fine. A curve means a shape or interaction is missing. A funnel means the errors grow in one region.",
           {
             "type": "p",
-            "text": "Data layout"
+            "text": "Multicollinearity: two or more features carry the same information"
           },
-          "In the table X, rows are examples and columns are features. How you prepare data decides what each coefficient means.",
-          "Assumptions matter differently for **predicting** and for **explaining**.",
-          {
-            "type": "p",
-            "text": "Reading the residual plot"
-          },
-          "Random cloud: fine. Curve: missing shape or interaction. Funnel: uneven spread.",
-          {
-            "type": "p",
-            "text": "Multicollinearity signs and fixes"
-          },
-          "**Signs**: coefficients jump between folds, odd signs, great uncertainty. Predictions may still be fine.",
-          "**Fixes**: drop or combine features, regularise, reduce dimensions.",
-          {
-            "type": "p",
-            "text": "Cautions when interpreting"
-          },
-          "It depends on which features are included, and leaving one out changes the others.",
-          "\"One unit more\" may be unrealistic.",
-          "Category coefficients depend on the reference category.",
-          "Interactions change what the main effects mean.",
-          "Scaling changes the size of coefficients. Unscaled means per raw unit, standardised means per standard deviation.",
-          "Predicting well does not show that changing x changes y.",
-          "Check stability across folds, penalty strengths and resamples.",
-          {
-            "type": "p",
-            "text": "Practical points"
-          },
-          "`make_pipeline(preprocessor, RidgeCV(alphas=[0.01, 0.1, 1, 10, 100]))`",
-          "Elastic Net's l1_ratio sets the mix. Use it with many related features.",
-          "Report MAE, RMSE, R squared and residual plots, against a `DummyRegressor`.",
-          "Prediction intervals need extra methods.",
-          "**Common mistakes**: causal language, unscaled penalties, predicting outside the data, choosing settings on the test set, ignoring interactions."
+          "**Signs**: coefficients jump around between samples, have the opposite sign to what you expect, or are very uncertain. Predictions may still be fine.",
+          "**Fixes**: drop or combine features, regularise (penalise large coefficients), or reduce the number of dimensions."
+        ]
+      },
+      {
+        "heading": "Doing it in scikit-learn",
+        "items": [
+          "`make_pipeline(preprocessor, RidgeCV(alphas=[0.01, 0.1, 1, 10, 100]))` prepares the data, then fits Ridge, picking the penalty strength itself.",
+          "**Elastic Net** mixes the two penalties (Ridge and Lasso). `l1_ratio` sets the mix. It suits many related features.",
+          "Report MAE, RMSE, R squared and residual plots, next to a `DummyRegressor` (always guesses the average).",
+          "A range of likely values around a prediction needs extra methods.",
+          "**Common mistakes**: claiming cause, penalising unscaled features, predicting far outside the data, choosing settings on the test set, ignoring interactions."
         ]
       }
     ],
@@ -382,7 +384,14 @@ module.exports = [
       {
         "heading": "Worked example",
         "items": [
-{"type":"task","show":0,"q":["Model: z = -4 + 1.0 x, where x is hours studied. Data (x, passed): (2, 0), (3, 0), (5, 1), (6, 1).","Find z, the probability and the loss for each, the average log-loss, and the odds ratio."]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Model: z = -4 + 1.0 x, where x is hours studied. Data (x, passed): (2, 0), (3, 0), (5, 1), (6, 1).",
+              "Find z, the probability and the loss for each, the average log-loss, and the odds ratio."
+            ]
+          },
           "Model: z = -4 + 1.0 x, where x = hours studied. The boundary is at 4 hours.",
           {
             "type": "table",
@@ -554,42 +563,44 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 5)",
+        "heading": "Why yes/no needs its own model, and the three jobs",
         "items": [
           {
             "type": "p",
-            "text": "Why not linear regression for yes/no"
+            "text": "Why not use linear regression for yes/no"
           },
-          "**Range**: it can go below 0 or above 1.",
-          "**Errors**: they are not evenly spread or bell-shaped.",
-          "**Shape**: we need a probability tied to a straight boundary.",
+          "**Range**: it can predict below 0 or above 1, which is not a probability.",
+          "**Errors**: they are not evenly spread or bell-shaped, which linear regression assumes.",
+          "**Shape**: we want a probability that changes smoothly across a straight dividing line.",
           {
             "type": "p",
             "text": "Three separate jobs"
           },
-          "The **model** gives a probability. The **threshold** turns it into a class. The **costs** decide which mistake matters more.",
-          "Never tune the threshold on the test set.",
+          "The **model** gives a probability. The **threshold** (cut-off) turns it into yes or no. The **costs** decide which mistake matters more.",
+          "Never tune the threshold on the test set."
+        ]
+      },
+      {
+        "heading": "Doing it in scikit-learn",
+        "items": [
+          "`LogisticRegression(C=1.0, max_iter=1000)`. C is the opposite of penalty strength: smaller C means a stronger penalty. Choose it by cross-validation.",
+          "`predict_proba(X)[:, 1]` gives the probability of \"yes\", and `pred = prob >= 0.5` applies the threshold.",
+          "The Elastic Net penalty only works with some solvers (the routine that fits the model), such as saga.",
+          "`class_weight` makes mistakes on one class count for more during training. It does not change how common that class really is.",
+          "Default settings differ between library versions."
+        ]
+      },
+      {
+        "heading": "Regression and classification workflows side by side",
+        "items": [
+          "**Regression** predicts a number. Measure with MAE, RMSE, R squared and residual plots.",
+          "**Classification** predicts a category. Measure with log loss (penalises confident wrong probabilities), ROC or precision-recall curves, calibration, the confusion matrix and a threshold.",
+          "Both need a protected test set, a baseline and no **leakage** (information from the test data sneaking into training).",
           {
             "type": "p",
-            "text": "Code"
+            "text": "A good starting piece of work"
           },
-          "`LogisticRegression(C=1.0, max_iter=1000)`.",
-          "`predict_proba(X)[:, 1]` gives the probability of \"yes\", and `pred = prob >= 0.5`.",
-          "Elastic Net needs a compatible solver such as saga. Choose C by cross-validation.",
-          "`class_weight` changes what the model optimises, not reality.",
-          "Defaults depend on the library version.",
-          {
-            "type": "p",
-            "text": "Comparing the two workflows"
-          },
-          "**Regression**: number target. MAE, RMSE, R squared, residuals.",
-          "**Classification**: category target. Log loss, ROC or PR, calibration, confusion matrix, threshold.",
-          "Both need protected testing, baselines and no leakage.",
-          {
-            "type": "p",
-            "text": "Portfolio baseline"
-          },
-          "Fit the model with your Week 3 preparation and Week 4 testing, compare with a dummy, report main and extra measures with their variation, explain a few coefficients, and try one regularised version."
+          "Prepare the data, set up testing, compare with a dummy model, report the main and extra measures with how much they vary, explain a few coefficients, and try one penalised version."
         ]
       }
     ],
@@ -663,7 +674,14 @@ module.exports = [
       {
         "heading": "Worked example: query q = (3, 3)",
         "items": [
-{"type":"task","show":0,"q":["Points: P1 (1, 1) A, P2 (2, 1) A, P3 (4, 4) B, P4 (3, 5) B, P5 (6, 3) B, P6 (2, 3) A.","Classify q = (3, 3) with k = 1, k = 3, k = 3 weighted by 1/d², and k = 5."]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Points: P1 (1, 1) A, P2 (2, 1) A, P3 (4, 4) B, P4 (3, 5) B, P5 (6, 3) B, P6 (2, 3) A.",
+              "Classify q = (3, 3) with k = 1, k = 3, k = 3 weighted by 1/d², and k = 5."
+            ]
+          },
           {
             "type": "table",
             "head": [
@@ -751,20 +769,71 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 6)",
+        "heading": "How k-NN differs from model-based methods",
         "items": [
-          "Instance-based vs model-based: kNN stores training examples and delays most computation until prediction (the local neighbourhood is the model); a decision tree learns a compact hierarchy of feature tests in training and predicts along one root-to-leaf path. Both are non-parametric supervised methods for classification and regression.",
-          "**Inductive bias** (each algorithm assumes useful structure): kNN = nearby cases in the represented feature space have similar targets; decision tree = useful predictions can be expressed by axis-aligned recursive rules.",
-          "kNN procedure (5 steps): store prepared training examples; measure distance to the query; select the k nearest; aggregate neighbour labels; return class or class probability (neighbour proportion = local probability estimate). Slide example: k = 3 neighbours magenta, green, green gives green; k = 5 neighbours magenta, green, green, magenta, magenta gives magenta (k changes the answer).",
-          "Lecture dataset **College Athletes** (Speed, Agility, Draft yes/no, 20 instances): similarity is measured as distance in feature space, each feature is a dimension, and this scales to arbitrarily high dimensions. Example: ID 12 = [5.00, 2.50] vs query [2.75, 7.50]: Euclidean = sqrt(2.25^2 + 5^2) = 5.483; Manhattan = 2.25 + 5.00 = 7.25.",
-          "Distance comparison: Euclidean and Manhattan are the most common; Minkowski generalises both (p = 1 Manhattan, p = 2 Euclidean) so infinitely many metrics exist; Manhattan is cheaper (no squares or square root), a good choice for very large datasets with limited compute; try several metrics for the dataset; other measures: cosine similarity, Russel-Rao, Sokal-Michener.",
-          "Categorical features: one-hot mismatch adds distance even when categories have no natural order; high cardinality gives many sparse indicators that dominate neighbourhoods; mixed numeric and categorical data may not suit a single Euclidean metric. Scaling defines the geometry of neighbourhoods (use StandardScaler or RobustScaler inside the pipeline).",
-          "Weighting: uniform (each neighbour equal) vs distance (closer neighbours count more, often inverse distance); weighting helps local predictions but can amplify noisy near-duplicates.",
-          "Choosing k (lecture): at least 3 if not using 1-NN, often 5-21, application dependent, so experiment. Increasing k has a smoothing effect: too low overfits noisy data, too high underfits; in imbalanced data the majority class dominates for larger k. **k does not affect computational cost much**: most cost is computing distances from the query to all stored instances (linear in number of cases and attributes). Distance-weighted kNN can use all cases.",
-          "kNN regression: y_hat(x) = (1/k) sum of the k neighbours' targets; distance-weighted mean variant; predictions stay within the range of nearby observed targets, so extrapolation is poor.",
-          "Cost profile: training cost low (store examples, maybe build a search index); prediction cost high (compare with many stored examples or search an index: brute force, KD Tree, Ball Tree); memory cost = retain training data and targets. Curse of dimensionality: sparse space, distance concentration (nearest and farthest distances less distinguishable), feature noise from irrelevant dimensions; feature selection, representation design and enough data matter more than a better search structure.",
-          "sklearn: `KNeighborsClassifier(n_neighbors=7, weights=\"distance\")` with `metric` / `p` controlling geometry; tune `n_neighbors`, `weights` (uniform / distance) and `p` (1, 2) with `GridSearchCV` over the whole pipeline (param name `kneighborsclassifier__n_neighbors`), scoring e.g. f1; near-equal settings may not be meaningful; do error analysis (local ambiguity, minority-class misses, scaling issues).",
-          "Strengths: simple intuition, flexible boundaries, classification and regression, few modelling assumptions. Limitations: sensitive to scale, irrelevant features, dimension and local density; costly prediction. Best fit: moderate data size, meaningful distance, locally smooth target structure."
+          "**k-NN** (k nearest neighbours) just **stores** the training examples. All the work happens when you ask for a prediction: it finds the k stored examples most like the new one. This is called **instance-based** learning.",
+          "A decision tree is **model-based**: it builds rules during training, then follows them.",
+          "Both work for classification (predict a category) and regression (predict a number), and neither assumes a fixed formula for the data (**non-parametric**).",
+          "Every method has an **inductive bias**, an assumption about what patterns to expect. For k-NN: similar cases have similar answers. For a tree: simple yes/no rules can separate the answers.",
+          {
+            "type": "p",
+            "text": "Steps"
+          },
+          "**1.** Store the prepared training examples.",
+          "**2.** Measure the distance from the new case to each one.",
+          "**3.** Take the k nearest.",
+          "**4.** Let them vote (or average, for numbers).",
+          "**5.** Return the winning class, or the share of neighbours as a probability.",
+          "The choice of k can change the answer: with neighbours in order magenta, green, green, magenta, magenta, k = 3 gives green but k = 5 gives magenta."
+        ]
+      },
+      {
+        "heading": "Measuring distance",
+        "items": [
+          "Each feature is one axis, and each example is a point. Closer points are more similar. This works with any number of features.",
+          "**Euclidean**: straight-line distance. **Manhattan**: add up the differences along each axis, like walking city blocks.",
+          "Example: from (5.00, 2.50) to (2.75, 7.50). Euclidean = sqrt(2.25^2 + 5^2) = 5.483. Manhattan = 2.25 + 5.00 = 7.25.",
+          "**Minkowski** is the general formula with a setting p: p = 1 gives Manhattan, p = 2 gives Euclidean.",
+          "Manhattan is cheaper to compute (no squares or square roots), useful for very large data. Try several.",
+          "Other similarity measures exist, such as cosine similarity, Russel-Rao and Sokal-Michener.",
+          {
+            "type": "p",
+            "text": "Preparing features"
+          },
+          "The scale of each feature decides who counts as near, so scale them (`StandardScaler`, or `RobustScaler` if there are outliers) inside the pipeline.",
+          "**One-hot encoding** turns a category into several 0/1 columns. A feature with very many categories makes many columns that can dominate the distance. Mixed numbers and categories may not suit one distance measure."
+        ]
+      },
+      {
+        "heading": "Choosing k, weighting, cost and limits",
+        "items": [
+          {
+            "type": "p",
+            "text": "Choosing k"
+          },
+          "Often between 5 and 21, at least 3 unless you want 1-NN. It depends on the data, so experiment.",
+          "Too small: follows noise (overfits). Too large: smooths away real detail (underfits), and with uneven classes the common class wins.",
+          "k barely affects speed: most of the time goes on measuring distances to every stored example.",
+          "**Weighting**: neighbours can count equally, or closer ones can count more (often 1 / distance). Weighting can let a noisy near-duplicate have too much say.",
+          "For numbers, predict the average of the k neighbours. It can never predict outside the range of those values.",
+          {
+            "type": "p",
+            "text": "Cost"
+          },
+          "Training is cheap. Prediction is expensive. All the data must be kept in memory.",
+          "**KD Tree** and **Ball Tree** are index structures that find neighbours faster than checking every point.",
+          "**Curse of dimensionality**: with very many features, points are all far apart and \"nearest\" barely differs from \"farthest\". Removing useless features helps more than a faster search.",
+          {
+            "type": "p",
+            "text": "In scikit-learn"
+          },
+          "`KNeighborsClassifier(n_neighbors=7, weights=\"distance\")`. Try values of `n_neighbors`, `weights` and `p` with `GridSearchCV` on the whole pipeline.",
+          "Tiny score differences may mean nothing. Look at which cases are wrong and why.",
+          {
+            "type": "p",
+            "text": "Summary"
+          },
+          "**Good**: simple, flexible boundaries, few assumptions. **Bad**: sensitive to scale and useless features, slow to predict. **Best when** the data is moderate in size and distance is meaningful."
         ]
       }
     ],

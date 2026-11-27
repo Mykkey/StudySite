@@ -75,7 +75,13 @@ module.exports = [
       {
         "heading": "Worked example (10 examples)",
         "items": [
-{"type":"task","show":1,"q":["Find the entropy and Gini of the whole set, then decide which feature to split on first and build the tree."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Find the entropy and Gini of the whole set, then decide which feature to split on first and build the tree."
+            ]
+          },
           {
             "type": "table",
             "head": [
@@ -247,7 +253,13 @@ module.exports = [
       {
         "heading": "Lecture worked example: Anyone for Tennis? (weather data)",
         "items": [
-{"type":"task","show":3,"q":["Build the decision tree using information gain."]},
+          {
+            "type": "task",
+            "show": 3,
+            "q": [
+              "Build the decision tree using information gain."
+            ]
+          },
           {
             "type": "p",
             "text": "The lecture data: will we play tennis?"
@@ -492,14 +504,25 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail: pruning, preprocessing, comparison with kNN (Week 6)",
+        "heading": "Cost-complexity pruning and using trees in scikit-learn",
         "items": [
-          "**Cost-complexity pruning**: R(T) = training error + alpha × number of leaves.",
-          "Small alpha keeps a bigger tree. Large alpha gives a smaller one. Choose alpha by cross-validation.",
-          "**Preparing data**: no scaling needed, but scikit-learn wants categories turned into numbers.",
-          "Missing-value support depends on the version, so use a documented method.",
-          "**Code**: `DecisionTreeClassifier(criterion=gini or log_loss/entropy, max_depth=4, min_samples_leaf=10, random_state=42)`.",
-          "Look at the tree with `plot_tree`. Tiny leaves give shaky explanations, and a split does not show cause.",
+          "**Pruning** means cutting branches off a tree so it does not memorise the data.",
+          "**Cost-complexity pruning** scores each smaller tree as: R(T) = training error + alpha × number of leaves. Lowest score wins.",
+          "alpha is the price of each leaf. Small alpha keeps a big tree, large alpha gives a small one. Choose it by cross-validation.",
+          {
+            "type": "p",
+            "text": "In scikit-learn (the Python library)"
+          },
+          "Trees need no scaling, but categories must be turned into numbers first.",
+          "Missing values are only handled by some versions, so fill them in yourself in a documented way.",
+          "`DecisionTreeClassifier(criterion=\"gini\" or \"entropy\", max_depth=4, min_samples_leaf=10, random_state=42)`",
+          "`plot_tree` draws it. Leaves with very few examples give shaky explanations, and a split does not show that one thing causes another."
+        ]
+      },
+      {
+        "heading": "Decision tree compared with k-NN",
+        "items": [
+          "**k-NN** (k nearest neighbours) predicts by finding the k most similar stored examples and letting them vote.",
           {
             "type": "table",
             "head": [
@@ -545,11 +568,19 @@ module.exports = [
               ]
             ]
           },
-          "**Comparing fairly**: same folds, scale only k-NN, same scorecard (main measure, variation, errors, speed, readability).",
-          "**k-NN**: small k = flexible but jumpy. Large k = smooth but may miss detail.",
-          "**Tree**: deep = flexible but jumpy. Shallow = smooth but may miss detail.",
-          "**Common mistakes**: unscaled k-NN, tuning on the test set, different folds, trusting a huge tree plot, reading importance as cause.",
-          "Do not choose on score alone. Consider speed, memory, stability and explanation."
+          {
+            "type": "p",
+            "text": "Both have a flexibility dial"
+          },
+          "**k-NN**: small k is flexible but jumpy. Large k is smooth but can miss detail.",
+          "**Tree**: a deep tree is flexible but jumpy. A shallow one is smooth but can miss detail.",
+          {
+            "type": "p",
+            "text": "Comparing them fairly"
+          },
+          "Use the same cross-validation folds and the same measures. Scale the features for k-NN only.",
+          "Do not choose on score alone: consider speed, memory, stability and how easy it is to explain.",
+          "**Common mistakes**: not scaling for k-NN, tuning on the test set, different folds, trusting a huge tree picture, reading feature importance as cause."
         ]
       }
     ],
@@ -617,7 +648,26 @@ module.exports = [
       {
         "heading": "Worked examples",
         "items": [
-{"type":"task","show":0,"q":["**AdaBoost:** 10 examples, each weight 0.1. The first stump gets 2 wrong. Find the error, the stump weight and the new example weights.","**Gradient boosting:** y = 3, 5, 8. Start from the mean, find the residuals, and make one step with learning rate 0.1."],"own":[{"type":"formula","label":"AdaBoost stump weight","text":"a = 0.5 × ln((1 − e) / e), where e is the weighted error"},{"type":"formula","label":"AdaBoost reweighting","text":"wrong: weight × e^a. right: weight × e^(−a). Then rescale so the weights add to 1."}]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "**AdaBoost:** 10 examples, each weight 0.1. The first stump gets 2 wrong. Find the error, the stump weight and the new example weights.",
+              "**Gradient boosting:** y = 3, 5, 8. Start from the mean, find the residuals, and make one step with learning rate 0.1."
+            ],
+            "own": [
+              {
+                "type": "formula",
+                "label": "AdaBoost stump weight",
+                "text": "a = 0.5 × ln((1 − e) / e), where e is the weighted error"
+              },
+              {
+                "type": "formula",
+                "label": "AdaBoost reweighting",
+                "text": "wrong: weight × e^a. right: weight × e^(−a). Then rescale so the weights add to 1."
+              }
+            ]
+          },
           "**AdaBoost weights**: 10 examples, each weight 0.1; the first stump misclassifies 2. Weighted error e = 0.2; a = 0.5 ln(0.8 / 0.2) = 0.5 ln 4 = 0.693.",
           "Misclassified: 0.1 x e^0.693 = 0.1 x 2 = 0.2 each (total 0.4). Correct: 0.1 x 0.5 = 0.05 each (total 0.4). Sum 0.8, so normalise: misclassified 0.25 each, correct 0.0625 each (totals 0.5 and 0.5). The next stump now sees the hard cases as half the total weight.",
           "**Gradient boosting (squared error)**: y = 3, 5, 8. F0 = mean = 5.333. Residuals = -2.333, -0.333, +2.667. Suppose the first tree fits the residuals exactly and eta = 0.1: F1 = 5.333 + 0.1 x residual = 5.100, 5.300, 5.600. Each stage moves a small step towards the targets."
@@ -675,31 +725,83 @@ module.exports = [
         ]
       },
       {
-        "heading": "Lecture detail (Week 7)",
+        "heading": "Why many models can beat one",
         "items": [
-          "Wisdom requires diversity: three needs = **accuracy** (base learners contain useful signal), **diversity** (predictions or errors differ), **aggregation** (voting or averaging gives one decision). Many copies of the same mistake do not create a strong ensemble.",
-          "Four sources of diversity: data resampling (bootstrap samples), feature randomness (different candidate feature subsets), algorithm diversity (different inductive biases), sequential correction (later models fix earlier errors or residuals).",
-          "Averaging reduces variance: average prediction = (1/M) sum f_m(x). High correlation: learners fail together, averaging adds little; lower correlation: independent errors partly cancel. Trade-off: more learners cost compute and show diminishing returns.",
-          "**Hard voting**: each classifier gives one label, majority wins. **Soft voting**: average or weight class probabilities, pick the largest (calibration matters). Justify weights with validation evidence, not after seeing test results.",
-          "Bootstrap: sample n cases with replacement; an observation may appear several times, each learner sees a different empirical dataset, some observations are omitted (out-of-bag). Slide example: original indices 1-5, draw 2, 5, 2, 1, 5: examples 2 and 5 appear twice, 3 and 4 are out-of-bag.",
-          "Bagging algorithm (5 steps): generate M bootstrap samples; fit one base learner per sample; predict with every learner; vote or average; evaluate the ensemble. Why trees suit bagging: single deep trees have low training bias but high variance (small data changes give different splits); averaging many unstable trees gives a stable predictor. Bagging cannot rescue a consistently biased base representation.",
-          "sklearn bagging: `BaggingClassifier(estimator=DecisionTreeClassifier(), n_estimators=200, max_samples=1.0, bootstrap=True, n_jobs=-1, random_state=42)`; n_estimators = number of base learners, max_samples = data per learner, bootstrap = sampling with replacement.",
-          "Random forest: bagged trees where strong predictors may dominate every tree; at each split only a random feature subset is considered, increasing diversity. A slightly weaker individual tree can create a stronger ensemble when correlation falls. Algorithm: bootstrap rows, random features per split, aggregate (vote for classification, average for regression).",
-          "RF hyperparameters: n_estimators (more trees stabilise, add compute and memory), max_features (smaller subsets increase diversity but may weaken splits), max_depth / leaf size (bias and variance of each tree), class_weight / sample weights (change fitting emphasis; do not replace careful evaluation). Tuning: primary controls max_features, min_samples_leaf, depth; increase n_estimators until validation behaviour stabilises; same folds and metrics. sklearn example: `RandomForestClassifier(n_estimators=500, max_features=\"sqrt\", min_samples_leaf=5, oob_score=True, n_jobs=-1)`; no scaling needed, but categories must be encoded.",
-          "**OOB evaluation**: per observation aggregate predictions only from trees that did not train on it; a convenient internal estimate and diagnostic; it does not replace a protected task-appropriate test strategy.",
-          "Importance: impurity importance is fast and built in but can favour features with many split opportunities; permutation importance = performance loss after shuffling a feature on held-out data; correlated predictors can have importance divided or masked. RF strengths: strong nonlinear baseline, interactions, reduced variance, modest preprocessing; limitations: larger models, slower inference, weaker global interpretability, poor extrapolation; best for structured tabular data.",
-          "Bagging vs boosting (slide wording): bagging fits learners independently on resampled data and mainly reduces variance; boosting fits weak learners sequentially focusing on current errors, reducing bias while controlling variance.",
-          "Weak learners: shallow trees capture one limited pattern or interaction; each stage adds a correction to the current prediction; the learning rate controls how strongly each learner contributes.",
-          "AdaBoost intuition (5 steps): fit a weak learner; measure weighted errors; increase weight on mistakes; fit the next learner; combine weighted votes. Gradient boosting intuition: start with a simple constant prediction; fit a small tree to the negative gradient / residual pattern; add scaled corrections across stages.",
+          "An **ensemble** combines several models. Each one is called a **base learner**.",
+          "It needs three things: **accuracy** (each is better than guessing), **diversity** (they make different mistakes) and **aggregation** (a way to combine them). Copies of the same mistake do not help.",
+          {
+            "type": "p",
+            "text": "Ways to make them differ"
+          },
+          "Give each a different sample of the data, a different subset of features, use different algorithms, or train them one after another so each fixes earlier errors.",
+          "Averaging reduces **variance** (how much predictions swing with the data), but only if the models do not all fail together. Each extra model adds less and costs more.",
+          "**Hard voting**: each gives a label and the majority wins. **Soft voting**: average their probabilities, then pick the largest, which needs those probabilities to be trustworthy. Choose weights using validation data."
+        ]
+      },
+      {
+        "heading": "Bootstrap and bagging",
+        "items": [
+          "**Bootstrap sample**: draw n examples from n **with replacement**, so some appear twice and some not at all. Drawing 2, 5, 2, 1, 5 from examples 1 to 5 repeats 2 and 5 and leaves out 3 and 4. Those left out are **out-of-bag (OOB)**.",
+          "**Bagging**: **1.** make many bootstrap samples, **2.** train one model on each, **3.** let each predict, **4.** vote or average, **5.** evaluate the whole thing.",
+          "Deep trees suit bagging: each is flexible but unstable, and averaging steadies them. Bagging cannot fix a mistake that every model makes.",
+          "`BaggingClassifier(estimator=DecisionTreeClassifier(), n_estimators=200, bootstrap=True)`: 200 trees, each on its own sample."
+        ]
+      },
+      {
+        "heading": "Random forests",
+        "items": [
+          "A **random forest** is bagged trees with one extra step: at each split only a random few features are considered. This stops one strong feature dominating every tree, so the trees differ more.",
+          {
+            "type": "p",
+            "text": "Settings"
+          },
+          "`n_estimators`: number of trees. Add more until the score stops changing.",
+          "`max_features`: fewer gives more variety but weaker splits.",
+          "`max_depth` and minimum leaf size: how detailed each tree is.",
+          "`class_weight`: makes errors on a class count more, but does not replace careful evaluation.",
+          "No scaling needed; categories must be turned into numbers.",
+          "**OOB score**: test each example using only the trees that never saw it. A handy check, but not a replacement for a test set.",
+          {
+            "type": "p",
+            "text": "Feature importance"
+          },
+          "**Impurity importance** (built in, fast) favours features with many possible split points.",
+          "**Permutation importance**: shuffle one feature in unseen data and see how much the score drops.",
+          "Features that carry the same information can share or hide each other's importance.",
+          {
+            "type": "p",
+            "text": "Strengths and limits"
+          },
+          "Strong on tables with little preparation. But big, slower to predict, hard to read, and cannot predict beyond the values it has seen."
+        ]
+      },
+      {
+        "heading": "Boosting",
+        "items": [
+          "**Boosting** trains models one after another, each concentrating on what is still wrong. It mainly reduces **bias** (being too simple). Bagging trains them separately and mainly reduces variance.",
+          "The models are **weak learners**: shallow trees that each capture one small pattern. The **learning rate** sets how much each one counts.",
+          "**AdaBoost**: fit a weak model, give more weight to the cases it got wrong, fit the next, then combine by weighted vote.",
+          "**Gradient boosting**: start with one constant guess, then repeatedly fit a small tree to the remaining errors and add a scaled-down version of it.",
           {
             "type": "formula",
             "label": "Additive model",
             "text": "F_m(x) = F_(m-1)(x) + eta x h_m(x)   (F_(m-1) = current ensemble prediction, eta = learning rate controlling update size, h_m = new weak learner fitted to the current error signal)"
           },
-          "Learning rate and trees: large eta = fast progress but risk of overshooting / overfitting; small eta = slower learning, typically with more estimators; tune learning rate and number of stages together. Depth: **stumps** (depth 1) give additive single-feature corrections; shallow trees capture limited interactions (common default); deep trees have more capacity, compute and overfitting risk.",
-          "sklearn: `GradientBoostingClassifier(n_estimators=200, learning_rate=0.05, max_depth=2, subsample=0.8)`; subsample below 1 gives stochastic boosting; `loss` defines the objective. **Histogram gradient boosting** bins numerical features for speed on larger datasets and supports missing values and categorical features under documented conditions. **Early stopping**: monitor validation loss after each stage, allow limited non-improving rounds (patience), reducing wasted computation and overfitting.",
-          "Boosting strengths: strong tabular performance, nonlinearities, interactions, flexible losses. Limitations: sequential training, tuning sensitivity, less transparent, noise and outlier sensitivity. Calibration: random forest probabilities are averages of leaf predictions and may need calibration; boosting probability quality depends on loss, complexity and fitting; choose thresholds on validation evidence and explicit costs.",
-          "Interpret ensembles responsibly: importance is model evidence, not causal truth; use permutation importance (on validation data), partial dependence (with feature-dependence caveats), individual local explanations with stability checks, error slices. Fair comparison: same folds (paired), same metrics (discrimination, errors, calibration), operational evidence (training time, prediction time, model size).",
+          {
+            "type": "p",
+            "text": "Settings"
+          },
+          "A large learning rate learns fast but can overshoot. A small one needs more trees. Tune the two together.",
+          "A **stump** is a tree with one split. Shallow trees are the usual choice; deep ones overfit more easily.",
+          "`GradientBoostingClassifier(n_estimators=200, learning_rate=0.05, max_depth=2, subsample=0.8)`: `subsample` below 1 trains each tree on a random part of the data.",
+          "**Histogram gradient boosting** groups numbers into bins to run faster on big data, and can handle missing values and categories.",
+          "**Early stopping**: stop adding trees when validation loss stops improving.",
+          "**Good**: very strong on tables. **Bad**: slower to train, fussy to tune, sensitive to noise and outliers, hard to read."
+        ]
+      },
+      {
+        "heading": "Comparing the ensembles and using them responsibly",
+        "items": [
           {
             "type": "table",
             "head": [
@@ -747,8 +849,23 @@ module.exports = [
               ]
             ]
           },
-          "Common mistakes: more trees is always better (benefits plateau, cost grows); OOB replaces the test set; boosting cannot overfit (it can fit noise); importance equals explanation (global split statistics do not explain each prediction); performance only (ignoring calibration, latency, model size, stakeholder risk); huge unstructured search grids.",
-          "Week 7 interim review expects: clean-environment run, Week 5 baseline and Week 6 models retained, at least one random forest and one justified boosting model, same CV design and primary metric, fold-level variability, error patterns / calibration, training and prediction time, leakage register and experiment log updates, preferred model with evidence, revised plan for weeks 8-12. Recommendation template: evidence, trade-offs (compute, latency, calibration, interpretability, risk), decision plus next experiment."
+          {
+            "type": "p",
+            "text": "Probabilities and explanations"
+          },
+          "A forest's probabilities are averages and may need **calibration** (adjusting so that \"80%\" means right 80% of the time). Pick thresholds on validation data using the costs of mistakes.",
+          "Feature importance describes the model, not cause and effect. Use permutation importance, **partial dependence** plots (how the prediction changes as one feature varies), checks on individual predictions and on groups of errors.",
+          "Compare fairly: same folds, same measures, plus training time, prediction time and size.",
+          {
+            "type": "p",
+            "text": "Common mistakes"
+          },
+          "Thinking more trees is always better; treating OOB as the test set; believing boosting cannot overfit; treating importance as an explanation; ignoring calibration, speed and risk; searching huge numbers of settings with no plan.",
+          {
+            "type": "p",
+            "text": "Module interim review (Week 7) expects"
+          },
+          "A project that runs from a clean setup, earlier baselines kept, at least one random forest and one justified boosting model, the same cross-validation for all, error and timing comparisons, updated logs, and a preferred model with evidence, trade-offs and next steps."
         ]
       }
     ],

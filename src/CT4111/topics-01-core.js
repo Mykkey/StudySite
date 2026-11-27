@@ -847,22 +847,117 @@ module.exports = [
         ]
       },
       {
-        "heading": "The four sample-paper principles: how and why they changed",
+        "heading": "Words used when discussing these principles",
         "items": [
-          "**(i) Don't repeat yourself: weakened but not dead.** Why it was important: duplicated code means fixing a bug in many places and humans hate typing it. Change: AI makes copies near-free to write and can refactor/unify code quickly, so some teams accept duplication for clarity, and generated code is often regenerated rather than maintained. Evidence: study of 211M lines shows duplication and churn up, reuse down with AI. Still matters: duplication hurts maintainability, review and AI context (inconsistent fixes). Net: DRY becomes a clean-up target AI can help with ('technical deflation') rather than a rule enforced at write time.",
-          "**(ii) Abstraction / information hiding: shifts level.** Why it was important: humans have limited working memory, so hide details behind interfaces. Change: LLMs can read large amounts of code and needs less hiding to understand it, 'nobody on the team holds a complete mental model' (Anthropic); the abstraction humans work at moves up to the **specification/prompt** and the contract (tests, interfaces). Still matters: context windows are finite and models hallucinate with too little or too much context, so modular code and clear interfaces help AI too; and guardrails like types and interfaces constrain generation.",
-          "**(iii) Requirements before code: strengthened and reshaped.** Why: with LLMs the 'what' and 'how' are decoupled; LLMs cannot guess what to build, so the developer must specify the 'what' thoroughly (prompting as specification, more emphasis on RE). Change: prototypes and vibe coding make code cheap, tempting 'code first', but ambiguity then produces wrong software at speed; tests (TDD) and user stories become the executable requirements; clarification-before-coding ('ask questions, state assumptions') is a prompting principle.",
-          "**(iv) Infrastructure as code: extended.** Why: reproducible, reviewable, versioned environments. Change: GenAI generates and reviews IaC and devops config quickly, and agents with shell access (embodied agents) can change infrastructure directly, so IaC and version control become the guardrail that makes AI changes auditable and revertible. The 'as code' idea extends to prompts, skills, CLAUDE.md/REVIEW.md instruction files and agent configuration: treat prompts as first-class versioned artefacts to avoid prompt debt."
+          "**Refactor**: improve code's structure without changing what it does.",
+          "**Churn**: code that gets rewritten or thrown away soon after it was written.",
+          "**Context window**: how much text an AI model can look at at once.",
+          "**Hallucinate**: the AI confidently makes something up.",
+          "**Guardrails**: checks that keep AI output safe and correct.",
+          "**Vibe coding**: letting the AI write code from loose requests without reading it closely."
+        ]
+      },
+      {
+        "heading": "(i) Don't repeat yourself: weakened but not dead",
+        "items": [
+          "**DRY** (\"don't repeat yourself\") means each piece of logic is written in one place.",
+          {
+            "type": "p",
+            "text": "Why it mattered"
+          },
+          "Duplicated code means fixing a bug in many places, and humans dislike typing the same thing.",
+          {
+            "type": "p",
+            "text": "What changed"
+          },
+          "AI makes copies almost free to write, and can also merge them quickly.",
+          "So some teams accept duplication for clarity, and generated code is often regenerated rather than maintained.",
+          "Evidence: a study of 211 million lines shows duplication and churn up, and reuse down, with AI.",
+          {
+            "type": "p",
+            "text": "Why it still matters"
+          },
+          "Duplication hurts maintenance, review and the AI itself, leading to inconsistent fixes.",
+          "**Net**: DRY becomes something you clean up afterwards with AI's help (\"technical deflation\": cleaning code gets cheaper) rather than a rule enforced while writing."
+        ]
+      },
+      {
+        "heading": "(ii) Abstraction / information hiding: shifts level",
+        "items": [
+          "**Information hiding** means putting details behind a simple **interface** (the list of things you can ask a part to do), so users of that part need not know how it works.",
+          {
+            "type": "p",
+            "text": "Why it mattered"
+          },
+          "Humans can only hold a little in their head at once.",
+          {
+            "type": "p",
+            "text": "What changed"
+          },
+          "**LLMs** (large language models, the AI behind chat and coding tools) can read large amounts of code and need less hidden from them.",
+          "Anthropic reports that \"nobody on the team holds a complete mental model\".",
+          "The level humans work at moves up to the **specification** or prompt (what you want) and the contract (tests and interfaces).",
+          {
+            "type": "p",
+            "text": "Why it still matters"
+          },
+          "Context windows are limited, and models make things up when given too little or too much.",
+          "So modular code and clear interfaces help AI too, and **types** and interfaces restrict what it can generate."
+        ]
+      },
+      {
+        "heading": "(iii) Requirements before code: strengthened and reshaped",
+        "items": [
+          {
+            "type": "p",
+            "text": "Why it matters"
+          },
+          "With LLMs the **what** (what to build) and the **how** (the code) come apart.",
+          "The AI cannot guess what to build, so the developer must specify it thoroughly. Prompting is a form of specification, so requirements work matters more.",
+          {
+            "type": "p",
+            "text": "The new pressure"
+          },
+          "Prototypes and vibe coding make code cheap, which tempts you to code first. Then unclear wishes produce the wrong software very quickly.",
+          "Tests written first (**TDD**) and user stories become requirements that can be run.",
+          "\"Ask questions and state assumptions before coding\" is a prompting principle."
+        ]
+      },
+      {
+        "heading": "(iv) Infrastructure as code: extended",
+        "items": [
+          "**Infrastructure as code** (IaC) means describing servers and setup in files kept in version control.",
+          {
+            "type": "p",
+            "text": "Why it mattered"
+          },
+          "Environments that are repeatable, reviewable and versioned.",
+          {
+            "type": "p",
+            "text": "What changed"
+          },
+          "GenAI writes and reviews these files and deployment configuration quickly.",
+          "**Agents** (AI that carries out actions itself) with access to a command line can change infrastructure directly.",
+          "So IaC and version control become the guardrail: every AI change can be inspected and undone.",
+          {
+            "type": "p",
+            "text": "The \"as code\" idea spreads"
+          },
+          "Prompts, skills, instruction files (`CLAUDE.md`, `REVIEW.md`) and agent settings should be versioned like code, to avoid **prompt debt** (a pile of unexplained prompts nobody can maintain)."
         ]
       },
       {
         "heading": "Other principles that changed (bonus examples)",
         "items": [
-          "**Code review as quality gate:** AI review runs on every PR; human approval scaled to risk (Anthropic).",
-          "**Shared ownership / Conway's law:** agents are team members whose organisation can emerge by itself (Mollick).",
-          "**Automate repetitive tasks:** extends to boilerplate, docs, tests.",
-          "**Document decisions:** AI drafts ADRs but accountability remains human.",
-          "Unchanged: separation of concerns, design for change, fail fast, measure before optimising still hold; AI is better when architecture is clean."
+          "**Code review as a quality gate**: AI review now runs on every pull request; how much human approval is needed depends on the risk (Anthropic).",
+          "**Shared ownership and Conway's law** (software structure mirrors how the team is organised): agents are now team members, and their organisation can arise by itself (Mollick).",
+          "**Automate repetitive tasks**: now extends to boilerplate (routine standard code), documentation and tests.",
+          "**Document decisions**: AI drafts the decision records (ADRs), but humans stay accountable.",
+          {
+            "type": "p",
+            "text": "Unchanged"
+          },
+          "**Separation of concerns** (each part handles one thing), **design for change**, **fail fast** (report errors at once) and **measure before optimising** still hold. AI works better when the architecture is clean."
         ]
       }
     ],
@@ -890,13 +985,22 @@ module.exports = [
       {
         "heading": "The problem RAG solves",
         "items": [
-          "An LLM only 'knows' what is in its weights (likely words) plus what we put in its context window. Everything else (your codebase, docs, new libraries) must be provided.",
-          "Naive approach: paste the whole file, all function docs and the task. Breaks when code grows: context windows are finite, long middle content is forgotten (primacy and recency bias), too much information and too little both cause hallucination, codebase changes so context goes stale."
+          "An LLM only \"knows\" what was learned in training (stored in its **weights**) plus what we put in its **context window** (the text it can see right now). Everything else, such as your code, documents and new libraries, must be provided.",
+          {
+            "type": "p",
+            "text": "The naive approach"
+          },
+          "Paste in the whole file, all function documentation and the task. This breaks as code grows:",
+          "Context windows are limited.",
+          "Content in the middle gets forgotten (models favour the start and end: **primacy and recency bias**).",
+          "Both too much and too little information cause **hallucination** (made-up answers).",
+          "The code base changes, so the context goes out of date."
         ]
       },
       {
         "heading": "How RAG works (goals and workings)",
         "items": [
+          "**RAG** (retrieval augmented generation): first **retrieve** the relevant pieces of your own material, then give them to the model to generate its answer.",
           {
             "type": "diagram",
             "kind": "flow",
@@ -939,20 +1043,41 @@ module.exports = [
             },
             "caption": "RAG pipeline: set-up (first three) then each query (last four)."
           },
-          "**Embeddings** are numeric vectors representing the meaning of text; similarity (e.g. cosine) finds relevant chunks without exact keyword matches.",
-          "**Goals:** ground answers in current, private or domain data; reduce hallucination; fit only relevant content into the finite context window; avoid retraining the model.",
-          "Keep the knowledge base up to date (libraries make re-indexing easy). RAG is 'a Google search over your codebase': the AI decides to search and results come into context.",
-          "Consumer chatbots often use plain web search as a tool instead (no embeddings).",
-          "In practice: Cursor indexes your project with embeddings; Claude Code often uses grep as the lookup tool."
+          "**Embeddings** are lists of numbers representing the meaning of text. Comparing them (for example by **cosine similarity**) finds relevant chunks even without matching words.",
+          {
+            "type": "p",
+            "text": "Goals"
+          },
+          "Base answers on current, private or specialist data.",
+          "Reduce made-up answers.",
+          "Fit only relevant content into the limited context window.",
+          "Avoid retraining the model.",
+          {
+            "type": "p",
+            "text": "In practice"
+          },
+          "Keep the searchable material up to date (**re-indexing** it is easy with libraries).",
+          "RAG is like a \"Google search over your codebase\": the AI decides to search and the results enter its context.",
+          "Consumer chatbots often just use web search as a tool instead, with no embeddings.",
+          "The Cursor editor indexes your project with embeddings; Claude Code often looks things up with **grep** (plain text search)."
         ]
       },
       {
         "heading": "Context management patterns",
         "items": [
-          "**Context as prompt (naive):** include everything; breaks at scale.",
-          "**Context on request:** the model emits something like a LOOKUP tool call; an API retrieves functions and docstrings and adds them. The LLM decides when to call the tool.",
-          "**RAG:** retrieve only relevant chunks. **Graph RAG:** retrieve from a knowledge graph of entities and relationships (requirements, ADRs, C4 components, incidents) via triplets (subject, predicate, object); answers 'what did we reject before?'.",
-          "**Keep context clean:** outdated docs cause hallucinations; long chats cost more and may auto-compact; start a new session after writing notes (TODO.md); prefer plain text (.md over .docx); supply niche library docs (e.g. context7).",
+          "**Context as prompt (naive)**: include everything. Breaks at scale.",
+          "**Context on request**: the model asks for what it needs, for example by issuing a LOOKUP **tool call**; the program fetches the functions and their descriptions and adds them. The model decides when to ask.",
+          "**RAG**: retrieve only the relevant chunks.",
+          "**Graph RAG**: retrieve from a **knowledge graph**, a network of things (requirements, decision records, components, incidents) and the links between them, stored as triples (subject, relation, object). It can answer \"what did we reject before?\".",
+          {
+            "type": "p",
+            "text": "Keeping context clean"
+          },
+          "Outdated documents cause hallucinations.",
+          "Long chats cost more and may be automatically summarised.",
+          "Write notes (such as `TODO.md`) and start a new session.",
+          "Prefer plain text (`.md` over `.docx`).",
+          "Supply documentation for unusual libraries (for example with a tool called context7).",
           "Good results need context that is **complete, correct and well presented**."
         ]
       }

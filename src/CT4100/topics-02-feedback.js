@@ -72,7 +72,15 @@ module.exports = [
       {
         "heading": "Worked example (from the notes)",
         "items": [
-{"type":"task","show":0,"q":["Terms: information, retrieval, indexing, database. The original query is (1, 1, 0, 0).","Relevant documents: (1, 2, 2, 0) and (1, 1, 2, 0). Non-relevant document: (0, 0, 0, 2).","Find the new query using Rocchio with α = 1, β = 0.75, γ = 0.25."]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Terms: information, retrieval, indexing, database. The original query is (1, 1, 0, 0).",
+              "Relevant documents: (1, 2, 2, 0) and (1, 1, 2, 0). Non-relevant document: (0, 0, 0, 2).",
+              "Find the new query using Rocchio with α = 1, β = 0.75, γ = 0.25."
+            ]
+          },
           {
             "type": "table",
             "head": [
@@ -307,14 +315,6 @@ module.exports = [
           "1. Run the original query. 2. Take the top **k** documents (k about 5-20) and assume they are relevant. 3. Select **expansion terms** from them: e.g. Rocchio centroid (highest-weight terms), top terms by tf-idf or by association with query terms (local analysis). 4. Add the best m terms (m about 10-30) with weights (original query terms weighted higher). 5. Re-run the expanded query and return the new ranking.",
           "**Key assumption:** the top-ranked documents contain useful information about the user's need (high precision at the top).",
           "In a vector model it is Rocchio with D_R = top-k, γ = 0 (or the bottom-ranked documents as D_N)."
-        ]
-      },
-      {
-        "heading": "Advantages and risks",
-        "items": [
-          "**Advantages:** fully automatic, no user burden; usually improves **recall** and average performance (MAP) by bridging vocabulary mismatch; simple to add to any ranker; works with short queries.",
-          "**Risks:** if top-k are not relevant (poor initial query) it adds irrelevant terms; **query drift** moves the query away from the original intent; extra retrieval pass costs time; high variance across queries (helps some, hurts others); long expanded queries; ambiguous queries drift towards the dominant sense; does not help when no relevant documents exist.",
-          "**Mitigations:** apply PRF only when the query is predicted easy (QPP); weight the original terms more (large α); restrict to few terms; weight documents by rank/score; use diverse term selection; verify with feedback from clarity scores."
         ]
       },
       {
@@ -630,21 +630,25 @@ module.exports = [
     ],
     "sections": [
       {
-        "heading": "Why diversity",
+        "heading": "Why show varied results",
         "items": [
-          "Queries are ambiguous (jaguar) or multi-faceted; user intent is unknown. Returning many near-identical items wastes list space and risks missing the user's intent entirely.",
-          "Applies to: **expansion terms** (don't add 5 near-synonyms), **search results** (cover all senses/aspects), **recommendations** (not 10 films from one franchise).",
-          "There is a **trade-off**: pure relevance ranking maximises expected relevance of each item (probability ranking principle); diversification sacrifices some per-item relevance to maximise coverage of intents and reduce the risk of total failure."
+          "A query such as \"jaguar\" can mean several things, and we do not know which the user wants. Ten near-identical results waste space and may miss the right meaning completely.",
+          "This applies to **suggested extra words** (not five synonyms), **search results** (cover each meaning) and **recommendations** (not ten films from one series).",
+          "**The trade-off**: ranking purely by relevance gives the best single items. Adding variety gives up a little of that to lower the risk of failing completely."
         ]
       },
       {
-        "heading": "Diverse candidate terms (no user feedback) - 8/9 papers",
+        "heading": "Suggesting varied extra words",
         "items": [
-          "Setting: suggest terms to the user to add to the query, from the top-k documents (pseudo-feedback) or the collection.",
-          "**Algorithm (greedy, MMR style):** (1) retrieve top-k for the query; (2) build candidate terms and score each by association with the query (e.g. Σ_{t_i in q} M(i,t) with Jaccard/PMI/tf-idf); (3) pick the best-scoring term; (4) for each further pick choose the term maximising **λ × assoc(t,q) - (1-λ) × max_{s in selected} sim(t,s)** where sim is term-term similarity (scalar cluster cosine, co-occurrence, embedding cosine); (5) stop after m terms.",
-          "**Alternative: cluster-then-pick:** cluster the candidate terms (e.g. k-means on their document-occurrence vectors or on word embeddings) and take the highest-scoring term from each cluster (one term per sense/aspect). Another: cluster the top documents and take terms from each cluster.",
-          "Evaluation: show terms to users; measure the proportion of subtopics covered, redundancy among terms, retrieval gain when a user picks a term (MAP, S-recall), compare against the non-diverse list.",
-          "Limitations: choosing λ and the number of clusters; needs a good term similarity; first retrieval may be poor; may drop highly relevant but similar terms."
+          "The task: suggest words to add to a query, taken from the top results, without the user marking anything.",
+          "**1.** Run the query and take the top k documents.",
+          "**2.** Score each candidate word by how strongly it goes with the query words.",
+          "**3.** Take the best one.",
+          "**4.** Next, pick the word with the best mix of **linked to the query** and **unlike the words already picked**: score = λ × link to query - (1-λ) × highest similarity to a picked word. λ (lambda) from 0 to 1 sets the balance.",
+          "**5.** Stop after m words.",
+          "**Another way**: group the candidate words into clusters and take the best word from each, so each meaning is covered. **k-means** is a common clustering method.",
+          "**Testing**: how many subtopics the words cover, how much they repeat each other, and whether picking one improves results.",
+          "**Limits**: choosing λ and the number of groups, needing a good similarity measure, poor first results, and dropping good words just for being similar."
         ]
       },
       {
@@ -660,22 +664,31 @@ module.exports = [
         ]
       },
       {
-        "heading": "Result diversification algorithms (2024-25 P2: describe one + trade-offs)",
+        "heading": "Methods for diversifying results",
         "items": [
-          "**MMR** (above): greedy, similarity-based, no explicit aspects, O(k·n) comparisons.",
-          "**xQuAD (explicit aspects):** estimate sub-queries/aspects of the query (from query suggestions, clusters or taxonomy); score = (1-λ) P(d|q) + λ Σ_aspects P(aspect|q) P(d|aspect) Π_{already selected d_j}(1 - P(d_j|aspect)): rewards documents covering aspects not yet covered.",
-          "**Cluster-based:** cluster the results and interleave top documents of each cluster. **IA-Select / PM-2** are other aspect-based methods.",
-          "**Trade-off relevance vs diversity:** λ controls it; high diversity lowers precision for the dominant intent; for unambiguous queries diversification hurts; for ambiguous/multi-faceted queries (jaguar, python) it raises the chance that every user finds something relevant (risk minimisation). Use QPP/ambiguity detection to decide when to diversify. Costs: extra computation, need aspect estimates, evaluation needs subtopic judgements."
+          "**MMR** (Maximal Marginal Relevance, above): pick one at a time, balancing relevance against similarity to those already picked. Simple.",
+          "**xQuAD**: first list the possible meanings (**aspects**) of the query, then favour documents covering meanings not yet covered.",
+          "**Cluster-based**: group the results and take the top ones from each group in turn.",
+          "Other aspect-based methods are named IA-Select and PM-2.",
+          {
+            "type": "p",
+            "text": "Relevance against diversity"
+          },
+          "λ controls it. More variety means lower precision for the most common meaning.",
+          "For a clear query it hurts. For an ambiguous one it raises the chance every user finds something. So predict ambiguity and diversify only when needed.",
+          "Costs: extra computing, estimating the meanings, and testing needs judgements per subtopic."
         ]
       },
       {
-        "heading": "Measuring diversity of the top-k (2025-26 P1 Q1c, 5 marks)",
+        "heading": "Measuring how diverse a top list is",
         "items": [
-          "**Intra-list distance (ILD):** average pairwise dissimilarity in the top-k: ILD = (2 / (k(k-1))) Σ_{i<j} (1 - cos(d_i, d_j)). Higher = more diverse. Needs document vectors only (no judgements).",
-          "**Subtopic recall (S-recall@k):** fraction of the query's subtopics covered by at least one of the top-k documents (needs subtopic judgements, as in TREC Diversity).",
-          "**α-nDCG:** DCG where a document's gain for a subtopic is discounted by (1-α)^(number of earlier documents already covering that subtopic); rewards novelty and penalises redundancy.",
-          "**Cluster/class coverage:** number of distinct clusters or categories represented in the top-k; **ERR-IA** (intent-aware expected reciprocal rank) averages a metric over intents weighted by intent probability.",
-          "**Recommender versions:** catalogue coverage, novelty, intra-list diversity. Mention that diversity must be reported with relevance (precision/nDCG) because it can be raised trivially by returning random items."
+          "**Intra-list distance (ILD)**: the average difference between every pair in the top k. Higher is more varied. Needs no relevance judgements.",
+          "ILD = (2 / (k(k-1))) × sum over pairs of (1 - cosine similarity).",
+          "**Subtopic recall**: the share of the query's subtopics that appear in the top k.",
+          "**α-nDCG**: like nDCG, but a document is worth less if earlier ones already covered its subtopic.",
+          "**Coverage**: how many different clusters or categories appear. **ERR-IA** averages a ranking score over the possible meanings.",
+          "For recommenders: share of the catalogue shown, novelty, variety within a list.",
+          "Always report relevance too, since random items would score high on variety."
         ]
       }
     ],

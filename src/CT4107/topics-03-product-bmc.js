@@ -331,10 +331,7 @@ module.exports = [
               ]
             ]
           },
-          {
-            "type": "note",
-            "text": "The slides number the boxes in two different orders. The Santander guide goes: segments, value, channels, relationships, revenue, resources, activities, partners, costs. The lecture slides go: segments, value, channels, relationships, activities, resources, partners, revenue, costs. The number is only a working order. Learn all nine and the question each answers."
-          },
+          "The slides number the nine boxes in two different orders, so go by the box names, not numbers.",
           "Other names on one slide: partner network (partners), offer (value), distribution channels (channels). Costs and revenue sit along the bottom."
         ]
       },
@@ -536,13 +533,22 @@ module.exports = [
         ]
       },
       {
-        "heading": "More from the Step 7 slides",
+        "heading": "Brochures and the minimum product",
         "items": [
-          "Cartoon on the Step 7 slide: 'a picture is worth a thousand words': people interpret a text description differently, a visual removes the ambiguity.",
-          "Brochure examples shown: **H.E.L.M.E.T** (Haptic Environment Listener and Motion Event Telemetry: smart cycling helmet with ultrasonic sensor array, haptic feedback and heads-up display; customers: commuters, leisure cyclists, tech enthusiasts), **SLIM** (liquid inventory management: a scale measures stock, software updates inventory, cloud analytics, 'saves time, money and stress') and **Biegando** (app that brings local walking and running events and trails to your phone; 'first year free for every student'). Each has a name, tagline, benefit headline, simple visuals and contact details.",
-          "A template ('Product alignment with persona') links each of the persona's top priorities (1, 2, 3) to: how you will deliver a new level of value on that priority; what **features**; what **functions**; what **benefits**. The brochure itself leads with the benefits.",
-          "Do not focus on technology, features and functions; answer what potential customers want to gain when they buy and ask themselves 'what value do I get out of this product?'.",
-          "Step 22 slide ('minimum viable product'): the cartoon says the customer wanted the Taj Mahal but you first build what gets you the oxygen to keep going: real customer feedback and cash."
+          "A picture removes ambiguity: people read a written description differently.",
+          "Step 7 makes a **brochure**: name, tagline, headline benefit, simple pictures and contact details.",
+          "Slide examples: a smart cycling helmet that warns riders of danger; a scale that tracks how much drink is left in stock; an app listing local runs and walks.",
+          {
+            "type": "p",
+            "text": "Link it to what the customer cares about"
+          },
+          "For each of your persona's top three priorities, write how you add value, then the **features**, **functions** and **benefits**.",
+          "Lead with benefits. The question is \"what value do I get out of this?\", not what technology is inside.",
+          {
+            "type": "p",
+            "text": "Minimum viable product (Step 22)"
+          },
+          "The simplest version a customer will pay for. The customer may dream of the Taj Mahal, but first build what gets you the \"oxygen\" to keep going: real feedback and money."
         ]
       },
       {
@@ -702,12 +708,18 @@ module.exports = [
         ]
       },
       {
-        "heading": "Core: more from the slides",
+        "heading": "What makes a great core, and the worksheet",
         "items": [
-          "Slide title: **secret sauce** (castle and moat picture). 'What makes for a great core?' = Unique, Grows, Important.",
-          "Core worksheet: (1) what is your value proposition? (2) list your moats from strongest to weakest (up to six); (3) what is your core? Orbit-style output: value proposition, team assets (prioritised), proposed moats (strongest to weakest), potential cores, and a recommended core with why it is unique, why it matters to customers, how it can grow over time.",
-          "Link the core to superior value with a table: core capability, customer benefit, why competitors may not match it. The key work is to connect customer value to defensible assets, practical moats and a core that strengthens as the business grows. The slide 'how does your core map to what your customer really wants?' stresses the Important dimension.",
-          "Metaphor: **customer's nirvana** is across a river; the bridge to it is built by your core and is only passable to you; competitors and the as-is state are stuck on the near bank."
+          "Your **core** is the thing you do that others cannot easily copy: your \"secret sauce\". A **moat** is anything that keeps competitors out, like the water round a castle.",
+          "A great core is **unique**, can **grow**, and is **important** to the customer.",
+          {
+            "type": "p",
+            "text": "Worksheet"
+          },
+          "**1.** Write your value proposition. **2.** List up to six possible moats, strongest to weakest. **3.** Choose your core.",
+          "Say why it is unique, why customers care, and how it gets stronger as the business grows.",
+          "A table helps: core ability, benefit to the customer, why competitors may not match it.",
+          "Picture from the slides: the customer's ideal is across a river. Your core builds a bridge only you can use, while competitors stay on the near bank."
         ]
       },
       {

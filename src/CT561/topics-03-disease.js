@@ -53,7 +53,13 @@ module.exports = [
       {
         "heading": "Worked example: Lecture challenge 10.1",
         "items": [
-{"type":"task","show":1,"q":["Find beta, lambda and the infection rate."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Find beta, lambda and the infection rate."
+            ]
+          },
           "N = 100,000, 1% infectious (I = 1000), R0 = 14, D = 7 days.",
           "beta = R0/D = 14/7 = **2 per day**. lambda = beta x I/N = 2 x 1000/100000 = **0.02 per day**. (Infection rate = S x lambda = 99,000 x 0.02 = 1,980 people per day.)"
         ]
@@ -61,7 +67,13 @@ module.exports = [
       {
         "heading": "Worked example: Sheet 1 Q3(a) measles",
         "items": [
-{"type":"task","show":1,"q":["Find beta, lambda and the herd immunity threshold."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Find beta, lambda and the herd immunity threshold."
+            ]
+          },
           "N = 10,000, 2% infectious (I = 200), R0 = 12, D = 7 days.",
           "beta = 12/7 = 1.714 per day. lambda = 1.714 x 200/10000 = **0.0343 per day** (3.4% of susceptibles infected per day).",
           "HIT = 1 - 1/12 = 0.9167 = **91.7%**, i.e. about 9,167 of 10,000 must be immune."
@@ -218,7 +230,15 @@ module.exports = [
       {
         "heading": "Structure and equations",
         "items": [
-          "Assumptions: closed population (no births, deaths, migration), homogeneous mixing, recovered are immune, constant parameters, deterministic.",
+          "**SIR** splits a population into three stocks: **Susceptible** (can catch it), **Infected** (has it and can pass it on) and **Recovered** (immune).",
+          {
+            "type": "p",
+            "text": "Assumptions"
+          },
+          "**Closed population**: no births, deaths or migration.",
+          "**Homogeneous mixing**: everyone is equally likely to meet everyone else.",
+          "Recovered people are immune. Parameters stay constant.",
+          "**Deterministic**: no randomness, so every run gives the same result.",
           {
             "type": "diagram",
             "kind": "graph",
@@ -274,15 +294,34 @@ module.exports = [
             "label": "Difference (Euler) form",
             "text": "S(t+DT) = S(t) - DT x IR(t);  I(t+DT) = I(t) + DT x (IR(t) - RR(t));  R(t+DT) = R(t) + DT x RR(t)"
           },
-          "Parameters: beta = R0/D, lambda = beta I/N, IR = S lambda, RR = I/D. Initial: I(0) = I0, S(0) = N - I0, R(0) = 0. S + I + R = N always.",
-          "**Attack rate** = proportion of the population that has been infected = (N - S)/N = (I + R)/N (with quarantine and vaccination: (N - S - V)/N).",
-          "**Feedback loops**: **Contagion (R)**: more I, more infection, more I. **Depletion (B)**: more infection, fewer S, lower infection. **Recovery (B)**: more I, more recovery, fewer I."
+          {
+            "type": "p",
+            "text": "Parameters"
+          },
+          "**beta** (transmission rate) = R0/D. **lambda** (force of infection) = beta I/N. **IR** (infection rate) = S x lambda. **RR** (recovery rate) = I/D.",
+          "**R0** is the number of people one case infects when everyone is susceptible; **D** is how many days a person stays infectious.",
+          "Start: I(0) = I0, S(0) = N - I0, R(0) = 0. S + I + R = N always.",
+          "**Attack rate** = the proportion of the population that has been infected = (N - S)/N = (I + R)/N. With quarantine and vaccination: (N - S - V)/N.",
+          {
+            "type": "p",
+            "text": "Feedback loops"
+          },
+          "**Contagion (reinforcing)**: more infected, more infections, more infected.",
+          "**Depletion (balancing)**: more infections, fewer susceptibles, fewer infections.",
+          "**Recovery (balancing)**: more infected, more recoveries, fewer infected."
         ]
       },
       {
         "heading": "Worked Euler steps (N = 1000, I0 = 10, R0 = 3, D = 4, DT = 1)",
         "items": [
-{"type":"task","show":0,"q":["SIR model: N = 1000, 10 infected, R0 = 3, D = 4, DT = 1.","Do three Euler steps for S, I and R."]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "SIR model: N = 1000, 10 infected, R0 = 3, D = 4, DT = 1.",
+              "Do three Euler steps for S, I and R."
+            ]
+          },
           "beta = 3/4 = 0.75. Step 0: IR = 0.75 x 990 x 10/1000 = 7.425; RR = 10/4 = 2.5. So S = 982.58, I = 10 + 7.425 - 2.5 = 14.93, R = 2.5.",
           "Step 1: IR = 0.75 x 982.58 x 14.93/1000 = 11.00; RR = 3.73. S = 971.58, I = 22.19, R = 6.23.",
           "Step 2: IR = 16.17; RR = 5.55. S = 955.41, I = 32.82, R = 11.78 (check: sums to 1000)."

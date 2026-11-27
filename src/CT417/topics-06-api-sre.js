@@ -175,7 +175,13 @@ module.exports = [
       {
         "heading": "Worked example 1 (the lecture): uptime SLI",
         "items": [
-{"type":"task","show":1,"q":["The target (SLO) is 99.9%. Find the SLI, the allowed downtime, and say whether the SLO is met."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "The target (SLO) is 99.9%. Find the SLI, the allowed downtime, and say whether the SLO is met."
+            ]
+          },
           "Month: 30 × 24 = 720 hours. The service was down 1.44 hours.",
           "SLI = (720 - 1.44) / 720 × 100 = 718.56 / 720 × 100 = **99.8%**.",
           "Target (SLO) is 99.9%. Allowed downtime = 0.001 × 720 = 0.72 hours (43.2 minutes).",
@@ -186,7 +192,13 @@ module.exports = [
       {
         "heading": "Worked example 2: several incidents against a budget",
         "items": [
-{"type":"task","show":2,"q":["Find the error budget, how much of it is used, the SLI, and whether the SLO is met."]},
+          {
+            "type": "task",
+            "show": 2,
+            "q": [
+              "Find the error budget, how much of it is used, the SLI, and whether the SLO is met."
+            ]
+          },
           "A vet clinic booking system. Target 99.9% over 30 days.",
           "Three outages: 12, 18 and 9 minutes = 39 minutes.",
           "Budget = 0.001 × 43,200 = 43.2 minutes.",
@@ -198,7 +210,13 @@ module.exports = [
       {
         "heading": "Worked example 3: stricter SLO",
         "items": [
-{"type":"task","show":1,"q":["Find the budget and the SLI. Is the SLO met, and by how much is it over or under?"]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Find the budget and the SLI. Is the SLO met, and by how much is it over or under?"
+            ]
+          },
           "Target 99.95% over 30 days. Downtime 25 minutes.",
           "Budget = 0.0005 × 43,200 = 21.6 minutes.",
           "SLI = (43,200 - 25) / 43,200 × 100 = 99.942%.",
@@ -209,7 +227,13 @@ module.exports = [
       {
         "heading": "Worked example 4: request-based SLI and error budget in requests",
         "items": [
-{"type":"task","show":1,"q":["Find the SLI, the allowed failures, and how much budget is left."]},
+          {
+            "type": "task",
+            "show": 1,
+            "q": [
+              "Find the SLI, the allowed failures, and how much budget is left."
+            ]
+          },
           "10,000,000 requests in a month, 4,200 failed. Target 99.95%.",
           "SLI = (10,000,000 - 4,200) / 10,000,000 = 99.958%: **met**.",
           "Budget = 0.0005 × 10,000,000 = 5,000 allowed failures.",
@@ -219,7 +243,14 @@ module.exports = [
       {
         "heading": "Worked example 5: burn rate",
         "items": [
-{"type":"task","show":0,"q":["Target 99.9% over 30 days. After 10 days there have been 30 minutes of downtime.","Find the burn rate. What does it tell you?"]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Target 99.9% over 30 days. After 10 days there have been 30 minutes of downtime.",
+              "Find the burn rate. What does it tell you?"
+            ]
+          },
           "**Burn rate** is how fast you are spending the budget.",
           "Target 99.9% over 30 days (budget 43.2 minutes). After 10 days you have had 30 minutes of downtime.",
           "Budget used: 30 / 43.2 = 0.694.",
@@ -232,7 +263,17 @@ module.exports = [
       {
         "heading": "Worked example 6: working backwards and composite availability",
         "items": [
-{"type":"task","show":0,"q":["1. There were 2 hours of downtime in 30 days. Find the SLI. Does it meet 99.5%? And 99.9%?","2. What is the most downtime allowed for 99.99% over a year (525,600 minutes)?","3. Services in a chain: find the availability of 99.9% then 99.5%, and of three 99.9% parts.","4. Two copies, each 99% available, either one works: find the availability.","5. 962,000 of 1,000,000 requests answer in under 300 ms. Is \"95% under 300 ms\" met?"]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "1. There were 2 hours of downtime in 30 days. Find the SLI. Does it meet 99.5%? And 99.9%?",
+              "2. What is the most downtime allowed for 99.99% over a year (525,600 minutes)?",
+              "3. Services in a chain: find the availability of 99.9% then 99.5%, and of three 99.9% parts.",
+              "4. Two copies, each 99% available, either one works: find the availability.",
+              "5. 962,000 of 1,000,000 requests answer in under 300 ms. Is \"95% under 300 ms\" met?"
+            ]
+          },
           {
             "type": "p",
             "text": "Working backwards"
@@ -302,13 +343,27 @@ module.exports = [
           "**MTTD (mean time to detect)**: average time from the incident starting to it being detected.",
           "**MTTR (mean time to repair/recover)**: average time from detection to service restoration (autumn 2025 paper definition). Total downtime = MTTD + MTTR for an incident.",
           "**MTBF (mean time between failures)**: normally operating time between failures divided by the number of failures. The Semester 1 paper told you to ASSUME MTBF = MTTD + MTTR per incident: follow the question's assumption and state it.",
-          "High observability and automated alerting reduce MTTD and MTTR."
+          "**Observability** means being able to tell what is going on inside a system from its outputs. Good observability and automatic alerts reduce both MTTD and MTTR."
         ]
       },
       {
         "heading": "Worked example A (2025-26 Semester 1 Q3d)",
         "items": [
-{"type":"task","show":0,"q":["Three incidents. Time to detect and time to repair: (4 h, 2 h), (30 min, 1 h), (6 h, 4 h).","The paper defines MTBF = MTTD + MTTR. Find the average, name the best incident, and suggest two improvements."],"own":[{"type":"formula","label":"MTBF as this paper defines it","text":"average of (MTTD + MTTR) over the incidents"}]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Three incidents. Time to detect and time to repair: (4 h, 2 h), (30 min, 1 h), (6 h, 4 h).",
+              "The paper defines MTBF = MTTD + MTTR. Find the average, name the best incident, and suggest two improvements."
+            ],
+            "own": [
+              {
+                "type": "formula",
+                "label": "MTBF as this paper defines it",
+                "text": "average of (MTTD + MTTR) over the incidents"
+              }
+            ]
+          },
           {
             "type": "table",
             "head": [
@@ -344,13 +399,28 @@ module.exports = [
           },
           "Average MTBF = (6 + 1.5 + 10) / 3 = 17.5 / 3 = **5.83 h** (5 h 50 min).",
           "Best performance: **incident 2**: smallest MTTD (30 min) and MTTR (1 h), shortest downtime (1.5 h), because automated alerting was active.",
-          "Two improvements: (1) automated alert correlation and tuned alerting thresholds/on-call paging to cut MTTD; (2) runbooks, automated rollback/patch pipelines and better triage to cut MTTR. Also observability (logs, metrics, traces), chaos/game days, blameless postmortems."
+          "Two improvements: (1) automated alert correlation and tuned alerting thresholds/on-call paging to cut MTTD; (2) runbooks, automated rollback/patch pipelines and better triage to cut MTTR. Also observability (logs, metrics, traces), chaos/game days, blameless postmortems.",
+          "**Alert correlation** groups related alarms. **On-call paging** automatically contacts the engineer on duty. A **runbook** is a written step-by-step fix guide. **Chaos or game days** are planned practice failures. A **blameless postmortem** reviews an incident without blaming people."
         ]
       },
       {
         "heading": "Worked example B (2025-26 Autumn Q3c, from timestamps)",
         "items": [
-{"type":"task","show":0,"q":["Incidents (start, detected, restored): (09:00, 09:40, 10:30), (13:15, 13:20, 13:50), (18:00, 19:30, 21:00).","Find the average MTTD and MTTR and name the best incident."],"own":[{"type":"formula","label":"MTTD and MTTR","text":"MTTD = average of (detected − start). MTTR = average of (restored − detected)."}]},
+          {
+            "type": "task",
+            "show": 0,
+            "q": [
+              "Incidents (start, detected, restored): (09:00, 09:40, 10:30), (13:15, 13:20, 13:50), (18:00, 19:30, 21:00).",
+              "Find the average MTTD and MTTR and name the best incident."
+            ],
+            "own": [
+              {
+                "type": "formula",
+                "label": "MTTD and MTTR",
+                "text": "MTTD = average of (detected − start). MTTR = average of (restored − detected)."
+              }
+            ]
+          },
           {
             "type": "table",
             "head": [
@@ -425,11 +495,25 @@ module.exports = [
       {
         "heading": "API and API-first",
         "items": [
-          "An **API** lets software systems communicate, sharing data and functionality securely. A client sends a request, the API gets data from the server and the response (usually JSON) returns.",
-          "**API contract**: methods, data formats and conventions two programs follow: method, path, parameters, status codes and response schema, i.e. the behaviour clients observe and rely on.",
-          "**API-first**: treat the contract as a design artefact agreed BEFORE implementing the behaviour behind it. In an existing system: define the intended contract change before changing the implementation.",
-          "Workflow: **Define contract, Mock APIs, Test APIs, Implement APIs**. The contract is the single source of truth for development and documentation.",
-          "Benefits: consistency across teams; reduced integration risk (issues surface while it is still a design); frontend and backend work in parallel (faster development); safer evolution (changes checked against the contract); better developer experience and onboarding; docs, mocks, tests, SDKs generated from one spec."
+          "An **API** (application programming interface) is how one piece of software asks another for data or actions.",
+          "A **client** sends a **request**, the server gets the data, and a **response** comes back, usually as **JSON** (a simple text format for data).",
+          "An **API contract** is the agreed rules: the method (such as GET), the path (the web address), the parameters (inputs), the status codes (numbers saying what happened) and the shape of the response. Clients rely on it.",
+          "**API-first** means agreeing the contract **before** writing the code behind it. In an existing system, define the intended change to the contract before changing the code.",
+          {
+            "type": "p",
+            "text": "Workflow"
+          },
+          "**Define** the contract, **mock** the API (a fake version that returns example answers), **test** it, then **implement** it.",
+          "The contract is the single source of truth for building and documenting.",
+          {
+            "type": "p",
+            "text": "Benefits"
+          },
+          "Consistency across teams.",
+          "Fewer integration problems, because issues appear while it is still only a design.",
+          "Frontend (what users see) and backend (the server) can be built at the same time.",
+          "Safer changes, checked against the contract.",
+          "Easier for new developers, and documentation, mocks, tests and **SDKs** (ready-made client code) can all be generated from the one description."
         ]
       },
       {
@@ -505,23 +589,45 @@ module.exports = [
             ]
           },
           "Use a **consistent error format** (JSON with code, message, details) and the right status code.",
-          "**Versioning**: URI versioning (`/v1/users`), header versioning (custom header); deprecate gracefully giving clients time to migrate.",
+          "**Versioning** lets an API change without breaking old clients: put the version in the address (`/v1/users`) or in a request **header** (extra information sent with a request).",
+          "**Deprecate** old versions gently: announce they will be removed and give clients time to move.",
           "**Additive change** (new optional capability, existing requests and responses preserved) vs **breaking change** (removes/changes behaviour clients rely on). Example: `GET /api/visits` still returns the full list while `GET /api/visits?petId=8` adds an optional filter (additive). Making petId mandatory would break existing clients. A cleaner design is not permission to break a contract: make an explicit compatibility decision."
         ]
       },
       {
         "heading": "API security (four points)",
         "items": [
-          "**Authentication**: OAuth2 access tokens (delegated, limited access without sharing credentials), JWT (compact, self-contained, stateless tokens carrying claims), API keys (simple identification of calling app, passed in header).",
-          "**Rate limiting**: thresholds per API key or IP protect against DoS/abuse (429 Too Many Requests).",
-          "**Input validation**: validate types, formats and ranges; prefer allowlists to denylists; parameterised queries.",
-          "**HTTPS everywhere**: TLS encrypts data in transit and prevents man-in-the-middle attacks."
+          {
+            "type": "p",
+            "text": "1. Authentication (who is calling?)"
+          },
+          "**OAuth2 access tokens**: a temporary pass giving limited access without sharing your password.",
+          "**JWT** (JSON Web Token): a small signed pass that carries facts about the user, so the server need not store a session.",
+          "**API keys**: a secret string, sent in a header, that identifies the calling app.",
+          {
+            "type": "p",
+            "text": "2. Rate limiting"
+          },
+          "Limit how many requests each key or IP address may send, to stop abuse and **DoS** (denial of service: flooding a server until it cannot respond). The reply is 429 Too Many Requests.",
+          {
+            "type": "p",
+            "text": "3. Input validation"
+          },
+          "Check the type, format and range of everything received. Prefer an **allowlist** (only these are accepted) to a **denylist** (these are blocked).",
+          "Use **parameterised queries**, which keep user input separate from the database command.",
+          {
+            "type": "p",
+            "text": "4. HTTPS everywhere"
+          },
+          "**TLS** encrypts data as it travels, preventing **man-in-the-middle** attacks (someone reading or changing it on the way)."
         ]
       },
       {
         "heading": "OpenAPI and Swagger",
         "items": [
-          "**OpenAPI Specification**: a standard, language-agnostic format (YAML or JSON) describing RESTful APIs. It is the contract between provider and consumer. Since 2015 the specification is called OpenAPI; **Swagger** is the tooling around it.",
+          "**REST** is the common style of web API that uses addresses for resources and HTTP methods for actions.",
+          "The **OpenAPI Specification** is a standard way to describe a REST API in a YAML or JSON file, whatever language it is written in. It is the contract between whoever provides the API and whoever uses it.",
+          "Since 2015 the specification has been called OpenAPI. **Swagger** is the name of the tools around it.",
           {
             "type": "table",
             "head": [
@@ -547,7 +653,7 @@ module.exports = [
               ]
             ]
           },
-          "One spec carries an API from design to docs to code to tests; mock servers let the frontend build in parallel."
+          "One file carries an API from design to documentation, code and tests. A **stub** is generated placeholder server code that you fill in."
         ]
       },
       {
@@ -587,31 +693,61 @@ module.exports = [
       {
         "heading": "Monitoring vs observability",
         "items": [
-          "**Monitoring**: continuously tracking system metrics (latency, uptime, error rate, throughput, CPU, memory); proactive; alerts when predefined thresholds are crossed; detects KNOWN problems.",
-          "**Observability**: deep insight into internal state from outputs, to understand WHY something fails. Three pillars: **logs** (text event records), **metrics** (numbers over time), **traces** (path of a request across services). Reduces MTTR.",
-          "**Playbook**: organisational goals, escalation paths, communication, general incident guidelines. **Runbook**: step-by-step technical instructions for an on-call engineer responding to a specific alert.",
-          "**Blameless postmortem**: after an incident, document what happened (timeline), why (root cause, 5 Whys) and what to do better; focus on process, not blame.",
-          "SRE vs DevOps: DevOps = culture of shared responsibility, CI/CD, IaC; SRE = specific engineering practice with SLOs, error budgets and toil reduction. They complement each other."
+          "**Monitoring**: continuously measuring things such as **latency** (response delay), uptime, error rate, **throughput** (requests per second), CPU and memory, and alerting when a limit is crossed. It catches problems you **already know** to look for.",
+          "**Observability**: being able to work out **why** something fails from what the system outputs. It reduces repair time (MTTR).",
+          {
+            "type": "p",
+            "text": "Three pillars of observability"
+          },
+          "**Logs**: text records of events.",
+          "**Metrics**: numbers measured over time.",
+          "**Traces**: the path of one request through several services.",
+          {
+            "type": "p",
+            "text": "Handling incidents"
+          },
+          "**Playbook**: general guidance: goals, who to escalate to, how to communicate.",
+          "**Runbook**: exact technical steps for the engineer on duty when a particular alert fires.",
+          "**Blameless postmortem**: afterwards, write down what happened (timeline), why (root cause, for example by asking \"why?\" five times) and what to improve. Focus on the process, not blame.",
+          "**DevOps** is a culture of shared responsibility with automation. **SRE** (site reliability engineering) is a specific practice using reliability targets, error budgets and reducing repetitive work. They complement each other."
         ]
       },
       {
         "heading": "Prometheus",
         "items": [
-          "Open-source monitoring system: **pull-based scraping** of an HTTP metrics endpoint, stores **time series** (metric name + labels) in its TSDB, query with **PromQL**, alert rules sent to Alertmanager (email, PagerDuty).",
-          "`up{job=\"petclinic\"}` is 1 when the latest scrape succeeded, 0 when it failed. Example query: `sum(rate(http_server_requests_seconds_count[5m]))` (only if the metric exists).",
-          "Spring Boot: add `spring-boot-starter-actuator` and `micrometer-registry-prometheus`; expose `management.endpoints.web.exposure.include=health,info,prometheus`.",
+          "**Prometheus** is a free monitoring tool.",
+          {
+            "type": "p",
+            "text": "How it works"
+          },
+          "It **scrapes**: at regular intervals it fetches a web page of current measurements from your app (it **pulls**; the app does not send).",
+          "It stores them as **time series** (a value at each moment, identified by a metric name and **labels** such as the job name) in its own database.",
+          "You ask questions with its query language, **PromQL**.",
+          "Alert rules send notifications to **Alertmanager**, which emails or pages someone.",
+          {
+            "type": "p",
+            "text": "Examples"
+          },
+          "`up{job=\"petclinic\"}` is 1 if the last scrape worked and 0 if it failed.",
+          "`sum(rate(http_server_requests_seconds_count[5m]))` is requests per second over the last 5 minutes (only if that metric exists).",
+          {
+            "type": "p",
+            "text": "Connecting Spring Boot"
+          },
+          "Add `spring-boot-starter-actuator` and `micrometer-registry-prometheus`, and set `management.endpoints.web.exposure.include=health,info,prometheus`.",
           {
             "type": "code",
             "text": "global:\n  scrape_interval: 15s\nscrape_configs:\n  - job_name: \"petclinic\"\n    metrics_path: \"/petclinic/actuator/prometheus\"\n    static_configs:\n      - targets: [\"host.docker.internal:9966\"]"
           },
-          "Inside a container, `localhost` means the container itself: use the container name on a shared Docker network."
+          "Inside a container, `localhost` means the container itself, so use the other container's name on a shared Docker network."
         ]
       },
       {
         "heading": "Grafana",
         "items": [
-          "Visualisation tool: dashboards made of panels; queries Prometheus as a data source (`http://ct417-prometheus:9090`); supports annotations (mark a deployment) and alerting.",
-          "Each panel answers one operational question (scrape reachability, request traffic, JVM heap). Alert on impact-related symptoms over an evaluation period, not every spike. Correlation across panels is not causation.",
+          "**Grafana** draws **dashboards**: pages of **panels** (charts). It reads data from Prometheus (`http://ct417-prometheus:9090`), can add **annotations** (such as marking when you deployed) and can send alerts.",
+          "Each panel should answer one question: can the app be reached, how much traffic, how much memory (**JVM heap**) is used?",
+          "Alert on symptoms that affect users, over a period of time, not on every spike. Two charts moving together (**correlation**) does not prove one caused the other.",
           "A healthy dashboard or UP target is not the same as a healthy application: also verify the user-facing operation.",
           {
             "type": "code",
