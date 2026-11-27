@@ -13,13 +13,18 @@ const ctx = { window: {} }; vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'data/manifest.js'), 'utf8'), ctx);
 const codes = process.argv.length > 2 ? process.argv.slice(2) : ctx.window.MANIFEST.map(m => m.code);
 /* maths.txt: "== formula label" then TeX lines (see js/maths.js); "~ " lines are the words underneath.
-   A second formula with the same label is "== label#2". */
+   A second formula with the same label is "== label#2".
+   Optional "Explain this formula" button: "? " lines say how it works, "> " lines walk through an
+   example, "= " lines are TeX inside that example. */
 const Maths = require('../js/maths.js');
 function addMaths(code, out, src) {
   const specs = {}; let cur;
   src.split(/\r?\n/).forEach(line => {
-    if (line.startsWith('== ')) { cur = specs[line.slice(3).trim()] = { math: [], where: [] }; }
+    if (line.startsWith('== ')) { cur = specs[line.slice(3).trim()] = { math: [], where: [], explain: [], example: [] }; }
     else if (line.startsWith('~ ')) cur.where.push(line.slice(2).trim());
+    else if (line.startsWith('? ')) cur.explain.push(line.slice(2).trim());
+    else if (line.startsWith('> ')) cur.example.push(line.slice(2).trim());
+    else if (line.startsWith('= ')) { const tex = line.slice(2).trim(); Maths.tex(tex); cur.example.push({ tex }); }
     else if (line.trim()) { Maths.tex(line.trim()); cur.math.push(line.trim()); }
   });
   const texts = {}, used = new Set();
@@ -32,6 +37,8 @@ function addMaths(code, out, src) {
     const n = seen.indexOf(o.text), key = n ? o.label + '#' + (n + 1) : o.label, spec = specs[key];
     if (!spec) return console.log(code + ': no maths for formula "' + key + '" (shown as plain text)');
     used.add(key); o.math = spec.math; if (spec.where.length) o.where = spec.where.join(' ');
+    if (spec.explain.length) o.explain = spec.explain;
+    if (spec.example.length) o.example = spec.example;
   })(out);
   Object.keys(specs).forEach(k => { if (!used.has(k)) throw new Error(code + '/maths.txt: no formula labelled "' + k + '"'); });
 }

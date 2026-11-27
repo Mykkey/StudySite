@@ -10,7 +10,14 @@
     var h = '<div class="formula">' + (it.label ? '<small>' + esc(it.label) + '</small>' : '');
     if (!it.math) return h + '<div class="ftext">' + esc(it.text) + '</div></div>';
     h += it.math.map(function (l) { return '<div class="fline">' + window.Maths.tex(l, true) + '</div>'; }).join('');
-    return h + (it.where ? '<p class="fwhere">' + fmt(it.where) + '</p>' : '') + '</div>';
+    return h + (it.where ? '<p class="fwhere">' + fmt(it.where) + '</p>' : '') + explain(it) + '</div>';
+  }
+  function explain(it) {
+    if (!it.explain && !it.example) return '';
+    function line(l) { return l.tex ? '<div class="fline">' + window.Maths.tex(l.tex, true) + '</div>' : '<p>' + fmt(l) + '</p>'; }
+    return '<details class="explain"><summary>💡 Explain this formula</summary>' +
+      (it.explain ? '<h4>How it works</h4><ul>' + it.explain.map(function (l) { return '<li>' + fmt(l) + '</li>'; }).join('') + '</ul>' : '') +
+      (it.example ? '<h4>Example</h4>' + it.example.map(line).join('') : '') + '</details>';
   }
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -129,20 +136,127 @@
   /* ---------- HOME ---------- */
   function studyNow() {
     var n = window.Planner.next(state, MODS), due = window.Review.pool(state, MODS).due.length;
-    var title = n.kind === 'review' ? 'Review ' + window.Review.SIZE + ' cards or fewer' : n.kind === 'resume' ? 'Resume: ' + n.topic.title : n.kind === 'topic' ? 'Learn: ' + n.topic.title : n.kind === 'mock' ? 'Mock paper: ' + n.code : 'All done';
+    var title = n.kind === 'review' ? 'Review ' + window.Review.SIZE + ' cards or fewer' : n.kind === 'resume' ? 'Resume: ' + n.topic.title : n.kind === 'topic' ? 'Learn: ' + n.topic.title : n.kind === 'mock' ? 'Exam papers: ' + n.code : 'All done';
+    var todayPlan = (window.Planner.schedule(state, MODS).days[0] || { topics: [] }).topics;
     return '<a class="continue now" href="' + window.Planner.href(n) + '"><span><small>Study now</small><b>' + esc(title) + '</b><small>' + esc(n.why) + '</small></span><span class="go">Start ▶</span></a>' +
-      '<div class="toolbar"><a class="btn" href="#review">🔁 Mixed review' + (due ? ' <span class="badge p1">' + due + ' due</span>' : '') + '</a><a class="btn" href="#drills">🧮 Calculation drills</a></div>';
+      '<div class="toolbar"><a class="btn" href="#calendar">📅 My calendar' + (todayPlan.length ? ' <span class="badge">today ' + todayPlan.filter(function (p) { return p.done; }).length + '/' + todayPlan.length + '</span>' : '') + '</a><a class="btn" href="#review">🔁 Mixed review' + (due ? ' <span class="badge p1">' + due + ' due</span>' : '') + '</a><a class="btn" href="#drills">🧮 Calculation drills</a></div>';
   }
+  function datesLabel() { var n = Object.keys(state.exams || {}).length; return n ? n + ' set' : 'add yours for a countdown'; }
   function examDates() {
-    var set = Object.keys(state.exams || {}).length;
-    return '<details class="fold" id="examdates"><summary>📅 Exam dates <span class="badge">' + (set ? set + ' set' : 'add yours for a countdown') + '</span></summary><div class="fbody"><div class="dates">' +
-      MAN.map(function (mm) { return '<label><span>' + mm.code + ' <small>' + esc(mm.name) + '</small></span><input type="date" data-exam="' + mm.code + '" value="' + esc((state.exams || {})[mm.code] || '') + '"></label>'; }).join('') + '</div></div></details>';
+    return '<details class="fold" id="examdates"><summary>📅 Exam dates <span class="badge">' + datesLabel() + '</span></summary><div class="fbody"><p>"Paper days" are the days just before an exam that you keep for exam paper revision. Topics are planned to finish before them.</p><div class="dates">' +
+      MAN.map(function (mm) {
+        return '<div class="daterow"><span>' + mm.code + ' <small>' + esc(mm.name) + '</small></span>' +
+          '<label><small>Exam date</small><input type="date" data-exam="' + mm.code + '" value="' + esc((state.exams || {})[mm.code] || '') + '"></label>' +
+          '<label><small>Paper days</small><input type="number" min="0" max="60" inputmode="numeric" placeholder="0" data-paper="' + mm.code + '" value="' + (window.Planner.paperDays(state, mm.code) || '') + '"></label></div>';
+      }).join('') + '</div></div></details>';
+  }
+  /* save in place, so the panel stays open and keeps focus; refresh redraws what depends on the dates */
+  function wireDates(refresh) {
+    function changed() { save(); $('#examdates summary .badge').textContent = datesLabel(); refresh(); }
+    $$('[data-exam]').forEach(function (inp) {
+      inp.onchange = function () {
+        state.exams = state.exams || {};
+        if (inp.value) state.exams[inp.dataset.exam] = inp.value; else delete state.exams[inp.dataset.exam];
+        changed();
+      };
+    });
+    $$('[data-paper]').forEach(function (inp) {
+      inp.onchange = function () {
+        var code = inp.dataset.paper;
+        state.paperDays = state.paperDays || {};
+        state.paperDays[code] = +inp.value || 0;
+        var n = window.Planner.paperDays(state, code);
+        if (n) state.paperDays[code] = n; else delete state.paperDays[code];
+        inp.value = n || '';
+        changed();
+      };
+    });
+  }
+  /* ---------- CALENDAR ---------- */
+  function dayText(day, opts) { return new Date(day * 864e5).toLocaleDateString('en-IE', Object.assign({ timeZone: 'UTC' }, opts)); }
+  function longDay(day) { return dayText(day, { weekday: 'long', day: 'numeric', month: 'long' }); }
+  function colourOf(code) { var m = MAN.filter(function (x) { return x.code === code; })[0]; return m ? m.colour : '#888'; }
+  function calDay(p, today) {
+    var h = '<h2>' + (p.day === today ? 'Today, ' : '') + esc(longDay(p.day)) + '</h2>';
+    p.exams.forEach(function (c) { h += '<div class="callout warn"><b>' + c + ' exam.</b> Good luck.</div>'; });
+    MAN.forEach(function (mm) {
+      var list = p.topics.filter(function (x) { return x.code === mm.code; }), papers = p.papers.indexOf(mm.code) >= 0;
+      if (!list.length && !papers) return;
+      h += '<div class="calmod" style="--mc:' + mm.colour + '"><h3>' + mm.code + ' <small>' + esc(mm.name) + '</small></h3><ul>' +
+        (papers ? '<li><a href="module.html?m=' + mm.code + '#mocks">📝 Exam paper revision</a></li>' : '') +
+        list.map(function (x) { return '<li' + (x.done ? ' class="done"' : '') + '><a href="module.html?m=' + mm.code + '#learn/' + esc(x.topic.id) + '">' + (x.done ? '✓ ' : '') + esc(plain(x.topic.title)) + '</a></li>'; }).join('') + '</ul></div>';
+    });
+    if (!p.topics.length && !p.papers.length && !p.exams.length) h += '<p>Nothing planned. Rest, or review some cards.</p>';
+    return h;
+  }
+  function calBody() {
+    var today = window.Review.dayNum(), plan = window.Planner.schedule(state, MODS, today), box = $('#cal');
+    if (!plan.days.length) { box.innerHTML = '<p class="callout">Add at least one exam date above to get a calendar.</p>'; return; }
+    var lead = (today + 3) % 7, total = Math.ceil((plan.days.length + lead) / 7) * 7, h = '', i;   /* weeks start on Monday */
+    if (plan.tight.length) h += '<div class="callout warn">No days left before paper revision for ' + plan.tight.join(', ') + '. Remaining topics are all put on today (or left out if the exam is today). Fewer paper days would spread them out.</div>';
+    if (plan.undated.length) h += '<p class="stat">Not in the calendar (no exam date): ' + plan.undated.join(', ') + '</p>';
+    h += '<div class="cal">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(function (d) { return '<b>' + d + '</b>'; }).join('');
+    for (i = 0; i < total; i++) {
+      var n = i - lead, p = plan.days[n], chips = '';
+      if (!p) { h += '<span></span>'; continue; }
+      p.exams.forEach(function (c) { chips += '<i class="exam" style="--mc:' + colourOf(c) + '">' + c.slice(2) + '<em> exam</em></i>'; });
+      MAN.forEach(function (mm) {
+        var k = p.topics.filter(function (x) { return x.code === mm.code; }).length;
+        if (p.papers.indexOf(mm.code) >= 0) chips += '<i class="pp" style="--mc:' + mm.colour + '">📝' + mm.code.slice(2) + '</i>';
+        if (k) chips += '<i style="--mc:' + mm.colour + '">' + mm.code.slice(2) + '<em> ×' + k + '</em></i>';
+      });
+      h += '<button data-day="' + n + '" aria-pressed="' + (n === 0) + '" aria-label="' + esc(longDay(p.day)) + '"><span>' + esc(dayText(p.day, n === 0 || new Date(p.day * 864e5).getUTCDate() === 1 ? { day: 'numeric', month: 'short' } : { day: 'numeric' })) + '</span>' + chips + '</button>';
+    }
+    h += '</div><p class="stat">Numbers are module codes without "CT". <span class="wide">×2 means two topics. </span>📝 means exam papers. Pick a day to see it.</p><div id="calday">' + calDay(plan.days[0], today) + '</div>';
+    box.innerHTML = h;
+    $$('[data-day]', box).forEach(function (btn) {
+      btn.onclick = function () {
+        $$('[data-day]', box).forEach(function (o) { o.setAttribute('aria-pressed', o === btn); });
+        $('#calday').innerHTML = calDay(plan.days[+btn.dataset.day], today);
+        $('#calday').scrollIntoView({ block: 'nearest' });
+      };
+    });
+  }
+  function calendar() {
+    $('#app').innerHTML = '<p><a class="btn" href="#">← Home</a></p><h1>My calendar</h1><p class="lead">Your main topics, shared over the days you have. Miss a day and it re-plans itself.</p>' + examDates() + '<div id="cal"></div>';
+    wireDates(calBody);
+    calBody();
   }
   function countdown(code, m) {
     var i = window.Planner.info(state, code, m, window.Review.dayNum());
     if (i.days == null) return '';
     if (i.past) return '<p class="stat">Exam done</p>';
     return '<p class="countdown' + (i.days <= 7 ? ' soon' : '') + '"><b>' + (i.days === 0 ? 'Today' : i.days + (i.days === 1 ? ' day left' : ' days left')) + '</b>' + (i.left.length ? ' · about ' + i.perDay + (i.perDay === 1 ? ' topic' : ' topics') + ' a day' : ' · main topics done') + '</p>';
+  }
+  /* progress lives in this browser only: a file carries it to another one */
+  function backupPanel() {
+    return '<details class="fold"><summary>💾 Save or move your progress</summary><div class="fbody"><p>Progress is kept in this browser only. Export it to a file, then import that file in another browser or on another device.</p>' +
+      '<div class="toolbar"><button id="export">Export to a file</button><button id="import">Import from a file</button></div><input type="file" id="importfile" accept=".json,application/json" hidden><p id="backupmsg" role="status"></p></div></details>';
+  }
+  function backupWire() {
+    var msg = $('#backupmsg'), pick = $('#importfile');
+    function obj(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
+    $('#export').onclick = function () {
+      var d = new Date(), day = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      var a = document.createElement('a'), url = URL.createObjectURL(new Blob([JSON.stringify({ app: 'studysite', saved: day, state: state })], { type: 'application/json' }));
+      a.href = url; a.download = 'studysite-progress-' + day + '.json'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      msg.textContent = 'Saved ' + a.download + ' to your downloads.';
+    };
+    $('#import').onclick = function () { pick.value = ''; pick.click(); };
+    pick.onchange = function () {
+      if (!pick.files[0]) return;
+      var r = new FileReader();
+      r.onload = function () {
+        var data;
+        try { data = JSON.parse(r.result); } catch (e) { data = null; }
+        if (!data || data.app !== 'studysite' || !obj(data.state) || !obj(data.state.done) || !obj(data.state.cards)) { msg.textContent = 'That is not a StudySite progress file. Nothing was changed.'; return; }
+        if (!window.confirm('Replace the progress in this browser with the file saved on ' + (data.saved || 'an unknown date') + '?')) return;
+        try { localStorage.setItem(KEY, JSON.stringify(data.state)); } catch (e) { msg.textContent = 'This browser would not save it. Nothing was changed.'; return; }
+        location.reload();
+      };
+      r.readAsText(pick.files[0]);
+    };
   }
   function home() {
     window.Review.migrate(state); save();
@@ -154,18 +268,12 @@
       else { var nx = S.nextTopic(mm.code, m); h += '<div data-count="' + mm.code + '">' + countdown(mm.code, m) + '</div><div class="rings">' + S.ring(pct(s.done, s.topics), 'topics') + '<span class="stat">Topics<br>' + s.done + '/' + s.topics + '</span>' + S.ring(pct(s.known, s.cards), 'cards') + '<span class="stat">Cards<br>' + s.known + '/' + s.cards + '</span></div><p class="stat">' + (nx ? 'Next up: ' + esc(nx.title) : 'All topics complete') + '</p>'; }
       h += '</a>';
     });
-    h += '</div><div class="disclaimer">Content is synthesised from your notes and past papers. Lecturer hints are second-hand and unverified. Mock papers and model answers are AI-written practice material, not official marking schemes.</div>';
+    h += '</div>' + backupPanel() + '<div class="disclaimer">Content is synthesised from your notes and past papers. Lecturer hints are second-hand and unverified. Mock papers and model answers are AI-written practice material, not official marking schemes.</div>';
     $('#app').innerHTML = h;
-    /* update in place, so the date panel stays open and keeps focus */
-    $$('[data-exam]').forEach(function (inp) {
-      inp.onchange = function () {
-        state.exams = state.exams || {};
-        if (inp.value) state.exams[inp.dataset.exam] = inp.value; else delete state.exams[inp.dataset.exam];
-        save();
-        $('#studynow').innerHTML = studyNow();
-        $$('[data-count]').forEach(function (d) { d.innerHTML = countdown(d.dataset.count, MODS[d.dataset.count]); });
-        var n = Object.keys(state.exams).length; $('#examdates summary .badge').textContent = n ? n + ' set' : 'add yours for a countdown';
-      };
+    backupWire();
+    wireDates(function () {
+      $('#studynow').innerHTML = studyNow();
+      $$('[data-count]').forEach(function (d) { d.innerHTML = countdown(d.dataset.count, MODS[d.dataset.count]); });
     });
   }
   function homeParts() { return location.hash.replace(/^#/, '').split('/'); }
@@ -173,6 +281,7 @@
     var p = homeParts(), app = $('#app');
     if (p[0] === 'review') window.Review.view({ state: state, save: save, mods: MODS, app: app, fmt: fmt, award: S.award, confetti: S.confetti });
     else if (p[0] === 'drills') window.Drills.view({ app: app, man: MAN, esc: esc, fmt: fmt, award: S.award, today: window.Review.dayNum }, p[1] || '');
+    else if (p[0] === 'calendar') calendar();
     else home();
     window.scrollTo(0, 0);
   }
@@ -457,6 +566,7 @@
   document.addEventListener('keydown', onKey);
   var hb = $('#helpbtn'); if (hb) hb.onclick = showHelp;
   var th = $('#themebtn'); if (th) th.onclick = function () { onKey({ key: 'd', target: document.body }); };
+  if (window.Planner.snapshot(state, window.Review.dayNum())) save();
   window.Timer.init({ state: state, save: save });
   if (page === 'home') { homeRoute(); window.addEventListener('hashchange', homeRoute); }
   else {

@@ -51,9 +51,9 @@ test('study now: resume first', () => {
   assert.strictEqual(x.kind + x.topic.id, 'resumea2');
 });
 test('study now: change of subject after two in a row', () => {
-  const exams = { A: '2027-01-11', B: '2027-01-16' };   // 2/10 and 3/15: equally pressing
-  const first = Planner.next({ exams }, mods, day).code, second = first === 'A' ? 'B' : 'A';
-  assert.strictEqual(Planner.next({ exams, recent: [first, first] }, mods, day).code, second);
+  const exams = { A: '2027-01-02', B: '2027-01-02' }, two = { A: mod(['a1', 'a2', 'a3']), B: mod(['b1', 'b2', 'b3']) };   // equally pressing, both on today
+  const first = Planner.next({ exams }, two, day).code, second = first === 'A' ? 'B' : 'A';
+  assert.strictEqual(Planner.next({ exams, recent: [first, first] }, two, day).code, second);
 });
 test('study now: reviews when ten are due, mock when finished', () => {
   const m = { A: mod(['t'], Array.from({ length: 12 }, (_, i) => ({ id: 'c' + i, topicId: 't' }))) };
@@ -61,6 +61,53 @@ test('study now: reviews when ten are due, mock when finished', () => {
   assert.strictEqual(Planner.next({ srs }, m, day).kind, 'review');
   assert.strictEqual(Planner.next({ done: { 'A:t': true } }, m, day).kind, 'mock');
   assert.strictEqual(Planner.next({ done: { 'A:t': true }, exams: { A: '2026-01-01' } }, m, day).kind, 'none');
+});
+
+/* calendar */
+const many = k => mod(Array.from({ length: k }, (_, i) => 't' + i));
+const where = (plan, code) => plan.days.flatMap((d, i) => d.topics.filter(x => x.code === code).map(() => i));
+test('calendar: every topic once, before the paper days, exam marked', () => {
+  const s = { exams: { A: '2027-01-11', B: '2027-01-21' }, paperDays: { A: 3 } };
+  const p = Planner.schedule(s, { A: many(14), B: many(5), C: many(2) }, day);
+  assert.strictEqual(p.days.length, 21);
+  assert.strictEqual(where(p, 'A').length, 14);
+  assert.strictEqual(where(p, 'B').length, 5);
+  assert(Math.max(...where(p, 'A')) < 7);
+  assert.deepStrictEqual(p.days.map((d, i) => d.papers.includes('A') ? i : null).filter(i => i != null), [7, 8, 9]);
+  assert(p.days[10].exams.includes('A') && p.days[20].exams.includes('B'));
+  assert.deepStrictEqual(p.undated, ['C']);
+  const a = p.days.slice(0, 7).map(d => d.topics.filter(x => x.code === 'A').length);
+  assert(a.every(n => n === 2), 'uneven: ' + a);
+});
+test('calendar: today stays put as topics are ticked off', () => {
+  const s = { exams: { A: '2027-01-05' }, done: {} };
+  Planner.snapshot(s, day);
+  const before = Planner.schedule(s, { A: many(8) }, day).days[0].topics.map(x => x.topic.id);
+  s.done['A:' + before[0]] = true;
+  const after = Planner.schedule(s, { A: many(8) }, day).days[0].topics;
+  assert.deepStrictEqual(after.map(x => x.topic.id), before);
+  assert.deepStrictEqual(after.map(x => x.done), [true, false]);
+  Planner.snapshot(s, day + 1);
+  const next = Planner.schedule(s, { A: many(8) }, day + 1);
+  assert.strictEqual(where(next, 'A').length, 7);
+});
+test('calendar: no room before paper days', () => {
+  const p = Planner.schedule({ exams: { A: '2027-01-03' }, paperDays: { A: 10 } }, { A: many(4) }, day);
+  assert.deepStrictEqual(p.tight, ['A']);
+  assert.strictEqual(p.days[0].topics.length, 4);
+  assert.deepStrictEqual(p.days.map(d => d.papers.length), [1, 1, 0]);
+});
+test('calendar: study now turns to papers', () => {
+  const s = { exams: { A: '2027-01-04' }, paperDays: { A: 3 }, done: { 'A:t0': true } };
+  assert.strictEqual(Planner.next(s, { A: many(1) }, day).kind, 'mock');
+});
+
+test('calendar: days come out about equally full', () => {
+  const s = { exams: { A: '2027-01-09', B: '2027-01-13', C: '2027-01-21' } };
+  const p = Planner.schedule(s, { A: many(24), B: many(30), C: many(12) }, day);
+  const n = p.days.slice(0, 20).map(d => d.topics.length);   // 54 topics are due in 12 days, then only C is left
+  [n.slice(0, 12), n.slice(12)].forEach(part => assert(Math.max(...part) - Math.min(...part) <= 1, 'lumpy: ' + n));
+  assert(Math.max(...where(p, 'A')) < 8 && Math.max(...where(p, 'B')) < 12);
 });
 
 /* worked examples already on the site */
