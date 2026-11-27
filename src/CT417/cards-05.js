@@ -28,10 +28,10 @@ module.exports = [
   c('jc-s6', 'jacoco-coverage', 'JaCoCo versions in the practicals?', 'Exam Registry: JUnit Jupiter 5, JaCoCo 0.8.11. PetClinic: JUnit 4-style tests, JaCoCo 0.8.2 (./mvnw --batch-mode clean verify).'),
   // sre
   c('sre-s1', 'sli-slo-sla-error-budget', 'What is "engineering bankruptcy"?', 'Toil takes an unmanageable share of capacity, leaving none to reduce toil or improve the business.'),
-  c('sre-s2', 'sli-slo-sla-error-budget', 'Slide example: 720 h month, 1.44 h downtime, SLO 99.9%?', 'SLI = 99.8%. Allowed downtime 0.72 h (43.2 min). 1.44 h exceeds it, so the SLO is not met.'),
+  c("sre-s2-m", 'sli-slo-sla-error-budget', "How do you work out allowed downtime from an SLO?", "(1 - SLO as a fraction) x length of the window, in the same units as the downtime."),
   // unit testing
   c('ut-s1', 'unit-testing-junit', 'What is a domain primitive (EmailAddress)?', 'A value object for an important domain concept that validates itself on construction, so invalid values cannot exist.'),
-  c('ut-s2', 'unit-testing-junit', 'EmailAddress boundary lengths in the slides?', 'Accept exactly 15 and exactly 77 chars; reject 14 chars, 65-char local part, multiple @, wrong domain, subdomain, leading/trailing dot, more than one dot.'),
+  c("ut-s2-m", 'unit-testing-junit', "Which values do you test for a field with a minimum and maximum length?", "The minimum and maximum (accepted), one below and one above (rejected), plus invalid formats."),
   // requirements
   c('rq-s1', 'req-change-management', 'Name the two lanes from request to engineering evidence.', 'Requirements maturity: raw request, clarified requirement, ready for engineering. Evidence: Issue, Pull Request, implementation, test, evidence (history, checks, traceability).'),
   c('rq-s2', 'req-change-management', 'Can an urgent change be not ready?', 'Yes. Priority (urgency) and readiness are different concerns.')

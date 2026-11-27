@@ -76,25 +76,30 @@
     if (it.rows) return it.rows.join(' ').split(/[\s,]+/).length;
     return String(it.text || '').split(/\s+/).length + (it.type === 'diagram' ? 20 : 0);
   }
+  /* One heading, one page. Only a very long section is split, and only between separate
+     things. A list, or a table with the text around it, is never cut in two. */
+  var LONG = 600, PAGE = 300;
   function chunkSection(s) {
-    var out = [], cur = [], w = 0;
+    var items = s.items || [], total = items.reduce(function (a, it) { return a + words(it); }, 0);
     /* a worked example stays on one page */
-    if (s.items && s.items[0] && s.items[0].type === 'task') return [s.items];
-    function flush() { if (cur.length) out.push(cur); cur = []; w = 0; }
-    (s.items || []).forEach(function (it) {
-      var n = words(it), big = it && (it.type === 'table' || it.type === 'diagram' || it.type === 'code');
-      if (big) { if (w > 25) flush(); cur.push(it); flush(); return; }
-      /* a "p" item introduces what follows: start a screen with it and never leave it stranded at the bottom */
-      if (it && it.type === 'p' && w > 25) flush();
-      if (cur.length && (cur.length >= 5 || w + n > 70)) {
-        var last = cur[cur.length - 1], carry = cur.length > 1 && last && last.type === 'p';
-        if (carry) cur.pop();
-        flush();
-        if (carry) { cur.push(last); w = words(last); }
-      }
-      cur.push(it); w += n;
+    if (total <= LONG || (items[0] && items[0].type === 'task')) return [items];
+    /* "p" items mark where each new thing starts. Without them, only a long paragraph stands alone. */
+    var marked = items.some(function (it) { return it.type === 'p'; });
+    function starts(it) {
+      if (marked) return it.type === 'p';
+      return typeof it === 'string' && words(it) >= 30 && !/^\W*(\d+[.)]|step \d)/i.test(it);
+    }
+    var groups = [];
+    items.forEach(function (it, i) {
+      if (!i || starts(it)) groups.push({ items: [], w: 0 });
+      var g = groups[groups.length - 1];
+      g.items.push(it); g.w += words(it);
     });
-    flush();
+    var out = [], w = 0;
+    groups.forEach(function (g) {
+      if (!out.length || w + g.w > PAGE) { out.push([]); w = 0; }
+      out[out.length - 1] = out[out.length - 1].concat(g.items); w += g.w;
+    });
     return out;
   }
   function icon(heading) {
@@ -112,7 +117,7 @@
       parts.forEach(function (items, i) { body.push({ type: 'read', heading: s.heading, part: i + 1, of: parts.length, items: items }); });
     });
     var cards = (M.flashcards || []).filter(function (c) { return c.topicId === t.id; });
-    var checks = Math.min(Math.floor(body.length / 3), Math.ceil(cards.length / 2));
+    var checks = Math.min(Math.floor(body.length / 2), Math.ceil(cards.length / 2));
     if (!checks && cards.length) checks = 1;
     var steps = [{ type: 'intro' }], every = checks ? Math.ceil(body.length / checks) : 0, used = 0, done = 0;
     body.forEach(function (b, i) {

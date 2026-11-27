@@ -46,7 +46,7 @@ module.exports = [
   c('ch-fail', 'cluster-hypothesis-evaluation', 'When does the cluster hypothesis fail?', 'Multi-faceted/ambiguous queries, non-topical relevance, heterogeneous vocabulary, broad topics, poor initial ranking.'),
   c('ch-effect', 'cluster-hypothesis-evaluation', 'Effect on feedback when it fails?', 'Centroid lies between clusters, expansion terms are off-target, drift, precision falls.'),
   c('ch-uses', 'cluster-hypothesis-evaluation', 'Uses of clustering in IR?', 'Search result clustering, Scatter-Gather, collection browsing, cluster-based retrieval, diverse expansion, recommender neighbourhoods.'),
-  c('ch-purity', 'cluster-hypothesis-evaluation', 'Purity?', 'Sum over clusters of the majority-class count, divided by N. Example (5+4+3)/17 = 0.71.'),
+  c("ch-purity-m", 'cluster-hypothesis-evaluation', "Purity: how do you work it out?", "Count the majority class in each cluster, add the counts, divide by the total number of points."),
   c('ch-rand', 'cluster-hypothesis-evaluation', 'Rand index?', '(TP + TN) / all document pairs; counts correct same/different-cluster decisions.'),
   c('ch-internal', 'cluster-hypothesis-evaluation', 'Internal vs external vs task-based cluster evaluation?', 'Internal: RSS/cohesion. External: gold-standard classes (purity, Rand). Task-based: effect on retrieval or user study.'),
   c('ch-recall', 'cluster-hypothesis-evaluation', 'How does clustering improve recall?', 'Return other documents in the cluster of a matching document: car also finds automobile documents.'),

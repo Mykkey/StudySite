@@ -15,8 +15,8 @@ const T = [
 ["tp-3","test-suite-prompting","Which prompt changes matter most for unit tests?","Naming business rules and edge cases, forbidding shallow asserts, fixing framework, giving real source."],
 ["tp-4","test-suite-prompting","Prompt phrase that avoids shallow tests?","'Avoid shallow tests such as assertNotNull; each test must verify a meaningful business rule.'"],
 ["tp-5","test-suite-prompting","Why give business rules in a test prompt?","They supply the oracle; AI cannot guess intended behaviour."],
-["tp-6","test-suite-prompting","ManagePrint boundaries to test?","Deadline exactly feasible, one minute early, in the past; file size limit-1, limit, limit+1; DST/time zones."],
-["tp-7","test-suite-prompting","ManagePrint failure paths?","Payment declined/timeout/double submit (no job queued), invalid file, incompatible printer/material, unauthorised user."],
+["tp-6-m","test-suite-prompting","Which boundaries should a test prompt ask for around a deadline or size limit?","Just under, exactly at and just over the limit; values in the past; for times, daylight saving and time zones."],
+["tp-7-m","test-suite-prompting","Which failure paths should a test prompt ask for in a paid job-submission feature?","Payment declined, timeout or double submit; invalid input; incompatible options; unauthorised user. Check no side effect happens."],
 // mutation
 ["mut-1","mutation-testing","What is mutation testing?","Inject small faults (mutants) and run tests to measure how good the tests are."],
 ["mut-2","mutation-testing","Killed vs surviving vs equivalent mutant?","Killed: a test fails (good). Surviving: all pass (weak tests). Equivalent: no behaviour change, undetectable."],

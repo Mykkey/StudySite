@@ -77,7 +77,7 @@ module.exports = [
   c('sre-12', 'sli-slo-sla-error-budget', 'Burn rate?', 'Fraction of budget consumed divided by fraction of window elapsed; 1 = on budget.'),
   c('sre-13', 'sli-slo-sla-error-budget', 'Time to budget exhaustion?', 'Window / burn rate.'),
   c('sre-14', 'sli-slo-sla-error-budget', 'What happens when error budget is spent?', 'Pause risky releases; focus on reliability until restored.'),
-  c('sre-15', 'sli-slo-sla-error-budget', 'Lecture example: 1.44 h down in 720 h?', 'SLI 99.8%; SLO 99.9% allows 0.72 h so it fails.'),
+  c("sre-15-m", 'sli-slo-sla-error-budget', "How do you check whether a time-based SLO is met?", "SLI = (total time - downtime) / total time x 100. Met if SLI >= SLO, or if downtime <= (1 - SLO) x window."),
   c('sre-16', 'sli-slo-sla-error-budget', 'Series availability of two services?', 'Multiply: 99.9% x 99.5% = 99.40%.'),
   c('sre-17', 'sli-slo-sla-error-budget', 'What is toil?', 'Repetitive manual automatable operations work; SRE minimises it.'),
   c('sre-18', 'sli-slo-sla-error-budget', 'Why SLO stricter than SLA?', 'Gives a safety margin before contractual penalties apply.'),

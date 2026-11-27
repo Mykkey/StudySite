@@ -10,7 +10,7 @@ module.exports = [
   c('cf-pred', 'collaborative-filtering', 'Mean-centred CF prediction formula?', 'P(a,i) = mean_a + Σ (r(u,i) - mean_u) w(a,u) / Σ |w(a,u)|.', 'Mean + weighted deviations'),
   c('cf-abs', 'collaborative-filtering', 'Why |w| in the denominator of the prediction?', 'Keeps the prediction on the rating scale when some correlations are negative.'),
   c('cf-sig', 'collaborative-filtering', 'Significance weighting formula and purpose?', "w' = min(|I|, 50)/50 × w: discounts strong correlation based on few co-rated items (with 2 items w is always ±1)."),
-  c('cf-ken', 'collaborative-filtering', 'Ken-message-6 example: Ken-Lee Pearson and prediction?', 'w = -0.8 (Lee opposite), Meg +1.0 (2 items), Nan 0. Predicted rating 4.19.'),
+  c("cf-ken-m", 'collaborative-filtering', "Steps to predict a rating with user-user collaborative filtering?", "1. Score each user's similarity to you. 2. Keep neighbours who rated the item. 3. Take their similarity-weighted average (mean-centred is preferred). 4. High result: recommend."),
   c('cf-item', 'collaborative-filtering', 'What is item-item CF?', 'Find items similar to the target (columns, adjusted cosine) and predict from the active user\'s own ratings of those items.', 'Because you liked X'),
   c('cf-item-why', 'collaborative-filtering', 'Why item-item CF over user-user?', 'Stable item similarities, precomputable offline, fewer items than users, easy explanation; less serendipity.'),
   c('cf-explicit', 'collaborative-filtering', 'Explicit vs implicit ratings?', 'Explicit: user gives a number. Implicit: inferred from purchases, clicks, plays, reading time (usually positive-only).'),

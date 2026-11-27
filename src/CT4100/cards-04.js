@@ -19,7 +19,7 @@ module.exports = [
   c('hits-matrix', 'hits', 'HITS in matrix form?', 'a ← M^T h, h ← M a; converge to principal eigenvectors of M^T M and M M^T.'),
   c('hits-norm', 'hits', 'Why normalise in HITS?', 'Sums grow without bound; only relative scores matter.'),
   c('hits-vs', 'hits', 'HITS vs PageRank key differences?', 'HITS: query-dependent, two scores, small base set, no teleportation, spam-prone. PageRank: query-independent, one score, whole web, teleportation.'),
-  c('hits-ex', 'hits', 'Notes example result?', 'C best authority, A and B best hubs, D both: a = (0,0,.56,.44), h = (.39,.39,0,.22).'),
+  c("hits-ex-m", 'hits', "In a link graph, how can you spot a likely hub and a likely authority?", "A hub links to many good pages. An authority is linked to by many good hubs. One page can be both."),
   c('hits-limit', 'hits', 'Limitations of link-only methods?', 'Narrow topics, topic drift in hubs, equal link weights, timeliness, malicious attack, wrong link semantics.'),
   // web search
   c('ws-diff', 'web-search', 'Web vs classical IR collection?', 'Huge, distributed, volatile, redundant (30-40% near duplicates), spammy, diverse, link-structured.'),

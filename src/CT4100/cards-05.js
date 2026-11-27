@@ -21,14 +21,14 @@ module.exports = [
   c('cl5-history', 'cluster-hypothesis-evaluation', 'Search result clustering systems over time?', 'Scatter/Gather 1992; Vivisimo/Clusty early 2000s; KartOO; Grokker; Carrot2.'),
   c('cl5-vr', 'cluster-hypothesis-evaluation', 'Van Rijsbergen wording of the cluster hypothesis?', '"Closely associated documents tend to be relevant to the same requests."'),
   c('cl5-gold', 'cluster-hypothesis-evaluation', 'External criteria for clusters?', 'Gold-standard human classes; the clustering should reproduce them (purity, Rand index).'),
-  c('cl5-purex', 'cluster-hypothesis-evaluation', 'Purity example (17 points)?', 'Majority counts 5, 4, 3: (5+4+3)/17 = 0.71.'),
+  c("cl5-purex-m", 'cluster-hypothesis-evaluation', "Why can purity be misleading?", "Many tiny clusters score high: one point per cluster gives purity 1."),
   c('cl5-rand-tab', 'cluster-hypothesis-evaluation', 'Rand index pair table?', 'Same class+same cluster = TP; same class+different cluster = FN; different class+same cluster = FP; different+different = TN.'),
   c('cl5-pairs', 'cluster-hypothesis-evaluation', 'How many pairs in the Rand index?', 'C(N,2) = N(N-1)/2 pairs; RI = (TP+TN)/all pairs.'),
   c('cl5-discuss', 'cluster-hypothesis-evaluation', 'Why do web engines still show a ranked list?', 'Users prefer simplicity and speed; clusters are hard to label; the cluster hypothesis fails for many queries.'),
   // intro / preprocessing / indexing
   c('in5-tax', 'ir-models-overview', 'Lecture taxonomy of IR models?', 'Boolean (classical, fuzzy, extended); vector (VSM, LSI, neural nets); probabilistic (inference network, belief network).'),
   c('in5-stem', 'preprocessing', 'Two classic stemmers?', 'Lovins and Porter.'),
-  c('in5-tok', 'preprocessing', 'Token count of the notes pre-processing example?', '13 stems after stop-word removal and stemming (11 distinct); the slide\'s "14" is a slip.'),
+  c("in5-tok-m", 'preprocessing', "What do stop-word removal and stemming do to the token count and vocabulary?", "Stop-word removal drops common words, so fewer tokens. Stemming merges word forms, so fewer distinct terms."),
   c('in5-query', 'inverted-index', 'Query types an index must support?', 'Single term, Boolean, phrase, proximity, wildcard, prefix.'),
   // evaluation
   c('ev5-cran', 'user-oriented-evaluation', 'Cranfield experiments?', 'Cleverdon, 1960s: 1,400 aeronautics abstracts, 225 queries, all documents judged for all queries.'),
@@ -46,6 +46,6 @@ module.exports = [
   c('qp5-robust2', 'query-performance-prediction', 'TREC Robust human agreement figures?', 'Human difficulty judgements vs systems r = 0.26; agreement between humans r = 0.39.'),
   c('qp5-neg', 'query-performance-prediction', 'What does negative correlation of a predictor mean?', 'It ranks queries the wrong way round: predicted easy are actually hard.'),
   c('qp5-rag', 'query-performance-prediction', 'RAG deciding whether to retrieve: which predictors?', 'Only pre-retrieval ones (before retrieval); post-retrieval ones can flag low confidence afterwards.'),
-  c('qp5-stab', 'query-performance-prediction', 'Stability example numbers?', '[A,B,C,D,E] vs [A,C,B,D,E]: overlap@5 1.0; vs [X,Y,Z,A,B]: overlap@5 0.4, overlap@3 0.0.'),
-  c('qp5-scope', 'query-performance-prediction', 'Scope examples?', '"computer science" 0.80, "graph embedding" 0.20, "algorthim recusion" 0.003 (misspelling/missing coverage).'),
+  c("qp5-stab-m", 'query-performance-prediction', "How do you measure the stability of a ranking?", "Compare the top k before and after a small change using overlap@k: shared documents divided by k. High overlap suggests an easier query."),
+  c("qp5-scope-m", 'query-performance-prediction', "What do a very high and a very low query scope tell you?", "High: the query is broad and vague. Very low: a misspelling or a topic the collection hardly covers."),
 ];
