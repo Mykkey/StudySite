@@ -188,7 +188,7 @@
       if (st.done && st.done % STAGE === 0) h += '<div class="callout">☕ ' + st.done + ' topics done. Good moment for a 5-minute break: stand up, get water.</div>';
     }
     h += '</div>';
-    if (s.type !== 'recap') h += '<div class="lesson-nav"><button data-act="back"' + (L.i ? '' : ' disabled') + '>← Back</button><button class="primary big" data-act="next">' + (s.type === 'intro' ? 'Start' : s.type === 'check' ? 'Carry on' : 'Got it, next') + ' →</button></div>';
+    if (s.type !== 'recap') h += '<div class="lesson-nav"><button data-act="back"' + (L.i ? '' : ' disabled') + '>Back <span class="kbd">←</span></button><button class="primary big" data-act="next">' + (s.type === 'intro' ? 'Start' : s.type === 'check' ? 'Carry on' : 'Got it, next') + ' <span class="kbd">→</span></button></div>';
     h += '</div>';
     var v = $('#view'); v.innerHTML = h;
     $$('[data-act]', v).forEach(function (b) { b.onclick = function () { act(b.dataset.act, b.dataset); }; });

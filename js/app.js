@@ -309,7 +309,7 @@
     h += '<div class="round" aria-label="' + rn + ' of 10 in this round">' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return '<i class="' + (i < rn ? 'on' : '') + '"></i>'; }).join('') + '<span class="stat">to checkpoint</span></div>';
     h += '<p class="stat" style="text-align:center">Card ' + (fc.i + 1) + ' of ' + fc.order.length + (tt[c.topicId] ? ' &middot; ' + esc(tt[c.topicId].title) : '') + '</p>';
     h += '<div class="fc' + (fc.flipped ? ' flipped' : '') + (st === 'know' ? ' known' : st === 'learn' ? ' learn' : '') + '" id="fc"><div class="fc-inner"><div class="fc-face front"><span class="tag">Question</span>' + fmt(c.front) + '<small>click or press Space to flip</small></div><div class="fc-face back"><span class="tag">Answer</span><div>' + fmt(c.back) + '</div>' + (c.hook ? '<small>Hook: ' + fmt(c.hook) + '</small>' : '') + '</div></div></div>';
-    h += '<div class="actions"><button id="fcprev">&larr; Prev</button><button class="bad" id="fclearn">Still learning <span class="kbd">1</span></button><button class="good" id="fcknow">I know it <span class="kbd">2</span></button><button id="fcnext">Next &rarr;</button></div>';
+    h += '<div class="actions"><button id="fcprev">Prev <span class="kbd">&larr;</span></button><button class="bad" id="fclearn">Still learning <span class="kbd">1</span></button><button class="good" id="fcknow">I know it <span class="kbd">2</span></button><button id="fcnext">Next <span class="kbd">&rarr;</span></button></div>';
     $('#view').innerHTML = h; bindCards();
   }
   function bindCards() {

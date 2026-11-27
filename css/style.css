@@ -155,3 +155,7 @@ figure.diagram figcaption { color: var(--muted); font-size: .85rem; }
 
 /* long exam-frequency notes wrap instead of widening the page */
 .badge { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+
+/* the key hints inside Back / Next: readable on coloured buttons, hidden on touch screens */
+button.primary .kbd { color: inherit; border-color: currentColor; background: transparent; }
+@media (hover: none) { button .kbd { display: none; } }
